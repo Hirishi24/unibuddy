@@ -1,30 +1,17 @@
-import { TrendingUp, TrendingDown, AlertTriangle, Target } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, Calculator } from "lucide-react";
 
 interface DashboardStatsProps {
-  percentage: number;
-  totalMarked: number;
-  totalPresent: number;
   bunkStatus: {
     canBunk: number;
     mustAttend: number;
     status: "safe" | "danger" | "neutral";
     message: string;
     currentPercentage: number;
+    worstCourse: string | null;
   };
 }
 
-const DashboardStats = ({
-  percentage,
-  totalMarked,
-  totalPresent,
-  bunkStatus,
-}: DashboardStatsProps) => {
-  const getPercentageClass = () => {
-    if (percentage >= 75) return "attendance-percentage-safe";
-    if (percentage >= 65) return "attendance-percentage-warning";
-    return "attendance-percentage-danger";
-  };
-
+const DashboardStats = ({ bunkStatus }: DashboardStatsProps) => {
   const getStatusBadgeClass = () => {
     if (bunkStatus.status === "safe") return "status-badge-success";
     if (bunkStatus.status === "danger") return "status-badge-danger";
@@ -38,48 +25,16 @@ const DashboardStats = ({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-      {/* Overall Attendance Card */}
+    <div className="mb-6">
+      {/* Bunk Status Card */}
       <div className="bg-card rounded-xl p-6 card-shadow animate-fade-in border border-border">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            Overall Attendance
-          </h3>
-          <Target className="h-5 w-5 text-primary" />
-        </div>
-        <div className="flex items-end gap-2">
-          <span className={`text-4xl font-bold ${getPercentageClass()}`}>
-            {percentage.toFixed(1)}%
-          </span>
-        </div>
-        <p className="text-sm text-muted-foreground mt-2">
-          {totalPresent} of {totalMarked} classes attended
-        </p>
-        <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${
-              percentage >= 75
-                ? "bg-success"
-                : percentage >= 65
-                ? "bg-warning"
-                : "bg-danger"
-            }`}
-            style={{ width: `${Math.min(percentage, 100)}%` }}
-          />
-        </div>
-        <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-          <span>0%</span>
-          <span className="font-medium text-primary">75% min</span>
-          <span>100%</span>
-        </div>
-      </div>
-
-      {/* Bunk Status Card */}
-      <div className="bg-card rounded-xl p-6 card-shadow animate-fade-in border border-border" style={{ animationDelay: "0.1s" }}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            Bunk Calculator
-          </h3>
+          <div className="flex items-center gap-2">
+            <Calculator className="h-5 w-5 text-primary" />
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Bunk Calculator (Per Course)
+            </h3>
+          </div>
           <div className={`p-2 rounded-full ${getStatusBadgeClass()}`}>
             {getStatusIcon()}
           </div>
@@ -110,14 +65,9 @@ const DashboardStats = ({
         >
           {bunkStatus.message}
         </p>
-        {bunkStatus.status === "safe" && (
+        {bunkStatus.worstCourse && (
           <p className="text-xs text-muted-foreground mt-2">
-            Based on {bunkStatus.currentPercentage.toFixed(1)}% current attendance
-          </p>
-        )}
-        {bunkStatus.status === "danger" && (
-          <p className="text-xs text-muted-foreground mt-2">
-            Current: {bunkStatus.currentPercentage.toFixed(1)}% — Need 75% to be safe
+            Based on {bunkStatus.currentPercentage.toFixed(0)}% in {bunkStatus.worstCourse}
           </p>
         )}
       </div>

@@ -1,18 +1,16 @@
-import { timetable, ClassSlot } from "@/data/timetable";
+import { ClassBlock } from "@/data/timetable";
 import ClassCard from "./ClassCard";
 import { DailyAttendanceRecord } from "@/hooks/useAttendance";
 import { Calendar } from "lucide-react";
 
 interface DailyScheduleProps {
-  day: string;
+  blocks: ClassBlock[];
   attendance: DailyAttendanceRecord;
-  onMarkAttendance: (classId: string, status: "present" | "absent") => void;
+  onMarkAttendance: (blockId: string, status: "present" | "absent") => void;
 }
 
-const DailySchedule = ({ day, attendance, onMarkAttendance }: DailyScheduleProps) => {
-  const daySchedule: ClassSlot[] = timetable[day] || [];
-
-  if (daySchedule.length === 0) {
+const DailySchedule = ({ blocks, attendance, onMarkAttendance }: DailyScheduleProps) => {
+  if (blocks.length === 0) {
     return (
       <div className="bg-card rounded-lg p-8 text-center card-shadow">
         <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
@@ -25,14 +23,14 @@ const DailySchedule = ({ day, attendance, onMarkAttendance }: DailyScheduleProps
   }
 
   return (
-    <div className="space-y-3">
-      {daySchedule.map((slot, index) => (
-        <div key={slot.id} style={{ animationDelay: `${index * 0.05}s` }}>
+    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+      {blocks.map((block, index) => (
+        <div key={block.blockId} style={{ animationDelay: `${index * 0.05}s` }}>
           <ClassCard
-            slot={slot}
-            status={attendance[slot.id] || null}
-            onMarkPresent={() => onMarkAttendance(slot.id, "present")}
-            onMarkAbsent={() => onMarkAttendance(slot.id, "absent")}
+            block={block}
+            status={attendance[block.blockId] || null}
+            onMarkPresent={() => onMarkAttendance(block.blockId, "present")}
+            onMarkAbsent={() => onMarkAttendance(block.blockId, "absent")}
           />
         </div>
       ))}

@@ -11,6 +11,17 @@ export interface Timetable {
   [day: string]: ClassSlot[];
 }
 
+// A block is a group of consecutive same-course classes (treated as one attendance entry)
+export interface ClassBlock {
+  blockId: string;
+  course: string;
+  room: string;
+  startTime: string;
+  endTime: string;
+  duration: number; // in hours
+  slotIds: string[];
+}
+
 export const timetable: Timetable = {
   Monday: [
     { id: "mon1", time: "09:00", course: "LBA 253/S", room: "S607" },
@@ -57,9 +68,8 @@ export const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 export const getCurrentDay = (): string => {
   const dayIndex = new Date().getDay();
-  // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   if (dayIndex === 0 || dayIndex === 6) {
-    return "Monday"; // Default to Monday on weekends
+    return "Monday";
   }
   return days[dayIndex - 1];
 };
@@ -73,13 +83,61 @@ export const getAllCourses = (): string[] => {
   return Array.from(courses).sort();
 };
 
-// Get total classes per course per week
-export const getTotalClassesPerCourse = (): Record<string, number> => {
-  const totals: Record<string, number> = {};
-  Object.values(timetable).forEach((dayClasses) => {
-    dayClasses.forEach((slot) => {
-      totals[slot.course] = (totals[slot.course] || 0) + 1;
-    });
-  });
-  return totals;
+// Helper to check if two times are consecutive (1 hour apart)
+const areConsecutive = (time1: string, time2: string): boolean => {
+  const hour1 = parseInt(time1.split(":")[0]);
+  const hour2 = parseInt(time2.split(":")[0]);
+  return hour2 - hour1 === 1;
+};
+
+// Group consecutive same-course classes into blocks
+export const getBlocksForDay = (day: DayName): ClassBlock[] => {
+  const slots = timetable[day] || [];
+  if (slots.length === 0) return [];
+
+  const blocks: ClassBlock[] = [];
+  let currentBlock: ClassBlock | null = null;
+
+  for (const slot of slots) {
+    if (
+      currentBlock &&
+      currentBlock.course === slot.course &&
+      areConsecutive(currentBlock.endTime, slot.time)
+    ) {
+      // Extend current block
+      currentBlock.endTime = slot.time;
+      currentBlock.duration++;
+      currentBlock.slotIds.push(slot.id);
+    } else {
+      // Save previous block and start new one
+      if (currentBlock) {
+        blocks.push(currentBlock);
+      }
+      currentBlock = {
+        blockId: `block_${slot.id}`,
+        course: slot.course,
+        room: slot.room,
+        startTime: slot.time,
+        endTime: slot.time,
+        duration: 1,
+        slotIds: [slot.id],
+      };
+    }
+  }
+
+  // Don't forget the last block
+  if (currentBlock) {
+    blocks.push(currentBlock);
+  }
+
+  return blocks;
+};
+
+// Get all blocks across all days (for counting per course)
+export const getAllBlocks = (): ClassBlock[] => {
+  const allBlocks: ClassBlock[] = [];
+  for (const day of days as DayName[]) {
+    allBlocks.push(...getBlocksForDay(day));
+  }
+  return allBlocks;
 };

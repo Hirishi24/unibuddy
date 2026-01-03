@@ -1,14 +1,14 @@
 import { Clock, MapPin, Check, X } from "lucide-react";
-import { ClassSlot } from "@/data/timetable";
+import { ClassBlock } from "@/data/timetable";
 
 interface ClassCardProps {
-  slot: ClassSlot;
+  block: ClassBlock;
   status: "present" | "absent" | null;
   onMarkPresent: () => void;
   onMarkAbsent: () => void;
 }
 
-const ClassCard = ({ slot, status, onMarkPresent, onMarkAbsent }: ClassCardProps) => {
+const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent }: ClassCardProps) => {
   const formatTime = (time: string) => {
     const [hours] = time.split(":");
     const hour = parseInt(hours);
@@ -17,9 +17,22 @@ const ClassCard = ({ slot, status, onMarkPresent, onMarkAbsent }: ClassCardProps
     return `${hour12}:00 ${ampm}`;
   };
 
+  const getEndTimeDisplay = () => {
+    const [hours] = block.endTime.split(":");
+    const endHour = parseInt(hours) + 1; // Add 1 hour to get actual end time
+    const ampm = endHour >= 12 ? "PM" : "AM";
+    const hour12 = endHour % 12 || 12;
+    return `${hour12}:00 ${ampm}`;
+  };
+
+  const getDurationLabel = () => {
+    if (block.duration === 1) return "1 hour";
+    return `${block.duration} hours`;
+  };
+
   return (
     <div
-      className={`bg-card rounded-lg p-4 card-shadow transition-all duration-200 animate-scale-in ${
+      className={`bg-card rounded-lg p-4 card-shadow transition-all duration-200 animate-scale-in border border-border ${
         status === "present"
           ? "ring-2 ring-success/50"
           : status === "absent"
@@ -29,15 +42,20 @@ const ClassCard = ({ slot, status, onMarkPresent, onMarkAbsent }: ClassCardProps
     >
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="font-semibold text-foreground text-lg">{slot.course}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-foreground text-lg">{block.course}</h3>
+            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+              {getDurationLabel()}
+            </span>
+          </div>
           <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />
-              {formatTime(slot.time)}
+              {formatTime(block.startTime)} - {getEndTimeDisplay()}
             </span>
             <span className="flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" />
-              {slot.room}
+              {block.room}
             </span>
           </div>
         </div>
