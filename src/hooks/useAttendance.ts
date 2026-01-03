@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { timetable, getAllCourses, DayName } from "@/data/timetable";
+import { getAllCourses, DayName, getBlocksForDay, ClassBlock } from "@/data/timetable";
 import { format, parseISO, isValid } from "date-fns";
 
+// Attendance is stored per block (not per individual slot)
 export interface DailyAttendanceRecord {
-  [classId: string]: "present" | "absent" | null;
+  [blockId: string]: "present" | "absent" | null;
 }
 
 export interface AttendanceByDate {
@@ -12,12 +13,15 @@ export interface AttendanceByDate {
 
 export interface SubjectStats {
   course: string;
-  totalClasses: number;
+  totalBlocks: number;
   attended: number;
   percentage: number;
+  canBunk: number;
+  mustAttend: number;
+  status: "safe" | "danger" | "neutral";
 }
 
-const STORAGE_KEY = "student-attendance-data-v2";
+const STORAGE_KEY = "student-attendance-data-v3";
 
 // Helper to get day name from date
 const getDayNameFromDate = (date: Date): DayName | null => {
@@ -49,24 +53,24 @@ export const useAttendance = () => {
   const getDateKey = (date: Date): string => format(date, "yyyy-MM-dd");
 
   const markAttendance = useCallback(
-    (classId: string, status: "present" | "absent", date: Date = selectedDate) => {
+    (blockId: string, status: "present" | "absent", date: Date = selectedDate) => {
       const dateKey = getDateKey(date);
       setAttendanceByDate((prev) => ({
         ...prev,
         [dateKey]: {
           ...prev[dateKey],
-          [classId]: status,
+          [blockId]: status,
         },
       }));
     },
     [selectedDate]
   );
 
-  const clearAttendance = useCallback((classId: string, date: Date = selectedDate) => {
+  const clearAttendance = useCallback((blockId: string, date: Date = selectedDate) => {
     const dateKey = getDateKey(date);
     setAttendanceByDate((prev) => {
       const dayData = { ...prev[dateKey] };
-      delete dayData[classId];
+      delete dayData[blockId];
       return {
         ...prev,
         [dateKey]: dayData,
@@ -83,24 +87,7 @@ export const useAttendance = () => {
     return attendanceByDate[dateKey] || {};
   }, [attendanceByDate]);
 
-  // Calculate overall stats across all dates
-  const getOverallStats = useCallback(() => {
-    let totalMarked = 0;
-    let totalPresent = 0;
-
-    Object.values(attendanceByDate).forEach((dayRecord) => {
-      Object.values(dayRecord).forEach((status) => {
-        if (status === "present" || status === "absent") {
-          totalMarked++;
-          if (status === "present") totalPresent++;
-        }
-      });
-    });
-
-    const percentage = totalMarked > 0 ? (totalPresent / totalMarked) * 100 : 0;
-    return { totalMarked, totalPresent, percentage };
-  }, [attendanceByDate]);
-
+  // Calculate stats per course (blocks, not individual slots)
   const getSubjectStats = useCallback((): SubjectStats[] => {
     const courses = getAllCourses();
     const courseStats: Record<string, { attended: number; total: number }> = {};
@@ -109,21 +96,22 @@ export const useAttendance = () => {
       courseStats[course] = { attended: 0, total: 0 };
     });
 
-    // Iterate through all dates and count attendance per course
+    // Iterate through all dates and count attendance per course (by blocks)
     Object.entries(attendanceByDate).forEach(([dateKey, dayRecord]) => {
       const date = parseISO(dateKey);
       if (!isValid(date)) return;
 
       const dayName = getDayNameFromDate(date);
-      if (!dayName || !timetable[dayName]) return;
+      if (!dayName) return;
 
-      timetable[dayName].forEach((slot) => {
-        const status = dayRecord[slot.id];
+      const blocks = getBlocksForDay(dayName);
+      blocks.forEach((block) => {
+        const status = dayRecord[block.blockId];
         if (status === "present") {
-          courseStats[slot.course].attended++;
-          courseStats[slot.course].total++;
+          courseStats[block.course].attended++;
+          courseStats[block.course].total++;
         } else if (status === "absent") {
-          courseStats[slot.course].total++;
+          courseStats[block.course].total++;
         }
       });
     });
@@ -131,66 +119,87 @@ export const useAttendance = () => {
     return courses.map((course) => {
       const stats = courseStats[course];
       const percentage = stats.total > 0 ? (stats.attended / stats.total) * 100 : 0;
+
+      // Calculate bunk status per course
+      let canBunk = 0;
+      let mustAttend = 0;
+      let status: "safe" | "danger" | "neutral" = "neutral";
+
+      if (stats.total > 0) {
+        if (percentage >= 75) {
+          status = "safe";
+          // How many can be missed: attended / (total + x) >= 0.75
+          canBunk = Math.floor(stats.attended / 0.75 - stats.total);
+          canBunk = Math.max(0, canBunk);
+        } else {
+          status = "danger";
+          // How many must attend: (attended + x) / (total + x) >= 0.75
+          mustAttend = Math.ceil(3 * stats.total - 4 * stats.attended);
+          mustAttend = Math.max(0, mustAttend);
+        }
+      }
+
       return {
         course,
-        totalClasses: stats.total,
+        totalBlocks: stats.total,
         attended: stats.attended,
         percentage,
+        canBunk,
+        mustAttend,
+        status,
       };
     });
   }, [attendanceByDate]);
 
-  // 75% rule calculations based on OD/ML (actual attendance)
+  // Get worst course status for overall bunk message
   const calculateBunkStatus = useCallback(() => {
-    const { totalMarked, totalPresent, percentage } = getOverallStats();
+    const stats = getSubjectStats();
+    const coursesWithData = stats.filter((s) => s.totalBlocks > 0);
 
-    if (totalMarked === 0) {
+    if (coursesWithData.length === 0) {
       return {
         canBunk: 0,
         mustAttend: 0,
         status: "neutral" as const,
         message: "Start marking attendance to see bunk status",
         currentPercentage: 0,
+        worstCourse: null as string | null,
       };
     }
 
-    if (percentage >= 75) {
-      // Calculate how many can be missed while staying at or above 75%
-      // (totalPresent) / (totalMarked + x) >= 0.75
-      // totalPresent >= 0.75 * (totalMarked + x)
-      // totalPresent / 0.75 >= totalMarked + x
-      // x <= (totalPresent / 0.75) - totalMarked
-      const canBunk = Math.floor(totalPresent / 0.75 - totalMarked);
-      return {
-        canBunk: Math.max(0, canBunk),
-        mustAttend: 0,
-        status: "safe" as const,
-        message:
-          canBunk > 0
-            ? `You can bunk ${canBunk} class${canBunk > 1 ? "es" : ""} and stay above 75%`
-            : "Attend next class to maintain 75%",
-        currentPercentage: percentage,
-      };
-    } else {
-      // Calculate how many must be attended to reach 75%
-      // (totalPresent + x) / (totalMarked + x) >= 0.75
-      // totalPresent + x >= 0.75 * totalMarked + 0.75x
-      // 0.25x >= 0.75 * totalMarked - totalPresent
-      // x >= (0.75 * totalMarked - totalPresent) / 0.25
-      // x >= 3 * totalMarked - 4 * totalPresent
-      const mustAttend = Math.ceil(3 * totalMarked - 4 * totalPresent);
+    // Find the course with lowest percentage (worst case)
+    const worstCourse = coursesWithData.reduce((prev, curr) =>
+      curr.percentage < prev.percentage ? curr : prev
+    );
+
+    if (worstCourse.status === "danger") {
       return {
         canBunk: 0,
-        mustAttend: Math.max(0, mustAttend),
+        mustAttend: worstCourse.mustAttend,
         status: "danger" as const,
-        message:
-          mustAttend > 0
-            ? `Attend next ${mustAttend} class${mustAttend > 1 ? "es" : ""} to reach 75%`
-            : "You're at exactly 75%",
-        currentPercentage: percentage,
+        message: `${worstCourse.course}: Attend ${worstCourse.mustAttend} class${worstCourse.mustAttend > 1 ? "es" : ""} to reach 75%`,
+        currentPercentage: worstCourse.percentage,
+        worstCourse: worstCourse.course,
       };
     }
-  }, [getOverallStats]);
+
+    // Find course with minimum bunks allowed
+    const minBunkCourse = coursesWithData.reduce((prev, curr) =>
+      curr.canBunk < prev.canBunk ? curr : prev
+    );
+
+    return {
+      canBunk: minBunkCourse.canBunk,
+      mustAttend: 0,
+      status: "safe" as const,
+      message:
+        minBunkCourse.canBunk > 0
+          ? `${minBunkCourse.course}: Can bunk ${minBunkCourse.canBunk} class${minBunkCourse.canBunk > 1 ? "es" : ""}`
+          : `${minBunkCourse.course}: Attend next class to stay above 75%`,
+      currentPercentage: minBunkCourse.percentage,
+      worstCourse: minBunkCourse.course,
+    };
+  }, [getSubjectStats]);
 
   // Get dates that have any attendance marked
   const getMarkedDates = useCallback((): Date[] => {
@@ -203,7 +212,7 @@ export const useAttendance = () => {
       .filter(isValid);
   }, [attendanceByDate]);
 
-  // Get attendance summary for a specific date
+  // Get attendance summary for a specific date (counts blocks)
   const getDateSummary = useCallback((date: Date): { present: number; absent: number } => {
     const record = getAttendanceForDate(date);
     let present = 0;
@@ -215,6 +224,13 @@ export const useAttendance = () => {
     return { present, absent };
   }, [getAttendanceForDate]);
 
+  // Get blocks for a date
+  const getBlocksForDate = useCallback((date: Date): ClassBlock[] => {
+    const dayName = getDayNameFromDate(date);
+    if (!dayName) return [];
+    return getBlocksForDay(dayName);
+  }, []);
+
   return {
     attendanceByDate,
     selectedDate,
@@ -223,10 +239,10 @@ export const useAttendance = () => {
     clearAttendance,
     resetAllAttendance,
     getAttendanceForDate,
-    getOverallStats,
     getSubjectStats,
     calculateBunkStatus,
     getMarkedDates,
     getDateSummary,
+    getBlocksForDate,
   };
 };

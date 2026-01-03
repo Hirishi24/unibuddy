@@ -1,5 +1,4 @@
 import { GraduationCap, RotateCcw, CalendarOff, PartyPopper, Moon } from "lucide-react";
-import { timetable, DayName } from "@/data/timetable";
 import { getNoClassReason, getNoClassMessage } from "@/data/academicCalendar";
 import { useAttendance } from "@/hooks/useAttendance";
 import DashboardStats from "@/components/DashboardStats";
@@ -16,32 +15,23 @@ const Index = () => {
     markAttendance,
     resetAllAttendance,
     getAttendanceForDate,
-    getOverallStats,
     getSubjectStats,
     calculateBunkStatus,
     getMarkedDates,
     getDateSummary,
+    getBlocksForDate,
   } = useAttendance();
 
-  const overallStats = getOverallStats();
   const subjectStats = getSubjectStats();
   const bunkStatus = calculateBunkStatus();
   const markedDates = getMarkedDates();
   const currentAttendance = getAttendanceForDate(selectedDate);
-
-  // Get day name from selected date
-  const getDayNameFromDate = (date: Date): DayName | null => {
-    const dayIndex = date.getDay();
-    const days: (DayName | null)[] = [null, "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", null];
-    return days[dayIndex];
-  };
+  const blocksForDate = getBlocksForDate(selectedDate);
 
   // Check for no-class reason (holiday, weekend, or out of semester)
   const noClassReason = getNoClassReason(selectedDate);
   const noClassMessage = getNoClassMessage(selectedDate);
   const hasClasses = noClassReason.type === "has_classes";
-
-  const selectedDayName = hasClasses ? getDayNameFromDate(selectedDate) : null;
 
   const handleReset = () => {
     if (window.confirm("Are you sure you want to reset all attendance data?")) {
@@ -49,8 +39,8 @@ const Index = () => {
     }
   };
 
-  const handleMarkAttendance = (classId: string, status: "present" | "absent") => {
-    markAttendance(classId, status, selectedDate);
+  const handleMarkAttendance = (blockId: string, status: "present" | "absent") => {
+    markAttendance(blockId, status, selectedDate);
   };
 
   // Get appropriate icon for no-class reason
@@ -98,13 +88,8 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto max-w-4xl px-4 pb-8">
-        {/* Dashboard Stats */}
-        <DashboardStats
-          percentage={overallStats.percentage}
-          totalMarked={overallStats.totalMarked}
-          totalPresent={overallStats.totalPresent}
-          bunkStatus={bunkStatus}
-        />
+        {/* Dashboard Stats - shows worst course bunk status */}
+        <DashboardStats bunkStatus={bunkStatus} />
 
         {/* Calendar and Schedule Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -140,9 +125,9 @@ const Index = () => {
                 <p className="text-foreground font-medium mb-1">No Classes</p>
                 <p className="text-sm text-muted-foreground">{noClassMessage}</p>
               </div>
-            ) : selectedDayName && timetable[selectedDayName] ? (
+            ) : blocksForDate.length > 0 ? (
               <DailySchedule
-                day={selectedDayName}
+                blocks={blocksForDate}
                 attendance={currentAttendance}
                 onMarkAttendance={handleMarkAttendance}
               />
