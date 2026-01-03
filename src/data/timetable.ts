@@ -5,6 +5,8 @@ export interface ClassSlot {
   room: string;
 }
 
+export type DayName = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday";
+
 export interface Timetable {
   [day: string]: ClassSlot[];
 }

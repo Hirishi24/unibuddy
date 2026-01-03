@@ -1,11 +1,11 @@
 import { timetable, ClassSlot } from "@/data/timetable";
 import ClassCard from "./ClassCard";
-import { AttendanceRecord } from "@/hooks/useAttendance";
+import { DailyAttendanceRecord } from "@/hooks/useAttendance";
 import { Calendar } from "lucide-react";
 
 interface DailyScheduleProps {
   day: string;
-  attendance: AttendanceRecord;
+  attendance: DailyAttendanceRecord;
   onMarkAttendance: (classId: string, status: "present" | "absent") => void;
 }
 
