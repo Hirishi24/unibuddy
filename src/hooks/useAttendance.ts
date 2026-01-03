@@ -1,8 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { timetable, getAllCourses, getTotalClassesPerCourse } from "@/data/timetable";
+import { timetable, getAllCourses, DayName } from "@/data/timetable";
+import { format, parseISO, isValid } from "date-fns";
 
-export interface AttendanceRecord {
+export interface DailyAttendanceRecord {
   [classId: string]: "present" | "absent" | null;
+}
+
+export interface AttendanceByDate {
+  [dateKey: string]: DailyAttendanceRecord;
 }
 
 export interface SubjectStats {
@@ -12,93 +17,130 @@ export interface SubjectStats {
   percentage: number;
 }
 
-const STORAGE_KEY = "student-attendance-data";
+const STORAGE_KEY = "student-attendance-data-v2";
+
+// Helper to get day name from date
+const getDayNameFromDate = (date: Date): DayName | null => {
+  const dayIndex = date.getDay();
+  const days: (DayName | null)[] = [null, "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", null];
+  return days[dayIndex];
+};
 
 export const useAttendance = () => {
-  const [attendance, setAttendance] = useState<AttendanceRecord>(() => {
+  const [attendanceByDate, setAttendanceByDate] = useState<AttendanceByDate>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : {};
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return {};
+      }
+    }
+    return {};
   });
+
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   // Save to localStorage whenever attendance changes
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(attendance));
-  }, [attendance]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(attendanceByDate));
+  }, [attendanceByDate]);
+
+  const getDateKey = (date: Date): string => format(date, "yyyy-MM-dd");
 
   const markAttendance = useCallback(
-    (classId: string, status: "present" | "absent") => {
-      setAttendance((prev) => ({
+    (classId: string, status: "present" | "absent", date: Date = selectedDate) => {
+      const dateKey = getDateKey(date);
+      setAttendanceByDate((prev) => ({
         ...prev,
-        [classId]: status,
+        [dateKey]: {
+          ...prev[dateKey],
+          [classId]: status,
+        },
       }));
     },
-    []
+    [selectedDate]
   );
 
-  const clearAttendance = useCallback((classId: string) => {
-    setAttendance((prev) => {
-      const next = { ...prev };
-      delete next[classId];
-      return next;
+  const clearAttendance = useCallback((classId: string, date: Date = selectedDate) => {
+    const dateKey = getDateKey(date);
+    setAttendanceByDate((prev) => {
+      const dayData = { ...prev[dateKey] };
+      delete dayData[classId];
+      return {
+        ...prev,
+        [dateKey]: dayData,
+      };
     });
-  }, []);
+  }, [selectedDate]);
 
   const resetAllAttendance = useCallback(() => {
-    setAttendance({});
+    setAttendanceByDate({});
   }, []);
 
-  // Calculate stats
+  const getAttendanceForDate = useCallback((date: Date): DailyAttendanceRecord => {
+    const dateKey = getDateKey(date);
+    return attendanceByDate[dateKey] || {};
+  }, [attendanceByDate]);
+
+  // Calculate overall stats across all dates
   const getOverallStats = useCallback(() => {
     let totalMarked = 0;
     let totalPresent = 0;
 
-    Object.values(attendance).forEach((status) => {
-      if (status === "present" || status === "absent") {
-        totalMarked++;
-        if (status === "present") totalPresent++;
-      }
+    Object.values(attendanceByDate).forEach((dayRecord) => {
+      Object.values(dayRecord).forEach((status) => {
+        if (status === "present" || status === "absent") {
+          totalMarked++;
+          if (status === "present") totalPresent++;
+        }
+      });
     });
 
     const percentage = totalMarked > 0 ? (totalPresent / totalMarked) * 100 : 0;
     return { totalMarked, totalPresent, percentage };
-  }, [attendance]);
+  }, [attendanceByDate]);
 
   const getSubjectStats = useCallback((): SubjectStats[] => {
     const courses = getAllCourses();
-    const classesPerCourse = getTotalClassesPerCourse();
+    const courseStats: Record<string, { attended: number; total: number }> = {};
+
+    courses.forEach((course) => {
+      courseStats[course] = { attended: 0, total: 0 };
+    });
+
+    // Iterate through all dates and count attendance per course
+    Object.entries(attendanceByDate).forEach(([dateKey, dayRecord]) => {
+      const date = parseISO(dateKey);
+      if (!isValid(date)) return;
+
+      const dayName = getDayNameFromDate(date);
+      if (!dayName || !timetable[dayName]) return;
+
+      timetable[dayName].forEach((slot) => {
+        const status = dayRecord[slot.id];
+        if (status === "present") {
+          courseStats[slot.course].attended++;
+          courseStats[slot.course].total++;
+        } else if (status === "absent") {
+          courseStats[slot.course].total++;
+        }
+      });
+    });
 
     return courses.map((course) => {
-      let attended = 0;
-      let markedClasses = 0;
-
-      // Count attendance for this course
-      Object.entries(timetable).forEach(([_, dayClasses]) => {
-        dayClasses.forEach((slot) => {
-          if (slot.course === course) {
-            const status = attendance[slot.id];
-            if (status === "present") {
-              attended++;
-              markedClasses++;
-            } else if (status === "absent") {
-              markedClasses++;
-            }
-          }
-        });
-      });
-
-      const totalClasses = markedClasses || classesPerCourse[course];
-      const percentage = markedClasses > 0 ? (attended / markedClasses) * 100 : 0;
-
+      const stats = courseStats[course];
+      const percentage = stats.total > 0 ? (stats.attended / stats.total) * 100 : 0;
       return {
         course,
-        totalClasses: markedClasses,
-        attended,
+        totalClasses: stats.total,
+        attended: stats.attended,
         percentage,
       };
     });
-  }, [attendance]);
+  }, [attendanceByDate]);
 
-  // 75% rule calculations
+  // 75% rule calculations based on OD/ML (actual attendance)
   const calculateBunkStatus = useCallback(() => {
     const { totalMarked, totalPresent, percentage } = getOverallStats();
 
@@ -108,6 +150,7 @@ export const useAttendance = () => {
         mustAttend: 0,
         status: "neutral" as const,
         message: "Start marking attendance to see bunk status",
+        currentPercentage: 0,
       };
     }
 
@@ -124,8 +167,9 @@ export const useAttendance = () => {
         status: "safe" as const,
         message:
           canBunk > 0
-            ? `You can safely bunk ${canBunk} class${canBunk > 1 ? "es" : ""}`
+            ? `You can bunk ${canBunk} class${canBunk > 1 ? "es" : ""} and stay above 75%`
             : "Attend next class to maintain 75%",
+        currentPercentage: percentage,
       };
     } else {
       // Calculate how many must be attended to reach 75%
@@ -143,17 +187,46 @@ export const useAttendance = () => {
           mustAttend > 0
             ? `Attend next ${mustAttend} class${mustAttend > 1 ? "es" : ""} to reach 75%`
             : "You're at exactly 75%",
+        currentPercentage: percentage,
       };
     }
   }, [getOverallStats]);
 
+  // Get dates that have any attendance marked
+  const getMarkedDates = useCallback((): Date[] => {
+    return Object.keys(attendanceByDate)
+      .filter((dateKey) => {
+        const record = attendanceByDate[dateKey];
+        return Object.values(record).some((status) => status === "present" || status === "absent");
+      })
+      .map((dateKey) => parseISO(dateKey))
+      .filter(isValid);
+  }, [attendanceByDate]);
+
+  // Get attendance summary for a specific date
+  const getDateSummary = useCallback((date: Date): { present: number; absent: number } => {
+    const record = getAttendanceForDate(date);
+    let present = 0;
+    let absent = 0;
+    Object.values(record).forEach((status) => {
+      if (status === "present") present++;
+      if (status === "absent") absent++;
+    });
+    return { present, absent };
+  }, [getAttendanceForDate]);
+
   return {
-    attendance,
+    attendanceByDate,
+    selectedDate,
+    setSelectedDate,
     markAttendance,
     clearAttendance,
     resetAllAttendance,
+    getAttendanceForDate,
     getOverallStats,
     getSubjectStats,
     calculateBunkStatus,
+    getMarkedDates,
+    getDateSummary,
   };
 };

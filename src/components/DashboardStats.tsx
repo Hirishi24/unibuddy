@@ -9,6 +9,7 @@ interface DashboardStatsProps {
     mustAttend: number;
     status: "safe" | "danger" | "neutral";
     message: string;
+    currentPercentage: number;
   };
 }
 
@@ -39,7 +40,7 @@ const DashboardStats = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
       {/* Overall Attendance Card */}
-      <div className="bg-card rounded-lg p-6 card-shadow animate-fade-in">
+      <div className="bg-card rounded-xl p-6 card-shadow animate-fade-in border border-border">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Overall Attendance
@@ -68,16 +69,16 @@ const DashboardStats = ({
         </div>
         <div className="flex justify-between mt-1 text-xs text-muted-foreground">
           <span>0%</span>
-          <span className="font-medium">75% min</span>
+          <span className="font-medium text-primary">75% min</span>
           <span>100%</span>
         </div>
       </div>
 
       {/* Bunk Status Card */}
-      <div className="bg-card rounded-lg p-6 card-shadow animate-fade-in" style={{ animationDelay: "0.1s" }}>
+      <div className="bg-card rounded-xl p-6 card-shadow animate-fade-in border border-border" style={{ animationDelay: "0.1s" }}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            Bunk Status
+            Bunk Calculator
           </h3>
           <div className={`p-2 rounded-full ${getStatusBadgeClass()}`}>
             {getStatusIcon()}
@@ -94,6 +95,9 @@ const DashboardStats = ({
               {bunkStatus.mustAttend}
             </span>
           )}
+          {bunkStatus.status === "neutral" && (
+            <span className="text-4xl font-bold text-muted-foreground">—</span>
+          )}
         </div>
         <p
           className={`text-sm mt-2 font-medium ${
@@ -108,12 +112,12 @@ const DashboardStats = ({
         </p>
         {bunkStatus.status === "safe" && (
           <p className="text-xs text-muted-foreground mt-2">
-            You're above 75% — some wiggle room available!
+            Based on {bunkStatus.currentPercentage.toFixed(1)}% current attendance
           </p>
         )}
         {bunkStatus.status === "danger" && (
           <p className="text-xs text-muted-foreground mt-2">
-            Focus on attending classes consistently.
+            Current: {bunkStatus.currentPercentage.toFixed(1)}% — Need 75% to be safe
           </p>
         )}
       </div>
