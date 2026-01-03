@@ -6,26 +6,26 @@
 
 @layer base {
   :root {
-    --background: 30 100% 97%;
-    --foreground: 0 0% 11%;
+    --background: 0 0% 98%;
+    --foreground: 210 11% 15%;
 
-    --card: 30 100% 97%;
-    --card-foreground: 0 0% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 11% 15%;
 
-    --popover: 30 100% 97%;
-    --popover-foreground: 0 0% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 11% 15%;
 
     --primary: 24 97% 56%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 30 100% 91%;
+    --secondary: 210 10% 92%;
+    --secondary-foreground: 210 11% 15%;
 
-    --muted: 30 30% 90%;
-    --muted-foreground: 0 0% 35%;
+    --muted: 210 10% 94%;
+    --muted-foreground: 210 10% 40%;
 
-    --accent: 30 100% 91%;
-    --accent-foreground: 0 0% 11%;
+    --accent: 210 10% 94%;
+    --accent-foreground: 210 11% 15%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
@@ -39,71 +39,75 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 30% 85%;
-    --input: 30 30% 85%;
+    --border: 210 10% 88%;
+    --input: 210 10% 88%;
     --ring: 24 97% 56%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 11%;
-    --sidebar-foreground: 30 100% 91%;
+    --sidebar-background: 210 11% 15%;
+    --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 24 97% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 20%;
-    --sidebar-accent-foreground: 30 100% 91%;
-    --sidebar-border: 0 0% 20%;
+    --sidebar-accent: 210 10% 25%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 210 10% 25%;
     --sidebar-ring: 24 97% 56%;
 
-    --shadow-card: 0 2px 8px 0 hsl(0 0% 0% / 0.08);
-    --shadow-card-hover: 0 8px 24px -4px hsl(0 0% 0% / 0.12);
+    --shadow-card: 0 2px 8px 0 hsl(0 0% 0% / 0.06);
+    --shadow-card-hover: 0 8px 24px -4px hsl(0 0% 0% / 0.1);
   }
 
+  /* Dark mode - Royal Charcoal palette */
   .dark {
-    --background: 0 0% 11%;
-    --foreground: 30 100% 91%;
+    --background: 200 5% 12%;
+    --foreground: 0 0% 92%;
 
-    --card: 0 0% 20%;
-    --card-foreground: 30 100% 91%;
+    --card: 210 4% 16%;
+    --card-foreground: 0 0% 92%;
 
-    --popover: 0 0% 20%;
-    --popover-foreground: 30 100% 91%;
+    --popover: 210 4% 16%;
+    --popover-foreground: 0 0% 92%;
 
     --primary: 24 97% 56%;
-    --primary-foreground: 0 0% 11%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 25%;
-    --secondary-foreground: 30 100% 91%;
+    --secondary: 200 3% 28%;
+    --secondary-foreground: 0 0% 92%;
 
-    --muted: 0 0% 25%;
-    --muted-foreground: 30 30% 70%;
+    --muted: 200 3% 22%;
+    --muted-foreground: 200 5% 60%;
 
-    --accent: 0 0% 25%;
-    --accent-foreground: 30 100% 91%;
+    --accent: 200 3% 25%;
+    --accent-foreground: 0 0% 92%;
 
-    --success: 142 76% 36%;
+    --success: 142 76% 42%;
     --success-foreground: 0 0% 100%;
 
-    --danger: 0 62% 50%;
-    --danger-foreground: 30 100% 91%;
+    --danger: 0 70% 55%;
+    --danger-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 30 100% 91%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
+    --border: 200 3% 25%;
+    --input: 200 3% 25%;
     --ring: 24 97% 56%;
-    
-    --sidebar-background: 0 0% 11%;
-    --sidebar-foreground: 30 100% 91%;
+
+    --sidebar-background: 200 5% 10%;
+    --sidebar-foreground: 0 0% 92%;
     --sidebar-primary: 24 97% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 20%;
-    --sidebar-accent-foreground: 30 100% 91%;
-    --sidebar-border: 0 0% 25%;
+    --sidebar-accent: 200 3% 20%;
+    --sidebar-accent-foreground: 0 0% 92%;
+    --sidebar-border: 200 3% 22%;
     --sidebar-ring: 24 97% 56%;
+
+    --shadow-card: 0 2px 8px 0 hsl(0 0% 0% / 0.3);
+    --shadow-card-hover: 0 8px 24px -4px hsl(0 0% 0% / 0.4);
   }
 }
 
@@ -158,6 +162,10 @@
 
 @layer utilities {
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(0 0% 11%) 0%, hsl(0 0% 20%) 100%);
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(24 90% 48%) 100%);
+  }
+
+  .dark .gradient-primary {
+    background: linear-gradient(135deg, hsl(200 5% 12%) 0%, hsl(200 3% 18%) 100%);
   }
 }
