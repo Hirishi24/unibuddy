@@ -1,4 +1,4 @@
-import { GraduationCap, RotateCcw, CalendarOff, PartyPopper, Moon } from "lucide-react";
+import { GraduationCap, RotateCcw, CalendarOff, PartyPopper, Moon, Download, Upload } from "lucide-react";
 import { getNoClassReason, getNoClassMessage } from "@/data/academicCalendar";
 import { useAttendance } from "@/hooks/useAttendance";
 import DashboardStats from "@/components/DashboardStats";
@@ -7,6 +7,8 @@ import SubjectBreakdown from "@/components/SubjectBreakdown";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
 import ThemeToggle from "@/components/ThemeToggle";
 import { format } from "date-fns";
+import { useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const {
@@ -20,7 +22,12 @@ const Index = () => {
     getMarkedDates,
     getDateSummary,
     getBlocksForDate,
+    exportToExcel,
+    importFromExcel,
   } = useAttendance();
+
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const subjectStats = getSubjectStats();
   const bunkStatus = calculateBunkStatus();
@@ -41,6 +48,34 @@ const Index = () => {
 
   const handleMarkAttendance = (blockId: string, status: "present" | "absent") => {
     markAttendance(blockId, status, selectedDate);
+  };
+
+  const handleExport = () => {
+    exportToExcel();
+    toast({
+      title: "Exported!",
+      description: "Attendance data saved to Excel file",
+    });
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const result = await importFromExcel(file);
+      toast({
+        title: result.success ? "Imported!" : "Import Failed",
+        description: result.message,
+        variant: result.success ? "default" : "destructive",
+      });
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   // Get appropriate icon for no-class reason
@@ -75,6 +110,27 @@ const Index = () => {
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <button
+                onClick={handleExport}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                title="Export to Excel"
+              >
+                <Download className="h-5 w-5" />
+              </button>
+              <button
+                onClick={handleImportClick}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                title="Import from Excel"
+              >
+                <Upload className="h-5 w-5" />
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".xlsx,.xls"
+                className="hidden"
+              />
+              <button
                 onClick={handleReset}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                 title="Reset all data"
@@ -107,6 +163,11 @@ const Index = () => {
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 {format(selectedDate, "EEEE, MMM d")}
               </h3>
+              {hasClasses && blocksForDate.length > 0 && (
+                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                  {blocksForDate.reduce((sum, block) => sum + block.duration, 0)} hrs
+                </span>
+              )}
               {!hasClasses && noClassReason.type === "holiday" && (
                 <span className="text-xs bg-warning/20 text-warning px-2 py-1 rounded-full font-medium">
                   Holiday

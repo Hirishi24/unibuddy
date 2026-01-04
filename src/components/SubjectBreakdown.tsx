@@ -30,7 +30,7 @@ const SubjectBreakdown = ({ stats }: SubjectBreakdownProps) => {
                 Subject
               </th>
               <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">
-                Classes
+                Hours
               </th>
               <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">
                 Attended

@@ -44,10 +44,21 @@ const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent }: ClassCardProp
         <div>
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-foreground text-lg">{block.course}</h3>
+            {block.isLab && (
+              <span className="text-xs bg-purple-500/20 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full font-bold">
+                L
+              </span>
+            )}
+            {block.isOE && (
+              <span className="text-xs bg-orange-500/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-bold">
+                OE
+              </span>
+            )}
             <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
               {getDurationLabel()}
             </span>
           </div>
+          <p className="text-sm text-muted-foreground mt-0.5">{block.courseTitle}</p>
           <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />

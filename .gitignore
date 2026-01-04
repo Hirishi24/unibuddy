@@ -6,11 +6,21 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+bun-debug.log*
 
+# Dependencies
 node_modules
+
+# Build outputs
 dist
 dist-ssr
+build
+
+# Local env files
 *.local
+.env
+.env.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +32,27 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Backend data (SQLite database)
+backend/data/*.db
+backend/data/*.db-journal
+
+# Package manager locks (keep one, ignore others)
+# bun.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# OS files
+Thumbs.db
+*.tmp
+*.temp
+
+# Coverage
+coverage/
+
+# Cache
+.cache
+.parcel-cache
+.eslintcache
+*.tsbuildinfo

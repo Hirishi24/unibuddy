@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { getAllCourses, DayName, getBlocksForDay, ClassBlock, courseTitles } from "@/data/timetable";
+import { getAllCourses, DayName, getBlocksForDay, ClassBlock } from "@/data/timetable";
 import { format, parseISO, isValid } from "date-fns";
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
+import { attendanceApi, type AttendanceByDate as ApiAttendanceByDate } from "@/lib/api";
 
 // Attendance is stored per block (not per individual slot)
 export interface DailyAttendanceRecord {
@@ -24,7 +23,6 @@ export interface SubjectStats {
 }
 
 const STORAGE_KEY = "student-attendance-data-v3";
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 const USE_BACKEND = import.meta.env.VITE_USE_BACKEND === "true";
 
 // Helper to get day name from date
@@ -36,6 +34,7 @@ const getDayNameFromDate = (date: Date): DayName | null => {
 
 export const useAttendance = () => {
   const [attendanceByDate, setAttendanceByDate] = useState<AttendanceByDate>(() => {
+    // Always start with localStorage data for immediate display
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -49,25 +48,27 @@ export const useAttendance = () => {
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch from backend on mount if enabled
+  // Fetch data from backend on mount if USE_BACKEND is true
   useEffect(() => {
     if (USE_BACKEND) {
       setIsLoading(true);
-      fetch(`${API_URL}/attendance`)
-        .then((res) => res.json())
+      attendanceApi.getAll()
         .then((data) => {
-          if (data && typeof data === "object") {
-            setAttendanceByDate(data);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          }
+          setAttendanceByDate(data as AttendanceByDate);
+          setError(null);
         })
-        .catch((err) => console.error("Failed to fetch from backend:", err))
+        .catch((err) => {
+          console.error("Failed to fetch attendance from backend:", err);
+          setError("Failed to load attendance data from server");
+          // Keep using localStorage data on error
+        })
         .finally(() => setIsLoading(false));
     }
   }, []);
 
-  // Save to localStorage whenever attendance changes
+  // Save to localStorage whenever attendance changes (always, for offline support)
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(attendanceByDate));
   }, [attendanceByDate]);
@@ -75,10 +76,10 @@ export const useAttendance = () => {
   const getDateKey = (date: Date): string => format(date, "yyyy-MM-dd");
 
   const markAttendance = useCallback(
-    (blockId: string, status: "present" | "absent", date: Date = selectedDate) => {
+    async (blockId: string, status: "present" | "absent", date: Date = selectedDate) => {
       const dateKey = getDateKey(date);
       
-      // Update local state immediately
+      // Optimistically update local state
       setAttendanceByDate((prev) => ({
         ...prev,
         [dateKey]: {
@@ -87,20 +88,22 @@ export const useAttendance = () => {
         },
       }));
 
-      // Sync to backend if enabled
+      // If backend is enabled, sync with server
       if (USE_BACKEND) {
-        fetch(`${API_URL}/attendance`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date: dateKey, blockId, status }),
-        }).catch((err) => console.error("Failed to sync to backend:", err));
+        try {
+          await attendanceApi.mark(dateKey, blockId, status);
+        } catch (err) {
+          console.error("Failed to sync attendance with backend:", err);
+          setError("Failed to save to server. Data saved locally.");
+        }
       }
     },
     [selectedDate]
   );
 
-  const clearAttendance = useCallback((blockId: string, date: Date = selectedDate) => {
+  const clearAttendance = useCallback(async (blockId: string, date: Date = selectedDate) => {
     const dateKey = getDateKey(date);
+    
     setAttendanceByDate((prev) => {
       const dayData = { ...prev[dateKey] };
       delete dayData[blockId];
@@ -110,22 +113,25 @@ export const useAttendance = () => {
       };
     });
 
-    // Sync to backend if enabled
     if (USE_BACKEND) {
-      fetch(`${API_URL}/attendance/${dateKey}/${blockId}`, {
-        method: "DELETE",
-      }).catch((err) => console.error("Failed to delete from backend:", err));
+      try {
+        await attendanceApi.clear(dateKey, blockId);
+      } catch (err) {
+        console.error("Failed to clear attendance on backend:", err);
+      }
     }
   }, [selectedDate]);
 
-  const resetAllAttendance = useCallback(() => {
+  const resetAllAttendance = useCallback(async () => {
     setAttendanceByDate({});
-    
-    // Sync to backend if enabled
+
     if (USE_BACKEND) {
-      fetch(`${API_URL}/attendance`, {
-        method: "DELETE",
-      }).catch((err) => console.error("Failed to reset on backend:", err));
+      try {
+        await attendanceApi.resetAll();
+      } catch (err) {
+        console.error("Failed to reset attendance on backend:", err);
+        setError("Failed to reset on server. Data cleared locally.");
+      }
     }
   }, []);
 
@@ -134,7 +140,7 @@ export const useAttendance = () => {
     return attendanceByDate[dateKey] || {};
   }, [attendanceByDate]);
 
-  // Calculate stats per course (in hours, not blocks)
+  // Calculate stats per course (blocks, not individual slots)
   const getSubjectStats = useCallback((): SubjectStats[] => {
     const courses = getAllCourses();
     const courseStats: Record<string, { attended: number; total: number }> = {};
@@ -143,7 +149,7 @@ export const useAttendance = () => {
       courseStats[course] = { attended: 0, total: 0 };
     });
 
-    // Iterate through all dates and count attendance per course (by hours)
+    // Iterate through all dates and count attendance per course (by blocks)
     Object.entries(attendanceByDate).forEach(([dateKey, dayRecord]) => {
       const date = parseISO(dateKey);
       if (!isValid(date)) return;
@@ -154,12 +160,11 @@ export const useAttendance = () => {
       const blocks = getBlocksForDay(dayName);
       blocks.forEach((block) => {
         const status = dayRecord[block.blockId];
-        // Count hours (duration) instead of blocks
         if (status === "present") {
-          courseStats[block.course].attended += block.duration;
-          courseStats[block.course].total += block.duration;
+          courseStats[block.course].attended++;
+          courseStats[block.course].total++;
         } else if (status === "absent") {
-          courseStats[block.course].total += block.duration;
+          courseStats[block.course].total++;
         }
       });
     });
@@ -279,149 +284,25 @@ export const useAttendance = () => {
     return getBlocksForDay(dayName);
   }, []);
 
-  // Export attendance to Excel
-  const exportToExcel = useCallback(() => {
-    const rows: any[] = [];
-    
-    // Create rows for each attendance record
-    Object.entries(attendanceByDate).forEach(([dateKey, dayRecord]) => {
-      const date = parseISO(dateKey);
-      if (!isValid(date)) return;
-      
-      const dayName = getDayNameFromDate(date);
-      if (!dayName) return;
-      
-      const blocks = getBlocksForDay(dayName);
-      blocks.forEach((block) => {
-        const status = dayRecord[block.blockId];
-        if (status) {
-          rows.push({
-            Date: dateKey,
-            Day: dayName,
-            "Block ID": block.blockId,
-            "Course Code": block.course,
-            "Course Title": courseTitles[block.course] || block.course,
-            Time: block.time,
-            Duration: block.duration,
-            Room: block.room,
-            Status: status.charAt(0).toUpperCase() + status.slice(1),
-          });
-        }
-      });
-    });
+  // Sync local data to backend (for manual migration)
+  const syncToBackend = useCallback(async () => {
+    if (!USE_BACKEND) {
+      return { success: false, message: "Backend is not enabled" };
+    }
 
-    // Sort by date
-    rows.sort((a, b) => a.Date.localeCompare(b.Date));
-
-    // Create summary sheet
-    const stats = getSubjectStats();
-    const summaryRows = stats.map((s) => ({
-      "Course Code": s.course,
-      "Course Title": courseTitles[s.course] || s.course,
-      "Total Hours": s.totalBlocks,
-      "Attended Hours": s.attended,
-      "Percentage": `${s.percentage.toFixed(1)}%`,
-      "Can Bunk": s.canBunk,
-      "Must Attend": s.mustAttend,
-      "Status": s.status.toUpperCase(),
-    }));
-
-    // Create workbook with multiple sheets
-    const wb = XLSX.utils.book_new();
-    
-    // Attendance sheet
-    const attendanceWs = XLSX.utils.json_to_sheet(rows.length > 0 ? rows : [{ Message: "No attendance data yet" }]);
-    XLSX.utils.book_append_sheet(wb, attendanceWs, "Attendance");
-    
-    // Summary sheet
-    const summaryWs = XLSX.utils.json_to_sheet(summaryRows.length > 0 ? summaryRows : [{ Message: "No data" }]);
-    XLSX.utils.book_append_sheet(wb, summaryWs, "Summary");
-
-    // Raw data sheet (for import)
-    const rawRows = Object.entries(attendanceByDate).flatMap(([dateKey, dayRecord]) =>
-      Object.entries(dayRecord).map(([blockId, status]) => ({
-        Date: dateKey,
-        BlockId: blockId,
-        Status: status,
-      }))
-    );
-    const rawWs = XLSX.utils.json_to_sheet(rawRows.length > 0 ? rawRows : [{ Message: "No data" }]);
-    XLSX.utils.book_append_sheet(wb, rawWs, "RawData");
-
-    // Save file
-    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    const blob = new Blob([wbout], { type: "application/octet-stream" });
-    saveAs(blob, `ClassBuddy_Attendance_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
-  }, [attendanceByDate, getSubjectStats]);
-
-  // Import attendance from Excel
-  const importFromExcel = useCallback((file: File): Promise<{ success: boolean; message: string }> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target?.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { type: "array" });
-          
-          // Try to find RawData sheet first (preferred), otherwise use Attendance sheet
-          let sheetName = workbook.SheetNames.includes("RawData") ? "RawData" : workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(sheet);
-          
-          if (jsonData.length === 0) {
-            resolve({ success: false, message: "No data found in Excel file" });
-            return;
-          }
-          
-          const newAttendance: AttendanceByDate = {};
-          
-          jsonData.forEach((row: any) => {
-            // Support both raw format and attendance format
-            const dateKey = row.Date || row.date;
-            const blockId = row.BlockId || row["Block ID"] || row.blockId;
-            let status = row.Status || row.status;
-            
-            if (dateKey && blockId && status) {
-              status = status.toLowerCase();
-              if (status === "present" || status === "absent") {
-                if (!newAttendance[dateKey]) {
-                  newAttendance[dateKey] = {};
-                }
-                newAttendance[dateKey][blockId] = status;
-              }
-            }
-          });
-          
-          const recordCount = Object.keys(newAttendance).length;
-          if (recordCount === 0) {
-            resolve({ success: false, message: "No valid attendance records found" });
-            return;
-          }
-          
-          // Merge with existing data
-          setAttendanceByDate((prev) => {
-            const merged = { ...prev };
-            Object.entries(newAttendance).forEach(([dateKey, dayRecord]) => {
-              merged[dateKey] = { ...merged[dateKey], ...dayRecord };
-            });
-            return merged;
-          });
-          
-          resolve({ success: true, message: `Imported ${recordCount} days of attendance data` });
-        } catch (error) {
-          console.error("Import error:", error);
-          resolve({ success: false, message: "Failed to parse Excel file" });
-        }
-      };
-      
-      reader.onerror = () => {
-        resolve({ success: false, message: "Failed to read file" });
-      };
-      
-      reader.readAsArrayBuffer(file);
-    });
-  }, []);
+    try {
+      setIsLoading(true);
+      const result = await attendanceApi.bulkImport(attendanceByDate as ApiAttendanceByDate);
+      setError(null);
+      return { success: true, message: `Synced ${result.recordsImported} records` };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Sync failed";
+      setError(message);
+      return { success: false, message };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [attendanceByDate]);
 
   return {
     attendanceByDate,
@@ -436,7 +317,10 @@ export const useAttendance = () => {
     getMarkedDates,
     getDateSummary,
     getBlocksForDate,
-    exportToExcel,
-    importFromExcel,
+    // New properties for backend support
+    isLoading,
+    error,
+    syncToBackend,
+    isBackendEnabled: USE_BACKEND,
   };
 };
