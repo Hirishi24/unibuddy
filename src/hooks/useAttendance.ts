@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getAllCourses, DayName, getBlocksForDay, ClassBlock, courseTitles } from "@/data/timetable";
+import { getAllCourses, DayName, getBlocksForDay, ClassBlock, courseTitles, courseMetadata, CourseMetadata } from "@/data/timetable";
 import { format, parseISO, isValid } from "date-fns";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -15,12 +15,42 @@ export interface AttendanceByDate {
 
 export interface SubjectStats {
   course: string;
-  totalBlocks: number;
+  totalBlocks: number; // attended + missed so far
   attended: number;
   percentage: number;
   canBunk: number;
   mustAttend: number;
   status: "safe" | "danger" | "neutral";
+}
+
+// Extended stats for detailed course view
+export interface DetailedCourseStats {
+  course: string;
+  courseTitle: string;
+  rooms: string[];
+  // Semester totals
+  semesterTotal: number;
+  odMlAllowed: number;
+  classesAfterOdMl: number;
+  minRequiredFor75: number;
+  minRequired: number; // 60% of classesAfterOdMl (with max OD/ML)
+  // Current progress
+  classesHeld: number; // classes that have occurred
+  attended: number;
+  missed: number;
+  currentPercentage: number;
+  // Bunk calculations (without OD/ML)
+  canBunkWithoutOdMl: number;
+  mustAttendFor75: number;
+  // With OD/ML calculations
+  canBunkWithOdMl: number;
+  effectiveAttendance: number; // if max OD/ML is used
+  // Projections
+  remainingClasses: number;
+  projectedFinalPercentage: number; // if all remaining attended
+  projectedWorstPercentage: number; // if all remaining missed
+  safetyMargin: number; // classes above 75% threshold
+  status: "safe" | "warning" | "danger" | "critical";
 }
 
 const STORAGE_KEY = "student-attendance-data-v3";
@@ -423,6 +453,123 @@ export const useAttendance = () => {
     });
   }, []);
 
+  // Get detailed stats for a specific course (for bunk estimation modal)
+  const getDetailedCourseStats = useCallback((course: string): DetailedCourseStats | null => {
+    const meta = courseMetadata[course];
+    if (!meta) return null;
+
+    // Calculate current attendance for this course
+    let attended = 0;
+    let missed = 0;
+
+    Object.entries(attendanceByDate).forEach(([dateKey, dayRecord]) => {
+      const date = parseISO(dateKey);
+      if (!isValid(date)) return;
+
+      const dayName = getDayNameFromDate(date);
+      if (!dayName) return;
+
+      const blocks = getBlocksForDay(dayName);
+      blocks.forEach((block) => {
+        if (block.course === course) {
+          const status = dayRecord[block.blockId];
+          if (status === "present") {
+            attended += block.duration;
+          } else if (status === "absent") {
+            missed += block.duration;
+          }
+        }
+      });
+    });
+
+    const classesHeld = attended + missed;
+    const remainingClasses = meta.totalClasses - classesHeld;
+    const currentPercentage = classesHeld > 0 ? (attended / classesHeld) * 100 : 0;
+
+    // Required for 75% of total semester classes
+    const requiredFor75 = Math.ceil(meta.totalClasses * 0.75);
+    
+    // SIMPLE BUNK CALCULATION:
+    // Max bunks allowed for semester = Total - Required for 75%
+    const maxBunksAllowed = meta.totalClasses - requiredFor75;
+    
+    // Remaining bunks = Max bunks - Already missed
+    const canBunkWithoutOdMl = Math.max(0, maxBunksAllowed - missed);
+    
+    // How many more must attend to reach 75%
+    const mustAttendFor75 = Math.max(0, requiredFor75 - attended);
+
+    // With OD/ML calculations
+    // If using max OD/ML, need only 60% of (totalClasses - odMlAllowed) = minRequired
+    // So max bunks with OD/ML = totalClasses - minRequired
+    const maxBunksWithOdMl = meta.totalClasses - meta.minRequired;
+    const canBunkWithOdMl = Math.max(0, maxBunksWithOdMl - missed);
+    
+    // Effective attendance if OD/ML is maxed out
+    const effectiveAttendance = classesHeld > 0 
+      ? ((attended + Math.min(missed, meta.odMlAllowed)) / classesHeld) * 100 
+      : 0;
+
+    // Projections
+    const projectedFinalPercentage = meta.totalClasses > 0 
+      ? ((attended + remainingClasses) / meta.totalClasses) * 100 
+      : 0;
+    const projectedWorstPercentage = meta.totalClasses > 0 
+      ? (attended / meta.totalClasses) * 100 
+      : 0;
+
+    // Safety margin: how many hours above the 75% threshold
+    const safetyMargin = attended - Math.ceil(classesHeld * 0.75);
+
+    // Determine status
+    let status: "safe" | "warning" | "danger" | "critical";
+    if (currentPercentage >= 85) {
+      status = "safe";
+    } else if (currentPercentage >= 75) {
+      status = "warning";
+    } else if (currentPercentage >= 65) {
+      status = "danger";
+    } else {
+      status = "critical";
+    }
+
+    // If no data yet, neutral
+    if (classesHeld === 0) {
+      status = "safe";
+    }
+
+    return {
+      course,
+      courseTitle: courseTitles[course] || course,
+      rooms: meta.rooms,
+      semesterTotal: meta.totalClasses,
+      odMlAllowed: meta.odMlAllowed,
+      classesAfterOdMl: meta.classesAfterOdMl,
+      minRequiredFor75: requiredFor75,
+      minRequired: meta.minRequired,
+      classesHeld,
+      attended,
+      missed,
+      currentPercentage,
+      canBunkWithoutOdMl,
+      mustAttendFor75,
+      canBunkWithOdMl,
+      effectiveAttendance,
+      remainingClasses,
+      projectedFinalPercentage,
+      projectedWorstPercentage,
+      safetyMargin,
+      status,
+    };
+  }, [attendanceByDate]);
+
+  // Get all courses with their metadata
+  const getAllDetailedStats = useCallback((): DetailedCourseStats[] => {
+    return getAllCourses()
+      .map((course) => getDetailedCourseStats(course))
+      .filter((stats): stats is DetailedCourseStats => stats !== null);
+  }, [getDetailedCourseStats]);
+
   return {
     attendanceByDate,
     selectedDate,
@@ -438,5 +585,7 @@ export const useAttendance = () => {
     getBlocksForDate,
     exportToExcel,
     importFromExcel,
+    getDetailedCourseStats,
+    getAllDetailedStats,
   };
 };

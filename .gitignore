@@ -1,3 +1,8 @@
+
+
+
+
+
 # Logs
 logs
 *.log
@@ -8,24 +13,28 @@ pnpm-debug.log*
 lerna-debug.log*
 bun-debug.log*
 
-# Dependencies
-node_modules
+# Dependency directories
+node_modules/
+backend/node_modules/
 
 # Build outputs
-dist
-dist-ssr
-build
+dist/
+dist-ssr/
+build/
+backend/dist/
+backend/build/
 
 # Local env files
 *.local
 .env
+.env.*
 .env.local
 .env.*.local
 
 # Editor directories and files
-.vscode/*
+.vscode/
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
@@ -33,9 +42,30 @@ build
 *.sln
 *.sw?
 
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Icon?
+
 # Backend data (SQLite database)
 backend/data/*.db
 backend/data/*.db-journal
+
+# Frontend production files
+public/*.zip
+public/*.tar.gz
+
+# Misc
+coverage/
+*.tgz
+*.bak
+*.tmp
+*.temp
+*.cache
+*.log
+*.pid
+*.seed
+*.pid.lock
 
 # Package manager locks (keep one, ignore others)
 # bun.lockb

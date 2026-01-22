@@ -1,13 +1,14 @@
 import { GraduationCap, RotateCcw, CalendarOff, PartyPopper, Moon, Download, Upload } from "lucide-react";
 import { getNoClassReason, getNoClassMessage } from "@/data/academicCalendar";
 import { useAttendance } from "@/hooks/useAttendance";
-import DashboardStats from "@/components/DashboardStats";
 import DailySchedule from "@/components/DailySchedule";
 import SubjectBreakdown from "@/components/SubjectBreakdown";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
 import ThemeToggle from "@/components/ThemeToggle";
+import CourseStatsModal from "@/components/CourseStatsModal";
+import OngoingClass from "@/components/OngoingClass";
 import { format } from "date-fns";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
@@ -24,13 +25,15 @@ const Index = () => {
     getBlocksForDate,
     exportToExcel,
     importFromExcel,
+    getDetailedCourseStats,
   } = useAttendance();
 
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [courseModalOpen, setCourseModalOpen] = useState(false);
 
   const subjectStats = getSubjectStats();
-  const bunkStatus = calculateBunkStatus();
   const markedDates = getMarkedDates();
   const currentAttendance = getAttendanceForDate(selectedDate);
   const blocksForDate = getBlocksForDate(selectedDate);
@@ -48,6 +51,11 @@ const Index = () => {
 
   const handleMarkAttendance = (blockId: string, status: "present" | "absent") => {
     markAttendance(blockId, status, selectedDate);
+  };
+
+  const handleCourseClick = (course: string) => {
+    setSelectedCourse(course);
+    setCourseModalOpen(true);
   };
 
   const handleExport = () => {
@@ -101,7 +109,7 @@ const Index = () => {
                 <GraduationCap className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">Smart Attendance</h1>
+                <h1 className="text-xl font-bold">Bunk Buddy</h1>
                 <p className="text-sm opacity-80">
                   Track your attendance, stay above 75%
                 </p>
@@ -144,9 +152,9 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto max-w-4xl px-4 pb-8">
-        {/* Dashboard Stats - shows worst course bunk status */}
-        <DashboardStats bunkStatus={bunkStatus} />
-
+        {/* Ongoing Class Banner */}
+        <OngoingClass blocks={blocksForDate} selectedDate={selectedDate} />
+        
         {/* Calendar and Schedule Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Calendar */}
@@ -191,6 +199,8 @@ const Index = () => {
                 blocks={blocksForDate}
                 attendance={currentAttendance}
                 onMarkAttendance={handleMarkAttendance}
+                selectedDate={selectedDate}
+                onCourseClick={handleCourseClick}
               />
             ) : (
               <div className="flex items-center justify-center h-48 text-muted-foreground">
@@ -201,8 +211,15 @@ const Index = () => {
         </div>
 
         {/* Subject Breakdown */}
-        <SubjectBreakdown stats={subjectStats} />
+        <SubjectBreakdown stats={subjectStats} getDetailedCourseStats={getDetailedCourseStats} />
       </main>
+
+      {/* Course Stats Modal for daily schedule clicks */}
+      <CourseStatsModal
+        stats={selectedCourse ? getDetailedCourseStats(selectedCourse) : null}
+        open={courseModalOpen}
+        onClose={() => setCourseModalOpen(false)}
+      />
     </div>
   );
 };

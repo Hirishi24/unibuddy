@@ -22,8 +22,8 @@ const AttendanceCalendar = ({
   const getDayContent = (day: Date) => {
     const reason = getNoClassReason(day);
     
-    // Show holiday indicator
-    if (reason.type === "holiday") {
+    // Show holiday/weekend indicator
+    if (reason.type === "holiday" || reason.type === "weekend") {
       return (
         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
           <div className="w-1.5 h-1.5 rounded-full bg-warning" />
@@ -69,6 +69,7 @@ const AttendanceCalendar = ({
         defaultMonth={semesterStart}
         fromDate={semesterStart}
         toDate={semesterEnd}
+        weekStartsOn={1}
         modifiers={{
           hasAttendance: markedDates,
           holiday: holidayDates,
@@ -88,16 +89,8 @@ const AttendanceCalendar = ({
       />
       <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-success" />
-          <span>≥75%</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-danger" />
-          <span>&lt;75%</span>
-        </div>
-        <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-warning" />
-          <span>Holiday</span>
+          <span>Holiday / Weekend</span>
         </div>
       </div>
     </div>

@@ -25,6 +25,7 @@ export interface ClassBlock {
   slotIds: string[];
   isLab: boolean;
   isOE: boolean;
+  faculty: string;
 }
 
 // Course code to title mapping
@@ -34,8 +35,82 @@ export const courseTitles: Record<string, string> = {
   "CSE 423": "Natural Language Processing",
   "CSE 455": "Artificial Intelligence",
   "CSE 456": "Digital Image Processing",
-  "LBA 253": "AI and Ethics",
+  "LBA 253": "Artificial Intelligence (AI) and Ethics",
   "SEC 176": "Generative AI - II",
+};
+
+// Faculty information per course
+export const courseFaculty: Record<string, string> = {
+  "CSE 304": "Mr. V R P S Sastry Yadavilli",
+  "CSE 306": "Mr. Ramesh Sahoo",
+  "CSE 423": "Dr. Yandrapati Prakash Babu",
+  "CSE 455": "Dr. Ananya Mahanti, Dr. Tabiya Manzoor",
+  "CSE 456": "Dr. Anila Makkapati, Mr. Madhusudan Naik",
+  "LBA 253": "Dr. Idris Hassan Bhat",
+  "SEC 176": "Mr. Careerskill",
+};
+
+// Total semester classes per course (excluding weekends and holidays)
+// OD/ML relaxation: 15% of total classes can be used as OD/ML
+// Required attendance: 75% (or 60% of remaining after using max OD/ML)
+export interface CourseMetadata {
+  totalClasses: number;
+  odMlAllowed: number; // 15% of total
+  classesAfterOdMl: number; // total - odMlAllowed
+  minRequired: number; // 60% of classesAfterOdMl (= 75% if no OD/ML used)
+  rooms: string[];
+}
+
+export const courseMetadata: Record<string, CourseMetadata> = {
+  "LBA 253": {
+    totalClasses: 48,
+    odMlAllowed: 8,
+    classesAfterOdMl: 40,
+    minRequired: 24,
+    rooms: ["S607"],
+  },
+  "CSE 455": {
+    totalClasses: 81,
+    odMlAllowed: 13,
+    classesAfterOdMl: 68,
+    minRequired: 41,
+    rooms: ["S412", "C707"],
+  },
+  "CSE 456": {
+    totalClasses: 78,
+    odMlAllowed: 12,
+    classesAfterOdMl: 66,
+    minRequired: 40,
+    rooms: ["C707", "S613"],
+  },
+  "CSE 306": {
+    totalClasses: 79,
+    odMlAllowed: 12,
+    classesAfterOdMl: 67,
+    minRequired: 41,
+    rooms: ["C707", "C1006", "V601"],
+  },
+  "CSE 423": {
+    totalClasses: 32,
+    odMlAllowed: 5,
+    classesAfterOdMl: 27,
+    minRequired: 17,
+    rooms: ["C702"],
+  },
+  "CSE 304": {
+    totalClasses: 48,
+    odMlAllowed: 8,
+    classesAfterOdMl: 40,
+    minRequired: 24,
+    rooms: ["C707"],
+  },
+  "SEC 176": {
+    totalClasses: 45,
+    odMlAllowed: 7,
+    classesAfterOdMl: 38,
+    minRequired: 23,
+    rooms: ["C707"],
+  },
 };
 
 // Get course title from course code
@@ -46,17 +121,17 @@ export const getCourseTitle = (courseCode: string): string => {
 export const timetable: Timetable = {
   Monday: [
     { id: "mon1", time: "09:00", course: "LBA 253", room: "S607", isOE: true },
-    { id: "mon2", time: "10:00", course: "CSE 455", room: "S412" },
-    { id: "mon3", time: "11:00", course: "CSE 455", room: "S412" },
+    { id: "mon2", time: "10:00", course: "CSE 455", room: "S412", isLab: true },
+    { id: "mon3", time: "11:00", course: "CSE 455", room: "S412", isLab: true },
     { id: "mon4", time: "13:00", course: "CSE 456", room: "C707" },
-    { id: "mon5", time: "14:00", course: "CSE 306", room: "C707", isLab: true },
-    { id: "mon6", time: "15:00", course: "CSE 306", room: "C707", isLab: true },
+    { id: "mon5", time: "14:00", course: "CSE 306", room: "C707" },
+    { id: "mon6", time: "15:00", course: "CSE 306", room: "C707" },
     { id: "mon7", time: "16:00", course: "CSE 423", room: "C702" },
   ],
   Tuesday: [
     { id: "tue1", time: "09:00", course: "LBA 253", room: "S607", isOE: true },
-    { id: "tue2", time: "10:00", course: "CSE 304", room: "C707", isLab: true },
-    { id: "tue3", time: "11:00", course: "CSE 304", room: "C707", isLab: true },
+    { id: "tue2", time: "10:00", course: "CSE 304", room: "C707" },
+    { id: "tue3", time: "11:00", course: "CSE 304", room: "C707" },
     { id: "tue4", time: "12:00", course: "CSE 455", room: "C707" },
     { id: "tue5", time: "15:00", course: "CSE 306", room: "C1006" },
     { id: "tue6", time: "16:00", course: "CSE 423", room: "C702" },
@@ -64,24 +139,21 @@ export const timetable: Timetable = {
   Wednesday: [
     { id: "wed1", time: "09:00", course: "LBA 253", room: "S607", isOE: true },
     { id: "wed2", time: "13:00", course: "CSE 304", room: "C707" },
-    { id: "wed3", time: "14:00", course: "CSE 455", room: "C707", isLab: true },
-    { id: "wed4", time: "15:00", course: "CSE 455", room: "C707", isLab: true },
+    { id: "wed3", time: "14:00", course: "CSE 455", room: "C707" },
+    { id: "wed4", time: "15:00", course: "CSE 455", room: "C707" },
   ],
   Thursday: [
-    { id: "thu1", time: "09:00", course: "CSE 423", room: "C705" },
-    { id: "thu2", time: "10:00", course: "SEC 176", room: "C707" },
-    { id: "thu3", time: "11:00", course: "SEC 176", room: "C707" },
-    { id: "thu4", time: "12:00", course: "SEC 176", room: "C707" },
-    { id: "thu5", time: "14:00", course: "CSE 456", room: "S613", isLab: true },
-    { id: "thu6", time: "15:00", course: "CSE 456", room: "S613", isLab: true },
+    { id: "thu1", time: "10:00", course: "SEC 176", room: "C707" },
+    { id: "thu2", time: "11:00", course: "SEC 176", room: "C707" },
+    { id: "thu3", time: "12:00", course: "SEC 176", room: "C707" },
+    { id: "thu4", time: "14:00", course: "CSE 456", room: "S613", isLab: true },
+    { id: "thu5", time: "15:00", course: "CSE 456", room: "S613", isLab: true },
   ],
   Friday: [
-    { id: "fri1", time: "09:00", course: "CSE 423", room: "C705", isLab: true },
-    { id: "fri2", time: "10:00", course: "CSE 423", room: "C705", isLab: true },
-    { id: "fri3", time: "11:00", course: "CSE 306", room: "C707" },
-    { id: "fri4", time: "12:00", course: "CSE 306", room: "C707" },
-    { id: "fri5", time: "14:00", course: "CSE 456", room: "C707", isLab: true },
-    { id: "fri6", time: "15:00", course: "CSE 456", room: "C707", isLab: true },
+    { id: "fri1", time: "10:00", course: "CSE 306", room: "V601", isLab: true },
+    { id: "fri2", time: "11:00", course: "CSE 306", room: "V601", isLab: true },
+    { id: "fri3", time: "14:00", course: "CSE 456", room: "C707" },
+    { id: "fri4", time: "15:00", course: "CSE 456", room: "C707" },
   ],
 };
 
@@ -149,6 +221,7 @@ export const getBlocksForDay = (day: DayName): ClassBlock[] => {
         slotIds: [slot.id],
         isLab: slot.isLab || false,
         isOE: slot.isOE || false,
+        faculty: courseFaculty[slot.course] || "TBA",
       };
     }
   }

@@ -7,9 +7,11 @@ interface DailyScheduleProps {
   blocks: ClassBlock[];
   attendance: DailyAttendanceRecord;
   onMarkAttendance: (blockId: string, status: "present" | "absent") => void;
+  selectedDate: Date;
+  onCourseClick?: (course: string) => void;
 }
 
-const DailySchedule = ({ blocks, attendance, onMarkAttendance }: DailyScheduleProps) => {
+const DailySchedule = ({ blocks, attendance, onMarkAttendance, selectedDate, onCourseClick }: DailyScheduleProps) => {
   if (blocks.length === 0) {
     return (
       <div className="bg-card rounded-lg p-8 text-center card-shadow">
@@ -31,6 +33,8 @@ const DailySchedule = ({ blocks, attendance, onMarkAttendance }: DailySchedulePr
             status={attendance[block.blockId] || null}
             onMarkPresent={() => onMarkAttendance(block.blockId, "present")}
             onMarkAbsent={() => onMarkAttendance(block.blockId, "absent")}
+            selectedDate={selectedDate}
+            onCourseClick={onCourseClick}
           />
         </div>
       ))}
