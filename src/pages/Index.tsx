@@ -109,7 +109,7 @@ const Index = () => {
                 <GraduationCap className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">Bunk Buddy</h1>
+                <h1 className="text-xl font-bold">Unibuddy</h1>
                 <p className="text-sm opacity-80">
                   Track your attendance, stay above 75%
                 </p>
@@ -154,7 +154,7 @@ const Index = () => {
       <main className="container mx-auto max-w-4xl px-4 pb-8">
         {/* Ongoing Class Banner */}
         <OngoingClass blocks={blocksForDate} selectedDate={selectedDate} />
-        
+
         {/* Calendar and Schedule Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Calendar */}
@@ -187,7 +187,7 @@ const Index = () => {
                 </span>
               )}
             </div>
-            
+
             {!hasClasses ? (
               <div className="flex flex-col items-center justify-center h-48 text-center">
                 {getNoClassIcon()}

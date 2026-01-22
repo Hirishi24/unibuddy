@@ -1,4 +1,4 @@
-# Bunk Buddy - Attendance Tracker
+# Unibuddy - Attendance Tracker
 
 A smart attendance tracking application to help students stay above 75% attendance.
 
