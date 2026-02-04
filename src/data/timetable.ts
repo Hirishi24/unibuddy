@@ -35,6 +35,7 @@ export const courseTitles: Record<string, string> = {
   "CSE 423": "Natural Language Processing",
   "CSE 455": "Artificial Intelligence",
   "CSE 456": "Digital Image Processing",
+  "FLC 120": "Foundations of Electrical and Electronics Engineering",
   "LBA 253": "Artificial Intelligence (AI) and Ethics",
   "SEC 176": "Generative AI - II",
 };
@@ -46,74 +47,87 @@ export const courseFaculty: Record<string, string> = {
   "CSE 423": "Dr. Yandrapati Prakash Babu",
   "CSE 455": "Dr. Ananya Mahanti, Dr. Tabiya Manzoor",
   "CSE 456": "Dr. Anila Makkapati, Mr. Madhusudan Naik",
+  "FLC 120": "Dr. Sheshadri Shekhar Rauth",
   "LBA 253": "Dr. Idris Hassan Bhat",
   "SEC 176": "Mr. Careerskill",
 };
 
 // Total semester classes per course (excluding weekends, holidays, and exam periods)
 // Mid-Term Exams: March 9-13, 2026 (Mon-Fri) - Classes cancelled
-// OD/ML relaxation: 15% of total classes can be used as OD/ML
-// Required attendance: 75% (or 60% of remaining after using max OD/ML)
+// OD relaxation: 15% of total classes can be used as OD
+// Required attendance: 75% (or 60% of remaining after using max OD)
 export interface CourseMetadata {
   totalClasses: number;
-  odMlAllowed: number; // 15% of total
-  classesAfterOdMl: number; // total - odMlAllowed
-  minRequired: number; // 60% of classesAfterOdMl (= 75% if no OD/ML used)
+  odAllowed: number; // 15% of total
+  classesAfterOd: number; // total - odAllowed
+  minRequired: number; // 60% of classesAfterOd (= 75% if no OD used)
   rooms: string[];
 }
 
 // Classes cancelled during Mid-Term Exams (March 9-13):
 // LBA 253: 3 hrs (Mon+Tue+Wed), CSE 455: 5 hrs, CSE 456: 5 hrs
 // CSE 306: 5 hrs, CSE 423: 2 hrs, CSE 304: 3 hrs, SEC 176: 3 hrs
+// FLC 120: 4 hrs (Wed+Fri)
 export const courseMetadata: Record<string, CourseMetadata> = {
   "LBA 253": {
     totalClasses: 45, // 48 - 3 (mid-term exam week)
-    odMlAllowed: 7,
-    classesAfterOdMl: 38,
+    odAllowed: 7,
+    classesAfterOd: 38,
     minRequired: 23,
     rooms: ["S607"],
   },
   "CSE 455": {
     totalClasses: 76, // 81 - 5 (mid-term exam week)
-    odMlAllowed: 12,
-    classesAfterOdMl: 64,
+    odAllowed: 12,
+    classesAfterOd: 64,
     minRequired: 39,
     rooms: ["S412", "C707"],
   },
   "CSE 456": {
     totalClasses: 73, // 78 - 5 (mid-term exam week)
-    odMlAllowed: 11,
-    classesAfterOdMl: 62,
+    odAllowed: 11,
+    classesAfterOd: 62,
     minRequired: 38,
     rooms: ["C707", "S613"],
   },
   "CSE 306": {
     totalClasses: 74, // 79 - 5 (mid-term exam week)
-    odMlAllowed: 11,
-    classesAfterOdMl: 63,
+    odAllowed: 11,
+    classesAfterOd: 63,
     minRequired: 38,
     rooms: ["C707", "C1006", "V601"],
   },
   "CSE 423": {
     totalClasses: 30, // 32 - 2 (mid-term exam week)
-    odMlAllowed: 5,
-    classesAfterOdMl: 25,
+    odAllowed: 5,
+    classesAfterOd: 25,
     minRequired: 15,
     rooms: ["C702"],
   },
   "CSE 304": {
     totalClasses: 45, // 48 - 3 (mid-term exam week)
-    odMlAllowed: 7,
-    classesAfterOdMl: 38,
+    odAllowed: 7,
+    classesAfterOd: 38,
     minRequired: 23,
     rooms: ["C707"],
   },
   "SEC 176": {
     totalClasses: 42, // 45 - 3 (mid-term exam week)
-    odMlAllowed: 7,
-    classesAfterOdMl: 35,
+    odAllowed: 7,
+    classesAfterOd: 35,
     minRequired: 21,
     rooms: ["C707"],
+  },
+  "FLC 120": {
+    // Started from Jan 30, 2026 (registered late)
+    // Wednesdays: 12 days × 2 hrs = 24 hrs (minus Mar 11 mid-term)
+    // Fridays: 10 days × 2 hrs = 20 hrs (minus Mar 13 mid-term, Mar 20 Ramzan, Mar 27 Rama Navami, Apr 3 Good Friday)
+    // Total: 44 hrs
+    totalClasses: 44,
+    odAllowed: 7,
+    classesAfterOd: 37,
+    minRequired: 23,
+    rooms: ["C909", "S411"],
   },
 };
 
@@ -142,9 +156,11 @@ export const timetable: Timetable = {
   ],
   Wednesday: [
     { id: "wed1", time: "09:00", course: "LBA 253", room: "S607", isOE: true },
-    { id: "wed2", time: "13:00", course: "CSE 304", room: "C707" },
-    { id: "wed3", time: "14:00", course: "CSE 455", room: "C707" },
-    { id: "wed4", time: "15:00", course: "CSE 455", room: "C707" },
+    { id: "wed2", time: "10:00", course: "FLC 120", room: "C909" },
+    { id: "wed3", time: "11:00", course: "FLC 120", room: "C909" },
+    { id: "wed4", time: "13:00", course: "CSE 304", room: "C707" },
+    { id: "wed5", time: "14:00", course: "CSE 455", room: "C707" },
+    { id: "wed6", time: "15:00", course: "CSE 455", room: "C707" },
   ],
   Thursday: [
     { id: "thu1", time: "10:00", course: "SEC 176", room: "C707" },
@@ -154,10 +170,12 @@ export const timetable: Timetable = {
     { id: "thu5", time: "15:00", course: "CSE 456", room: "S613", isLab: true },
   ],
   Friday: [
-    { id: "fri1", time: "10:00", course: "CSE 306", room: "V601", isLab: true },
-    { id: "fri2", time: "11:00", course: "CSE 306", room: "V601", isLab: true },
-    { id: "fri3", time: "14:00", course: "CSE 456", room: "C707" },
-    { id: "fri4", time: "15:00", course: "CSE 456", room: "C707" },
+    { id: "fri1", time: "09:00", course: "FLC 120", room: "S411", isLab: true },
+    { id: "fri2", time: "10:00", course: "FLC 120", room: "S411", isLab: true },
+    { id: "fri3", time: "11:00", course: "CSE 306", room: "V601", isLab: true },
+    { id: "fri4", time: "12:00", course: "CSE 306", room: "V601", isLab: true },
+    { id: "fri5", time: "14:00", course: "CSE 456", room: "C707" },
+    { id: "fri6", time: "15:00", course: "CSE 456", room: "C707" },
   ],
 };
 

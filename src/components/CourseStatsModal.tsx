@@ -145,8 +145,8 @@ const CourseStatsModal = ({ stats, open, onClose }: CourseStatsModalProps) => {
             />
             <StatCard
               icon={<Shield className="h-4 w-4 text-warning" />}
-              label="OD/ML Allowed"
-              value={`${stats.odMlAllowed} hrs`}
+              label="OD Allowed"
+              value={`${stats.odAllowed} hrs`}
               subtext="15% relaxation"
             />
           </div>
@@ -174,21 +174,21 @@ const CourseStatsModal = ({ stats, open, onClose }: CourseStatsModalProps) => {
               </div>
             </div>
 
-            {/* Without OD/ML */}
+            {/* Without OD */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Remaining bunks (without OD/ML)</span>
+                <span className="text-sm font-medium">Remaining bunks (without OD)</span>
                 <span
                   className={`text-lg font-bold ${
-                    stats.canBunkWithoutOdMl > 0 ? "text-success" : "text-danger"
+                    stats.canBunkWithoutOd > 0 ? "text-success" : "text-danger"
                   }`}
                 >
-                  {stats.canBunkWithoutOdMl} hrs
+                  {stats.canBunkWithoutOd} hrs
                 </span>
               </div>
-              {stats.canBunkWithoutOdMl > 0 ? (
+              {stats.canBunkWithoutOd > 0 ? (
                 <p className="text-xs text-muted-foreground">
-                  You can still miss {stats.canBunkWithoutOdMl} more hour(s) and maintain 75%
+                  You can still miss {stats.canBunkWithoutOd} more hour(s) and maintain 75%
                 </p>
               ) : (
                 <p className="text-xs text-danger">
@@ -197,20 +197,20 @@ const CourseStatsModal = ({ stats, open, onClose }: CourseStatsModalProps) => {
               )}
             </div>
 
-            {/* With OD/ML */}
+            {/* With OD */}
             <div className="space-y-2 pt-2 border-t border-border">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Remaining bunks (with max OD/ML)</span>
+                <span className="text-sm font-medium">Remaining bunks (with max OD)</span>
                 <span
                   className={`text-lg font-bold ${
-                    stats.canBunkWithOdMl > 0 ? "text-success" : "text-warning"
+                    stats.canBunkWithOd > 0 ? "text-success" : "text-warning"
                   }`}
                 >
-                  {stats.canBunkWithOdMl} hrs
+                  {stats.canBunkWithOd} hrs
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Max bunks with OD/ML = {stats.semesterTotal - stats.minRequiredFor75 + stats.odMlAllowed} hrs 
+                Max bunks with OD = {stats.semesterTotal - stats.minRequiredFor75 + stats.odAllowed} hrs 
                 (need only {stats.minRequired} of {stats.semesterTotal} hrs)
               </p>
             </div>

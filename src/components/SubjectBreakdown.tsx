@@ -114,7 +114,7 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
                     {(() => {
                       const detailed = getDetailedCourseStats(subject.course);
                       if (!detailed) return <span className="text-muted-foreground">-</span>;
-                      const bunksLeft = detailed.canBunkWithoutOdMl;
+                      const bunksLeft = detailed.canBunkWithoutOd;
                       const maxBunks = detailed.semesterTotal - detailed.minRequiredFor75;
                       const percentage = maxBunks > 0 ? (bunksLeft / maxBunks) * 100 : 0;
                       const colorClass = percentage <= 0 ? 'text-danger' : percentage < 30 ? 'text-danger' : percentage < 50 ? 'text-warning' : 'text-success';

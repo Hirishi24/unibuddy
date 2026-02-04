@@ -13,8 +13,25 @@ export interface ExamPeriod {
   name: string;
 }
 
+// Course-specific start dates (for late registrations)
+export interface CourseStartDate {
+  course: string;
+  startDate: string; // format: YYYY-MM-DD
+}
+
 export const SEMESTER_START = "2026-01-05";
 export const SEMESTER_END = "2026-05-04";
+
+// Courses with late registration (different start date than semester start)
+export const courseStartDates: CourseStartDate[] = [
+  { course: "FLC 120", startDate: "2026-01-30" }, // Registered on Jan 30, 2026
+];
+
+// Get the start date for a specific course (defaults to SEMESTER_START)
+export const getCourseStartDate = (course: string): string => {
+  const customStart = courseStartDates.find((c) => c.course === course);
+  return customStart ? customStart.startDate : SEMESTER_START;
+};
 
 // Exam periods when classes are cancelled
 export const examPeriods: ExamPeriod[] = [

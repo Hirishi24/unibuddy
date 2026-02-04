@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { getAllCourses, DayName, getBlocksForDay, ClassBlock, courseTitles, courseMetadata, CourseMetadata } from "@/data/timetable";
+import { getCourseStartDate } from "@/data/academicCalendar";
 import { format, parseISO, isValid } from "date-fns";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -30,21 +31,21 @@ export interface DetailedCourseStats {
   rooms: string[];
   // Semester totals
   semesterTotal: number;
-  odMlAllowed: number;
-  classesAfterOdMl: number;
+  odAllowed: number;
+  classesAfterOd: number;
   minRequiredFor75: number;
-  minRequired: number; // 60% of classesAfterOdMl (with max OD/ML)
+  minRequired: number; // 60% of classesAfterOd (with max OD)
   // Current progress
   classesHeld: number; // classes that have occurred
   attended: number;
   missed: number;
   currentPercentage: number;
-  // Bunk calculations (without OD/ML)
-  canBunkWithoutOdMl: number;
+  // Bunk calculations (without OD)
+  canBunkWithoutOd: number;
   mustAttendFor75: number;
-  // With OD/ML calculations
-  canBunkWithOdMl: number;
-  effectiveAttendance: number; // if max OD/ML is used
+  // With OD calculations
+  canBunkWithOd: number;
+  effectiveAttendance: number; // if max OD is used
   // Projections
   remainingClasses: number;
   projectedFinalPercentage: number; // if all remaining attended
@@ -183,6 +184,10 @@ export const useAttendance = () => {
 
       const blocks = getBlocksForDay(dayName);
       blocks.forEach((block) => {
+        // Skip if date is before course start date (e.g., late registration)
+        const courseStart = getCourseStartDate(block.course);
+        if (dateKey < courseStart) return;
+
         const status = dayRecord[block.blockId];
         // Count hours (duration) instead of blocks
         if (status === "present") {
@@ -302,11 +307,19 @@ export const useAttendance = () => {
     return { present, absent };
   }, [getAttendanceForDate]);
 
-  // Get blocks for a date
+  // Get blocks for a date (filters out courses that haven't started yet)
   const getBlocksForDate = useCallback((date: Date): ClassBlock[] => {
     const dayName = getDayNameFromDate(date);
     if (!dayName) return [];
-    return getBlocksForDay(dayName);
+    
+    const dateStr = format(date, "yyyy-MM-dd");
+    const allBlocks = getBlocksForDay(dayName);
+    
+    // Filter out courses that haven't started yet (e.g., late registrations)
+    return allBlocks.filter((block) => {
+      const courseStart = getCourseStartDate(block.course);
+      return dateStr >= courseStart;
+    });
   }, []);
 
   // Export attendance to Excel
@@ -331,7 +344,7 @@ export const useAttendance = () => {
             "Block ID": block.blockId,
             "Course Code": block.course,
             "Course Title": courseTitles[block.course] || block.course,
-            Time: block.time,
+            Time: block.startTime,
             Duration: block.duration,
             Room: block.room,
             Status: status.charAt(0).toUpperCase() + status.slice(1),
@@ -458,11 +471,17 @@ export const useAttendance = () => {
     const meta = courseMetadata[course];
     if (!meta) return null;
 
+    // Get course start date (for late registrations)
+    const courseStart = getCourseStartDate(course);
+
     // Calculate current attendance for this course
     let attended = 0;
     let missed = 0;
 
     Object.entries(attendanceByDate).forEach(([dateKey, dayRecord]) => {
+      // Skip dates before course start date
+      if (dateKey < courseStart) return;
+
       const date = parseISO(dateKey);
       if (!isValid(date)) return;
 
@@ -494,20 +513,20 @@ export const useAttendance = () => {
     const maxBunksAllowed = meta.totalClasses - requiredFor75;
     
     // Remaining bunks = Max bunks - Already missed
-    const canBunkWithoutOdMl = Math.max(0, maxBunksAllowed - missed);
+    const canBunkWithoutOd = Math.max(0, maxBunksAllowed - missed);
     
     // How many more must attend to reach 75%
     const mustAttendFor75 = Math.max(0, requiredFor75 - attended);
 
-    // With OD/ML calculations
-    // If using max OD/ML, need only 60% of (totalClasses - odMlAllowed) = minRequired
-    // So max bunks with OD/ML = totalClasses - minRequired
-    const maxBunksWithOdMl = meta.totalClasses - meta.minRequired;
-    const canBunkWithOdMl = Math.max(0, maxBunksWithOdMl - missed);
+    // With OD calculations
+    // If using max OD, need only 60% of (totalClasses - odAllowed) = minRequired
+    // So max bunks with OD = totalClasses - minRequired
+    const maxBunksWithOd = meta.totalClasses - meta.minRequired;
+    const canBunkWithOd = Math.max(0, maxBunksWithOd - missed);
     
-    // Effective attendance if OD/ML is maxed out
+    // Effective attendance if OD is maxed out
     const effectiveAttendance = classesHeld > 0 
-      ? ((attended + Math.min(missed, meta.odMlAllowed)) / classesHeld) * 100 
+      ? ((attended + Math.min(missed, meta.odAllowed)) / classesHeld) * 100 
       : 0;
 
     // Projections
@@ -543,17 +562,17 @@ export const useAttendance = () => {
       courseTitle: courseTitles[course] || course,
       rooms: meta.rooms,
       semesterTotal: meta.totalClasses,
-      odMlAllowed: meta.odMlAllowed,
-      classesAfterOdMl: meta.classesAfterOdMl,
+      odAllowed: meta.odAllowed,
+      classesAfterOd: meta.classesAfterOd,
       minRequiredFor75: requiredFor75,
       minRequired: meta.minRequired,
       classesHeld,
       attended,
       missed,
       currentPercentage,
-      canBunkWithoutOdMl,
+      canBunkWithoutOd,
       mustAttendFor75,
-      canBunkWithOdMl,
+      canBunkWithOd,
       effectiveAttendance,
       remainingClasses,
       projectedFinalPercentage,
