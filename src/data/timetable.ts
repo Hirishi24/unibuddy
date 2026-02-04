@@ -50,7 +50,8 @@ export const courseFaculty: Record<string, string> = {
   "SEC 176": "Mr. Careerskill",
 };
 
-// Total semester classes per course (excluding weekends and holidays)
+// Total semester classes per course (excluding weekends, holidays, and exam periods)
+// Mid-Term Exams: March 9-13, 2026 (Mon-Fri) - Classes cancelled
 // OD/ML relaxation: 15% of total classes can be used as OD/ML
 // Required attendance: 75% (or 60% of remaining after using max OD/ML)
 export interface CourseMetadata {
@@ -61,54 +62,57 @@ export interface CourseMetadata {
   rooms: string[];
 }
 
+// Classes cancelled during Mid-Term Exams (March 9-13):
+// LBA 253: 3 hrs (Mon+Tue+Wed), CSE 455: 5 hrs, CSE 456: 5 hrs
+// CSE 306: 5 hrs, CSE 423: 2 hrs, CSE 304: 3 hrs, SEC 176: 3 hrs
 export const courseMetadata: Record<string, CourseMetadata> = {
   "LBA 253": {
-    totalClasses: 48,
-    odMlAllowed: 8,
-    classesAfterOdMl: 40,
-    minRequired: 24,
-    rooms: ["S607"],
-  },
-  "CSE 455": {
-    totalClasses: 81,
-    odMlAllowed: 13,
-    classesAfterOdMl: 68,
-    minRequired: 41,
-    rooms: ["S412", "C707"],
-  },
-  "CSE 456": {
-    totalClasses: 78,
-    odMlAllowed: 12,
-    classesAfterOdMl: 66,
-    minRequired: 40,
-    rooms: ["C707", "S613"],
-  },
-  "CSE 306": {
-    totalClasses: 79,
-    odMlAllowed: 12,
-    classesAfterOdMl: 67,
-    minRequired: 41,
-    rooms: ["C707", "C1006", "V601"],
-  },
-  "CSE 423": {
-    totalClasses: 32,
-    odMlAllowed: 5,
-    classesAfterOdMl: 27,
-    minRequired: 17,
-    rooms: ["C702"],
-  },
-  "CSE 304": {
-    totalClasses: 48,
-    odMlAllowed: 8,
-    classesAfterOdMl: 40,
-    minRequired: 24,
-    rooms: ["C707"],
-  },
-  "SEC 176": {
-    totalClasses: 45,
+    totalClasses: 45, // 48 - 3 (mid-term exam week)
     odMlAllowed: 7,
     classesAfterOdMl: 38,
     minRequired: 23,
+    rooms: ["S607"],
+  },
+  "CSE 455": {
+    totalClasses: 76, // 81 - 5 (mid-term exam week)
+    odMlAllowed: 12,
+    classesAfterOdMl: 64,
+    minRequired: 39,
+    rooms: ["S412", "C707"],
+  },
+  "CSE 456": {
+    totalClasses: 73, // 78 - 5 (mid-term exam week)
+    odMlAllowed: 11,
+    classesAfterOdMl: 62,
+    minRequired: 38,
+    rooms: ["C707", "S613"],
+  },
+  "CSE 306": {
+    totalClasses: 74, // 79 - 5 (mid-term exam week)
+    odMlAllowed: 11,
+    classesAfterOdMl: 63,
+    minRequired: 38,
+    rooms: ["C707", "C1006", "V601"],
+  },
+  "CSE 423": {
+    totalClasses: 30, // 32 - 2 (mid-term exam week)
+    odMlAllowed: 5,
+    classesAfterOdMl: 25,
+    minRequired: 15,
+    rooms: ["C702"],
+  },
+  "CSE 304": {
+    totalClasses: 45, // 48 - 3 (mid-term exam week)
+    odMlAllowed: 7,
+    classesAfterOdMl: 38,
+    minRequired: 23,
+    rooms: ["C707"],
+  },
+  "SEC 176": {
+    totalClasses: 42, // 45 - 3 (mid-term exam week)
+    odMlAllowed: 7,
+    classesAfterOdMl: 35,
+    minRequired: 21,
     rooms: ["C707"],
   },
 };

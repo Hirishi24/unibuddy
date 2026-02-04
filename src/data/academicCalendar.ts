@@ -7,8 +7,23 @@ export interface Holiday {
   day: string;
 }
 
+export interface ExamPeriod {
+  startDate: string; // format: YYYY-MM-DD
+  endDate: string; // format: YYYY-MM-DD
+  name: string;
+}
+
 export const SEMESTER_START = "2026-01-05";
 export const SEMESTER_END = "2026-05-04";
+
+// Exam periods when classes are cancelled
+export const examPeriods: ExamPeriod[] = [
+  {
+    startDate: "2026-03-09",
+    endDate: "2026-03-13",
+    name: "Mid-Term Examinations/Assessments",
+  },
+];
 
 export const holidays: Holiday[] = [
   { date: "2026-01-14", name: "Bhogi", day: "Wednesday" },
@@ -37,9 +52,15 @@ export const getHolidayInfo = (dateStr: string): Holiday | null => {
 export type NoClassReason = 
   | { type: "holiday"; name: string }
   | { type: "weekend"; day: "Saturday" | "Sunday" }
+  | { type: "exam_period"; name: string }
   | { type: "before_semester" }
   | { type: "after_semester" }
   | { type: "has_classes" };
+
+// Check if a date falls within an exam period
+export const getExamPeriodInfo = (dateStr: string): ExamPeriod | null => {
+  return examPeriods.find((e) => dateStr >= e.startDate && dateStr <= e.endDate) || null;
+};
 
 // Helper to format date as YYYY-MM-DD using local timezone
 const formatDateLocal = (date: Date): string => {
@@ -75,6 +96,12 @@ export const getNoClassReason = (date: Date): NoClassReason => {
     return { type: "weekend", day: "Saturday" };
   }
 
+  // Check if it's during an exam period
+  const examPeriod = getExamPeriodInfo(dateStr);
+  if (examPeriod) {
+    return { type: "exam_period", name: examPeriod.name };
+  }
+
   // Has classes
   return { type: "has_classes" };
 };
@@ -88,6 +115,8 @@ export const getNoClassMessage = (date: Date): string | null => {
       return `Holiday: ${reason.name}`;
     case "weekend":
       return `${reason.day} - No classes`;
+    case "exam_period":
+      return `${reason.name} - Classes Cancelled`;
     case "before_semester":
       return "Date is before semester start (Jan 5)";
     case "after_semester":
