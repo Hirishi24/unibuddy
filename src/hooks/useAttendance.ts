@@ -363,7 +363,7 @@ export const useAttendance = () => {
       "Course Title": courseTitles[s.course] || s.course,
       "Total Hours": s.totalBlocks,
       "Attended Hours": s.attended,
-      "Percentage": `${s.percentage.toFixed(1)}%`,
+      "Percentage": `${s.percentage.toFixed(2)}%`,
       "Can Bunk": s.canBunk,
       "Must Attend": s.mustAttend,
       "Status": s.status.toUpperCase(),

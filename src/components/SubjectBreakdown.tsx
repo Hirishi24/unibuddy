@@ -93,7 +93,7 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
                         hasData
                       )}`}
                     >
-                      {hasData ? `${subject.percentage.toFixed(0)}%` : "-"}
+                      {hasData ? `${subject.percentage.toFixed(2)}%` : "-"}
                     </span>
                   </td>
                   <td className="py-3 px-4 text-center">

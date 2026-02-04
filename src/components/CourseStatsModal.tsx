@@ -101,7 +101,7 @@ const CourseStatsModal = ({ stats, open, onClose }: CourseStatsModalProps) => {
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Current Attendance</span>
               <span className={`text-2xl font-bold ${getStatusColor(stats.status)}`}>
-                {stats.currentPercentage.toFixed(1)}%
+                {stats.currentPercentage.toFixed(2)}%
               </span>
             </div>
             <div className="relative">
@@ -255,13 +255,13 @@ const CourseStatsModal = ({ stats, open, onClose }: CourseStatsModalProps) => {
                 <div className="bg-success/10 rounded-md p-3">
                   <p className="text-muted-foreground">If you attend all remaining</p>
                   <p className="text-lg font-bold text-success">
-                    {stats.projectedFinalPercentage.toFixed(1)}%
+                    {stats.projectedFinalPercentage.toFixed(2)}%
                   </p>
                 </div>
                 <div className="bg-danger/10 rounded-md p-3">
                   <p className="text-muted-foreground">If you miss all remaining</p>
                   <p className="text-lg font-bold text-danger">
-                    {stats.projectedWorstPercentage.toFixed(1)}%
+                    {stats.projectedWorstPercentage.toFixed(2)}%
                   </p>
                 </div>
               </div>

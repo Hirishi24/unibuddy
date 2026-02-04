@@ -67,7 +67,7 @@ const DashboardStats = ({ bunkStatus }: DashboardStatsProps) => {
         </p>
         {bunkStatus.worstCourse && (
           <p className="text-xs text-muted-foreground mt-2">
-            Based on {bunkStatus.currentPercentage.toFixed(0)}% in {bunkStatus.worstCourse}
+            Based on {bunkStatus.currentPercentage.toFixed(2)}% in {bunkStatus.worstCourse}
           </p>
         )}
       </div>
