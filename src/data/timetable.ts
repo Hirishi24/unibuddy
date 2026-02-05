@@ -64,10 +64,10 @@ export interface CourseMetadata {
   rooms: string[];
 }
 
-// Classes cancelled during Mid-Term Exams (March 9-13):
-// LBA 253: 3 hrs (Mon+Tue+Wed), CSE 455: 5 hrs, CSE 456: 5 hrs
-// CSE 306: 5 hrs, CSE 423: 2 hrs, CSE 304: 3 hrs, SEC 176: 3 hrs
-// FLC 120: 4 hrs (Wed+Fri)
+// Classes cancelled:
+// Mid-Term Exams (March 9-13): LBA 253: 3 hrs, CSE 455: 5 hrs, CSE 456: 5 hrs
+//   CSE 306: 5 hrs, CSE 423: 2 hrs, CSE 304: 3 hrs, SEC 176: 3 hrs, FLC 120: 4 hrs
+// Feb 5 (Infosys Recruitment): CSE 456 lab cancelled (2 hrs)
 export const courseMetadata: Record<string, CourseMetadata> = {
   "LBA 253": {
     totalClasses: 45, // 48 - 3 (mid-term exam week)
@@ -84,10 +84,10 @@ export const courseMetadata: Record<string, CourseMetadata> = {
     rooms: ["S412", "C707"],
   },
   "CSE 456": {
-    totalClasses: 73, // 78 - 5 (mid-term exam week)
-    odAllowed: 11,
-    classesAfterOd: 62,
-    minRequired: 38,
+    totalClasses: 71, // 78 - 5 (mid-term) - 2 (Feb 5 Infosys recruitment lab cancelled)
+    odAllowed: 10, // 15% of 71
+    classesAfterOd: 61,
+    minRequired: 37,
     rooms: ["C707", "S613"],
   },
   "CSE 306": {

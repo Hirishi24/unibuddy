@@ -2,6 +2,8 @@ import { ClassBlock } from "@/data/timetable";
 import ClassCard from "./ClassCard";
 import { DailyAttendanceRecord } from "@/hooks/useAttendance";
 import { Calendar } from "lucide-react";
+import { isLabCancelledDay } from "@/data/academicCalendar";
+import { format } from "date-fns";
 
 interface DailyScheduleProps {
   blocks: ClassBlock[];
@@ -12,6 +14,9 @@ interface DailyScheduleProps {
 }
 
 const DailySchedule = ({ blocks, attendance, onMarkAttendance, selectedDate, onCourseClick }: DailyScheduleProps) => {
+  const dateStr = format(selectedDate, "yyyy-MM-dd");
+  const labCancelled = isLabCancelledDay(dateStr);
+
   if (blocks.length === 0) {
     return (
       <div className="bg-card rounded-lg p-8 text-center card-shadow">
@@ -26,18 +31,24 @@ const DailySchedule = ({ blocks, attendance, onMarkAttendance, selectedDate, onC
 
   return (
     <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-      {blocks.map((block, index) => (
-        <div key={block.blockId} style={{ animationDelay: `${index * 0.05}s` }}>
-          <ClassCard
-            block={block}
-            status={attendance[block.blockId] || null}
-            onMarkPresent={() => onMarkAttendance(block.blockId, "present")}
-            onMarkAbsent={() => onMarkAttendance(block.blockId, "absent")}
-            selectedDate={selectedDate}
-            onCourseClick={onCourseClick}
-          />
-        </div>
-      ))}
+      {blocks.map((block, index) => {
+        // Check if this specific class is cancelled
+        const isCancelled = labCancelled && block.isLab;
+        
+        return (
+          <div key={block.blockId} style={{ animationDelay: `${index * 0.05}s` }}>
+            <ClassCard
+              block={block}
+              status={attendance[block.blockId] || null}
+              onMarkPresent={() => onMarkAttendance(block.blockId, "present")}
+              onMarkAbsent={() => onMarkAttendance(block.blockId, "absent")}
+              selectedDate={selectedDate}
+              onCourseClick={onCourseClick}
+              cancelledReason={isCancelled ? labCancelled.reason : undefined}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };

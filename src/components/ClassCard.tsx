@@ -1,4 +1,4 @@
-import { Clock, MapPin, Check, X, Lock } from "lucide-react";
+import { Clock, MapPin, Check, X, Lock, Ban } from "lucide-react";
 import { ClassBlock } from "@/data/timetable";
 import { isToday, isBefore, startOfDay } from "date-fns";
 
@@ -9,9 +9,10 @@ interface ClassCardProps {
   onMarkAbsent: () => void;
   selectedDate: Date;
   onCourseClick?: (course: string) => void;
+  cancelledReason?: string; // If set, class is cancelled
 }
 
-const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent, selectedDate, onCourseClick }: ClassCardProps) => {
+const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent, selectedDate, onCourseClick, cancelledReason }: ClassCardProps) => {
   // Format time in 24-hour format
   const formatTime = (time: string) => {
     return time; // Already in HH:MM format
@@ -56,6 +57,7 @@ const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent, selectedDate, o
   };
 
   const isLocked = !canMarkAttendance();
+  const isCancelled = !!cancelledReason;
 
   // Get time remaining message for locked classes
   const getLockedMessage = () => {
@@ -69,7 +71,9 @@ const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent, selectedDate, o
   return (
     <div
       className={`bg-card rounded-lg p-4 card-shadow transition-all duration-200 animate-scale-in border border-border ${
-        status === "present"
+        isCancelled
+          ? "opacity-60 border-warning/50"
+          : status === "present"
           ? "ring-2 ring-success/50"
           : status === "absent"
           ? "ring-2 ring-danger/50"
@@ -127,7 +131,13 @@ const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent, selectedDate, o
         )}
       </div>
 
-      {isLocked ? (
+      {isCancelled ? (
+        <div className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-warning/10 text-warning text-sm border border-warning/30">
+          <Ban className="h-4 w-4" />
+          <span className="font-medium">Cancelled</span>
+          <span className="text-warning/80">• {cancelledReason}</span>
+        </div>
+      ) : isLocked ? (
         <div className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-muted text-muted-foreground text-sm">
           <Lock className="h-4 w-4" />
           <span>{getLockedMessage()}</span>

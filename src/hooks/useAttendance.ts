@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { getAllCourses, DayName, getBlocksForDay, ClassBlock, courseTitles, courseMetadata, CourseMetadata } from "@/data/timetable";
-import { getCourseStartDate } from "@/data/academicCalendar";
+import { getCourseStartDate, isLabCancelledDay } from "@/data/academicCalendar";
 import { format, parseISO, isValid } from "date-fns";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -316,18 +316,58 @@ export const useAttendance = () => {
     const allBlocks = getBlocksForDay(dayName);
     
     // Filter out courses that haven't started yet (e.g., late registrations)
+    // Note: Labs on lab-cancelled days are still returned, but marked in UI as cancelled
     return allBlocks.filter((block) => {
       const courseStart = getCourseStartDate(block.course);
       return dateStr >= courseStart;
     });
   }, []);
 
-  // Export attendance to Excel
+  // Export attendance to Excel - Comprehensive export with all stats
   const exportToExcel = useCallback(() => {
-    const rows: any[] = [];
+    const wb = XLSX.utils.book_new();
+    const exportDate = format(new Date(), "yyyy-MM-dd HH:mm");
+
+    // ==================== SHEET 1: Overview ====================
+    const allStats = getAllCourses().map(course => {
+      const detailed = courseMetadata[course];
+      const stats = getSubjectStats().find(s => s.course === course);
+      const courseStart = getCourseStartDate(course);
+      
+      return {
+        "Course Code": course,
+        "Course Title": courseTitles[course] || course,
+        "Start Date": courseStart,
+        "Total Semester Hours": detailed?.totalClasses || 0,
+        "Classes Held": stats?.totalBlocks || 0,
+        "Present": stats?.attended || 0,
+        "Absent": (stats?.totalBlocks || 0) - (stats?.attended || 0),
+        "Attendance %": stats ? `${stats.percentage.toFixed(2)}%` : "0.00%",
+        "OD Allowed": detailed?.odAllowed || 0,
+        "Min Required (75%)": detailed ? Math.ceil(detailed.totalClasses * 0.75) : 0,
+        "Can Bunk": stats?.canBunk || 0,
+        "Must Attend": stats?.mustAttend || 0,
+        "Status": stats?.status?.toUpperCase() || "NEUTRAL",
+      };
+    });
     
-    // Create rows for each attendance record
-    Object.entries(attendanceByDate).forEach(([dateKey, dayRecord]) => {
+    const overviewWs = XLSX.utils.json_to_sheet(allStats);
+    // Set column widths
+    overviewWs['!cols'] = [
+      { wch: 12 }, { wch: 45 }, { wch: 12 }, { wch: 18 },
+      { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 14 },
+      { wch: 12 }, { wch: 18 }, { wch: 10 }, { wch: 12 }, { wch: 10 }
+    ];
+    XLSX.utils.book_append_sheet(wb, overviewWs, "Overview");
+
+    // ==================== SHEET 2: Daily Attendance Log ====================
+    const attendanceRows: any[] = [];
+    
+    // Sort dates chronologically
+    const sortedDates = Object.keys(attendanceByDate).sort();
+    
+    sortedDates.forEach((dateKey) => {
+      const dayRecord = attendanceByDate[dateKey];
       const date = parseISO(dateKey);
       if (!isValid(date)) return;
       
@@ -336,51 +376,95 @@ export const useAttendance = () => {
       
       const blocks = getBlocksForDay(dayName);
       blocks.forEach((block) => {
+        // Skip if before course start date
+        const courseStart = getCourseStartDate(block.course);
+        if (dateKey < courseStart) return;
+        
         const status = dayRecord[block.blockId];
         if (status) {
-          rows.push({
-            Date: dateKey,
-            Day: dayName,
-            "Block ID": block.blockId,
-            "Course Code": block.course,
+          attendanceRows.push({
+            "Date": dateKey,
+            "Day": dayName,
+            "Course": block.course,
             "Course Title": courseTitles[block.course] || block.course,
-            Time: block.startTime,
-            Duration: block.duration,
-            Room: block.room,
-            Status: status.charAt(0).toUpperCase() + status.slice(1),
+            "Time": `${block.startTime} - ${block.endTime}:59`,
+            "Duration (hrs)": block.duration,
+            "Type": block.isLab ? "Lab" : "Theory",
+            "Room": block.room,
+            "Status": status.charAt(0).toUpperCase() + status.slice(1),
           });
         }
       });
     });
 
-    // Sort by date
-    rows.sort((a, b) => a.Date.localeCompare(b.Date));
+    const attendanceWs = XLSX.utils.json_to_sheet(
+      attendanceRows.length > 0 ? attendanceRows : [{ Message: "No attendance marked yet" }]
+    );
+    attendanceWs['!cols'] = [
+      { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 40 },
+      { wch: 15 }, { wch: 14 }, { wch: 8 }, { wch: 8 }, { wch: 10 }
+    ];
+    XLSX.utils.book_append_sheet(wb, attendanceWs, "Daily Log");
 
-    // Create summary sheet
-    const stats = getSubjectStats();
-    const summaryRows = stats.map((s) => ({
-      "Course Code": s.course,
-      "Course Title": courseTitles[s.course] || s.course,
-      "Total Hours": s.totalBlocks,
-      "Attended Hours": s.attended,
-      "Percentage": `${s.percentage.toFixed(2)}%`,
-      "Can Bunk": s.canBunk,
-      "Must Attend": s.mustAttend,
-      "Status": s.status.toUpperCase(),
-    }));
-
-    // Create workbook with multiple sheets
-    const wb = XLSX.utils.book_new();
+    // ==================== SHEET 3: Date-wise Summary ====================
+    const dateSummaryRows: any[] = [];
     
-    // Attendance sheet
-    const attendanceWs = XLSX.utils.json_to_sheet(rows.length > 0 ? rows : [{ Message: "No attendance data yet" }]);
-    XLSX.utils.book_append_sheet(wb, attendanceWs, "Attendance");
-    
-    // Summary sheet
-    const summaryWs = XLSX.utils.json_to_sheet(summaryRows.length > 0 ? summaryRows : [{ Message: "No data" }]);
-    XLSX.utils.book_append_sheet(wb, summaryWs, "Summary");
+    sortedDates.forEach((dateKey) => {
+      const dayRecord = attendanceByDate[dateKey];
+      const date = parseISO(dateKey);
+      if (!isValid(date)) return;
+      
+      const dayName = getDayNameFromDate(date);
+      if (!dayName) return;
+      
+      let totalHours = 0;
+      let presentHours = 0;
+      let absentHours = 0;
+      const coursesAttended: string[] = [];
+      const coursesMissed: string[] = [];
+      
+      const blocks = getBlocksForDay(dayName);
+      blocks.forEach((block) => {
+        const courseStart = getCourseStartDate(block.course);
+        if (dateKey < courseStart) return;
+        
+        const status = dayRecord[block.blockId];
+        if (status) {
+          totalHours += block.duration;
+          if (status === "present") {
+            presentHours += block.duration;
+            if (!coursesAttended.includes(block.course)) coursesAttended.push(block.course);
+          } else {
+            absentHours += block.duration;
+            if (!coursesMissed.includes(block.course)) coursesMissed.push(block.course);
+          }
+        }
+      });
+      
+      if (totalHours > 0) {
+        dateSummaryRows.push({
+          "Date": dateKey,
+          "Day": dayName,
+          "Total Hours": totalHours,
+          "Present": presentHours,
+          "Absent": absentHours,
+          "Day %": `${((presentHours / totalHours) * 100).toFixed(2)}%`,
+          "Courses Attended": coursesAttended.join(", ") || "-",
+          "Courses Missed": coursesMissed.join(", ") || "-",
+        });
+      }
+    });
 
-    // Raw data sheet (for import)
+    const dateSummaryWs = XLSX.utils.json_to_sheet(
+      dateSummaryRows.length > 0 ? dateSummaryRows : [{ Message: "No data" }]
+    );
+    dateSummaryWs['!cols'] = [
+      { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 10 },
+      { wch: 10 }, { wch: 10 }, { wch: 35 }, { wch: 35 }
+    ];
+    XLSX.utils.book_append_sheet(wb, dateSummaryWs, "Date Summary");
+
+    // ==================== SHEET 4: Import Data (for backup/restore) ====================
     const rawRows = Object.entries(attendanceByDate).flatMap(([dateKey, dayRecord]) =>
       Object.entries(dayRecord).map(([blockId, status]) => ({
         Date: dateKey,
@@ -389,12 +473,30 @@ export const useAttendance = () => {
       }))
     );
     const rawWs = XLSX.utils.json_to_sheet(rawRows.length > 0 ? rawRows : [{ Message: "No data" }]);
-    XLSX.utils.book_append_sheet(wb, rawWs, "RawData");
+    rawWs['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 10 }];
+    XLSX.utils.book_append_sheet(wb, rawWs, "Import Data");
+
+    // ==================== SHEET 5: Export Info ====================
+    const infoRows = [
+      { "Field": "Export Date", "Value": exportDate },
+      { "Field": "Semester Start", "Value": "2026-01-05" },
+      { "Field": "Semester End", "Value": "2026-05-04" },
+      { "Field": "Total Courses", "Value": getAllCourses().length },
+      { "Field": "Days with Attendance", "Value": Object.keys(attendanceByDate).length },
+      { "Field": "", "Value": "" },
+      { "Field": "HOW TO IMPORT", "Value": "Use the 'Import Data' sheet to restore attendance" },
+      { "Field": "Required Columns", "Value": "Date, BlockId, Status" },
+      { "Field": "Date Format", "Value": "YYYY-MM-DD (e.g., 2026-02-05)" },
+      { "Field": "Status Values", "Value": "present or absent" },
+    ];
+    const infoWs = XLSX.utils.json_to_sheet(infoRows);
+    infoWs['!cols'] = [{ wch: 20 }, { wch: 50 }];
+    XLSX.utils.book_append_sheet(wb, infoWs, "Info");
 
     // Save file
     const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const blob = new Blob([wbout], { type: "application/octet-stream" });
-    saveAs(blob, `ClassBuddy_Attendance_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
+    saveAs(blob, `Unibuddy_Attendance_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
   }, [attendanceByDate, getSubjectStats]);
 
   // Import attendance from Excel
@@ -407,8 +509,12 @@ export const useAttendance = () => {
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: "array" });
           
-          // Try to find RawData sheet first (preferred), otherwise use Attendance sheet
-          let sheetName = workbook.SheetNames.includes("RawData") ? "RawData" : workbook.SheetNames[0];
+          // Try sheets in order of preference: Import Data > RawData > first sheet
+          let sheetName = "Import Data";
+          if (!workbook.SheetNames.includes(sheetName)) {
+            sheetName = workbook.SheetNames.includes("RawData") ? "RawData" : workbook.SheetNames[0];
+          }
+          
           const sheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(sheet);
           

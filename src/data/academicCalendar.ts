@@ -19,6 +19,12 @@ export interface CourseStartDate {
   startDate: string; // format: YYYY-MM-DD
 }
 
+// Special days when only labs are cancelled (not theory classes)
+export interface LabCancelledDay {
+  date: string; // format: YYYY-MM-DD
+  reason: string;
+}
+
 export const SEMESTER_START = "2026-01-05";
 export const SEMESTER_END = "2026-05-04";
 
@@ -26,6 +32,16 @@ export const SEMESTER_END = "2026-05-04";
 export const courseStartDates: CourseStartDate[] = [
   { course: "FLC 120", startDate: "2026-01-30" }, // Registered on Jan 30, 2026
 ];
+
+// Days when lab sessions are cancelled (theory classes continue)
+export const labCancelledDays: LabCancelledDay[] = [
+  { date: "2026-02-05", reason: "Infosys Campus Recruitment Drive" },
+];
+
+// Check if labs are cancelled on a specific date
+export const isLabCancelledDay = (dateStr: string): LabCancelledDay | null => {
+  return labCancelledDays.find((d) => d.date === dateStr) || null;
+};
 
 // Get the start date for a specific course (defaults to SEMESTER_START)
 export const getCourseStartDate = (course: string): string => {
