@@ -6,18 +6,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  Target,
-  Calendar,
-  Clock,
-  Shield,
-  Zap,
+  TrendingUp, TrendingDown, AlertTriangle, CheckCircle2,
+  XCircle, Target, Calendar, Clock, Shield, Zap,
 } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 
 interface CourseStatsModalProps {
   stats: DetailedCourseStats | null;
@@ -28,239 +19,237 @@ interface CourseStatsModalProps {
 const CourseStatsModal = ({ stats, open, onClose }: CourseStatsModalProps) => {
   if (!stats) return null;
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "safe":
-        return "text-success";
-      case "warning":
-        return "text-warning";
-      case "danger":
-        return "text-orange-500";
-      case "critical":
-        return "text-danger";
-      default:
-        return "text-muted-foreground";
-    }
+  const pct = stats.currentPercentage;
+
+  const statusMeta = {
+    safe:     { color: "hsl(145 65% 55%)", bg: "rgba(52,199,89,0.15)",  border: "rgba(52,199,89,0.28)",  icon: <CheckCircle2 size={18} style={{ color: "hsl(145 65% 55%)" }} />,  msg: pct >= 85 ? "Excellent! Comfortable buffer." : "Good! Be a bit careful." },
+    warning:  { color: "hsl(40 95% 62%)",  bg: "rgba(255,165,0,0.14)",  border: "rgba(255,165,0,0.28)",  icon: <AlertTriangle size={18} style={{ color: "hsl(40 95% 62%)" }} />,   msg: "Warning! Attendance getting low." },
+    danger:   { color: "hsl(0 72% 62%)",   bg: "rgba(255,69,58,0.14)",  border: "rgba(255,69,58,0.28)",  icon: <AlertTriangle size={18} style={{ color: "hsl(0 72% 62%)" }} />,    msg: "Danger! Take immediate action." },
+    critical: { color: "hsl(0 72% 58%)",   bg: "rgba(255,30,30,0.16)",  border: "rgba(255,30,30,0.28)",  icon: <XCircle size={18} style={{ color: "hsl(0 72% 58%)" }} />,           msg: "Critical! Immediate action required." },
+    nodata:   { color: "rgba(255,255,255,0.4)", bg: "rgba(255,255,255,0.06)", border: "rgba(255,255,255,0.12)", icon: null, msg: "No classes held yet." },
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "safe":
-        return <CheckCircle2 className="h-5 w-5 text-success" />;
-      case "warning":
-        return <AlertTriangle className="h-5 w-5 text-warning" />;
-      case "danger":
-        return <AlertTriangle className="h-5 w-5 text-orange-500" />;
-      case "critical":
-        return <XCircle className="h-5 w-5 text-danger" />;
-      default:
-        return null;
-    }
-  };
+  const key = stats.classesHeld === 0 ? "nodata" : (stats.status as keyof typeof statusMeta) || "nodata";
+  const meta = statusMeta[key] || statusMeta.nodata;
 
-  const getStatusMessage = () => {
-    if (stats.classesHeld === 0) {
-      return "No classes held yet. Start marking attendance!";
-    }
-    if (stats.currentPercentage >= 85) {
-      return "Excellent! You have a comfortable buffer.";
-    }
-    if (stats.currentPercentage >= 75) {
-      return "Good! But be careful with bunks.";
-    }
-    if (stats.currentPercentage >= 65) {
-      return "Warning! Attendance is getting low.";
-    }
-    return "Critical! Immediate action required.";
-  };
+  const progColor = pct >= 75 ? "hsl(145 65% 52%)" : pct >= 65 ? "hsl(40 95% 58%)" : "hsl(0 72% 58%)";
 
-  const progressColor = () => {
-    if (stats.currentPercentage >= 75) return "bg-success";
-    if (stats.currentPercentage >= 65) return "bg-warning";
-    return "bg-danger";
-  };
+  const StatCard = ({
+    icon, label, value, subtext, col,
+  }: { icon: React.ReactNode; label: string; value: string; subtext: string; col?: string }) => (
+    <div style={{
+      background: "rgba(255,255,255,0.05)",
+      border: "1px solid rgba(255,255,255,0.09)",
+      borderRadius: 14, padding: "14px 16px",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+        {icon}
+        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", fontWeight: 600 }}>{label}</span>
+      </div>
+      <p style={{ fontSize: 18, fontWeight: 800, color: col || "rgba(255,255,255,0.88)", lineHeight: 1, marginBottom: 3 }}>
+        {value}
+      </p>
+      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.32)" }}>{subtext}</p>
+    </div>
+  );
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {getStatusIcon(stats.status)}
+      <DialogContent
+        className="max-w-lg max-h-[90vh] overflow-y-auto"
+        style={{
+          background: "hsl(230 22% 11%)",
+          border: "1px solid rgba(255,255,255,0.12)",
+          borderRadius: 22,
+          boxShadow: "0 24px 80px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.15)",
+          backdropFilter: "blur(40px)",
+          color: "rgba(255,255,255,0.88)",
+          padding: "28px",
+        }}
+      >
+        <DialogHeader style={{ marginBottom: 20 }}>
+          <DialogTitle style={{ display: "flex", alignItems: "center", gap: 10, lineHeight: 1.2 }}>
+            {meta.icon}
             <div>
-              <span className="text-lg">{stats.course}</span>
-              <span className="text-sm font-normal text-muted-foreground ml-2">
-                {stats.courseTitle}
+              <span style={{ fontSize: 18, fontWeight: 800, color: "rgba(255,255,255,0.92)" }}>
+                {stats.course}
               </span>
+              <p style={{ fontSize: 12, fontWeight: 400, color: "rgba(255,255,255,0.38)", marginTop: 2 }}>
+                {stats.courseTitle}
+              </p>
             </div>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 pt-2">
-          {/* Current Progress */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Current Attendance</span>
-              <span className={`text-2xl font-bold ${getStatusColor(stats.status)}`}>
-                {stats.currentPercentage.toFixed(1)}%
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+          {/* ── Attendance percentage bar ── */}
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>Current Attendance</span>
+              <span style={{ fontSize: 28, fontWeight: 900, color: meta.color, lineHeight: 1 }}>
+                {pct.toFixed(1)}%
               </span>
             </div>
-            <div className="relative">
-              <Progress value={stats.currentPercentage} className="h-3" />
+
+            {/* Progress track */}
+            <div style={{ position: "relative", height: 10, background: "rgba(255,255,255,0.07)", borderRadius: 99, overflow: "hidden" }}>
+              <div style={{
+                height: "100%", borderRadius: 99,
+                width: `${Math.min(pct, 100)}%`,
+                background: `linear-gradient(90deg, ${progColor}, ${progColor}99)`,
+                transition: "width 0.8s cubic-bezier(0.34,1.26,0.64,1)",
+                boxShadow: `0 0 10px ${progColor}66`,
+              }} />
               {/* 75% marker */}
-              <div
-                className="absolute top-0 bottom-0 w-0.5 bg-foreground/50"
-                style={{ left: "75%" }}
-              />
-              <span
-                className="absolute -top-5 text-xs text-muted-foreground"
-                style={{ left: "75%", transform: "translateX(-50%)" }}
-              >
-                75%
-              </span>
+              <div style={{
+                position: "absolute", top: 0, bottom: 0, left: "75%",
+                width: 2, background: "rgba(255,255,255,0.5)", borderRadius: 2,
+              }} />
             </div>
-            <p className={`text-sm ${getStatusColor(stats.status)}`}>
-              {getStatusMessage()}
-            </p>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+              <p style={{ fontSize: 12, color: meta.color }}>{meta.msg}</p>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>Target: 75%</span>
+            </div>
           </div>
 
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* ── Quick stats ── */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <StatCard
-              icon={<Calendar className="h-4 w-4 text-primary" />}
+              icon={<Calendar size={14} style={{ color: "hsl(265 80% 70%)" }} />}
               label="Classes Held"
               value={`${stats.classesHeld} / ${stats.semesterTotal}`}
               subtext={`${stats.remainingClasses} remaining`}
             />
             <StatCard
-              icon={<CheckCircle2 className="h-4 w-4 text-success" />}
+              icon={<CheckCircle2 size={14} style={{ color: "hsl(145 65% 55%)" }} />}
               label="Attended"
               value={`${stats.attended} hrs`}
               subtext={`${stats.missed} missed`}
+              col="hsl(145 65% 58%)"
             />
             <StatCard
-              icon={<Target className="h-4 w-4 text-primary" />}
+              icon={<Target size={14} style={{ color: "hsl(265 80% 70%)" }} />}
               label="Need to Attend"
               value={`${Math.max(0, stats.mustAttendFor75)} hrs`}
-              subtext={stats.mustAttendFor75 > 0 ? `to reach 75%` : `75% achieved ✓`}
+              subtext={stats.mustAttendFor75 > 0 ? "to reach 75%" : "75% achieved ✓"}
+              col={stats.mustAttendFor75 > 0 ? "hsl(0 72% 62%)" : "hsl(145 65% 55%)"}
             />
             <StatCard
-              icon={<Shield className="h-4 w-4 text-warning" />}
+              icon={<Shield size={14} style={{ color: "hsl(40 95% 62%)" }} />}
               label="OD/ML Allowed"
               value={`${stats.odMlAllowed} hrs`}
               subtext="15% relaxation"
+              col="hsl(40 95% 62%)"
             />
           </div>
 
-          {/* Bunk Estimation Section */}
-          <div className="bg-muted/50 rounded-lg p-4 space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Zap className="h-4 w-4 text-warning" />
+          {/* ── Bunk Estimation ── */}
+          <div style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: 16, padding: "18px",
+          }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.78)", display: "flex", alignItems: "center", gap: 6, marginBottom: 14 }}>
+              <Zap size={14} style={{ color: "hsl(40 95% 62%)" }} />
               Bunk Estimation
             </h3>
 
-            {/* Max bunks info - always show */}
-            <div className="bg-background/50 rounded-md p-3 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Max bunks allowed (for 75%)</span>
-                <span className="font-semibold">
-                  {stats.semesterTotal - stats.minRequiredFor75} hrs
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Already missed</span>
-                <span className="font-semibold text-danger">
-                  {stats.missed} hrs
-                </span>
-              </div>
+            {/* Max bunks info */}
+            <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "12px 14px", marginBottom: 12 }}>
+              {[
+                { label: "Max bunks for 75%", val: `${stats.semesterTotal - stats.minRequiredFor75} hrs`, col: "rgba(255,255,255,0.75)" },
+                { label: "Already missed",    val: `${stats.missed} hrs`,                                col: "hsl(0 72% 62%)" },
+              ].map(r => (
+                <div key={r.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, lastChild: { marginBottom: 0 } }}>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.42)" }}>{r.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: r.col }}>{r.val}</span>
+                </div>
+              ))}
             </div>
 
             {/* Without OD/ML */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Remaining bunks (without OD/ML)</span>
-                <span
-                  className={`text-lg font-bold ${
-                    stats.canBunkWithoutOdMl > 0 ? "text-success" : "text-danger"
-                  }`}
-                >
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.65)" }}>
+                  Remaining bunks (no OD/ML)
+                </span>
+                <span style={{
+                  fontSize: 20, fontWeight: 900,
+                  color: stats.canBunkWithoutOdMl > 0 ? "hsl(145 65% 55%)" : "hsl(0 72% 62%)",
+                }}>
                   {stats.canBunkWithoutOdMl} hrs
                 </span>
               </div>
-              {stats.canBunkWithoutOdMl > 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  You can still miss {stats.canBunkWithoutOdMl} more hour(s) and maintain 75%
-                </p>
-              ) : (
-                <p className="text-xs text-danger">
-                  You've used all your bunks! Need to attend {stats.mustAttendFor75} more hours for 75%
-                </p>
-              )}
-            </div>
-
-            {/* With OD/ML */}
-            <div className="space-y-2 pt-2 border-t border-border">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Remaining bunks (with max OD/ML)</span>
-                <span
-                  className={`text-lg font-bold ${
-                    stats.canBunkWithOdMl > 0 ? "text-success" : "text-warning"
-                  }`}
-                >
-                  {stats.canBunkWithOdMl} hrs
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Max bunks with OD/ML = {stats.semesterTotal - stats.minRequiredFor75 + stats.odMlAllowed} hrs 
-                (need only {stats.minRequired} of {stats.semesterTotal} hrs)
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", marginTop: 3 }}>
+                {stats.canBunkWithoutOdMl > 0
+                  ? `You can still miss ${stats.canBunkWithoutOdMl} more hour(s) and stay at 75%`
+                  : `Need to attend ${stats.mustAttendFor75} more hours`}
               </p>
             </div>
 
-            {/* Must Attend */}
+            {/* With OD/ML */}
+            <div style={{ paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.65)" }}>
+                  Remaining bunks (with OD/ML)
+                </span>
+                <span style={{
+                  fontSize: 20, fontWeight: 900,
+                  color: stats.canBunkWithOdMl > 0 ? "hsl(145 65% 55%)" : "hsl(40 95% 62%)",
+                }}>
+                  {stats.canBunkWithOdMl} hrs
+                </span>
+              </div>
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", marginTop: 3 }}>
+                Max with OD/ML = {stats.semesterTotal - stats.minRequiredFor75 + stats.odMlAllowed} hrs
+              </p>
+            </div>
+
+            {/* Action / Safety callout */}
             {stats.mustAttendFor75 > 0 && (
-              <div className="bg-danger/10 rounded-md p-3 space-y-1">
-                <div className="flex items-center gap-2">
-                  <TrendingDown className="h-4 w-4 text-danger" />
-                  <span className="font-semibold text-danger">Action Required</span>
-                </div>
-                <p className="text-sm">
-                  Attend <strong>{stats.mustAttendFor75}</strong> more hours to reach 75%
-                  attendance.
+              <div style={{
+                marginTop: 12,
+                background: "rgba(255,69,58,0.12)", border: "1px solid rgba(255,69,58,0.25)",
+                borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 8,
+              }}>
+                <TrendingDown size={14} style={{ color: "hsl(0 72% 62%)", flexShrink: 0 }} />
+                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)" }}>
+                  Attend <strong style={{ color: "hsl(0 72% 68%)" }}>{stats.mustAttendFor75}</strong> more hours to reach 75%.
                 </p>
               </div>
             )}
-
-            {/* Safety Margin */}
             {stats.safetyMargin > 0 && (
-              <div className="bg-success/10 rounded-md p-3 space-y-1">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-success" />
-                  <span className="font-semibold text-success">Safety Buffer</span>
-                </div>
-                <p className="text-sm">
-                  You are <strong>{stats.safetyMargin}</strong> hours above the 75% threshold
-                  for classes held so far.
+              <div style={{
+                marginTop: 12,
+                background: "rgba(52,199,89,0.10)", border: "1px solid rgba(52,199,89,0.22)",
+                borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 8,
+              }}>
+                <TrendingUp size={14} style={{ color: "hsl(145 65% 55%)", flexShrink: 0 }} />
+                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)" }}>
+                  You are <strong style={{ color: "hsl(145 65% 58%)" }}>{stats.safetyMargin}</strong> hours above the 75% threshold.
                 </p>
               </div>
             )}
           </div>
 
-          {/* Projections */}
+          {/* ── Projections ── */}
           {stats.classesHeld > 0 && stats.remainingClasses > 0 && (
-            <div className="space-y-3">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" />
+            <div>
+              <h3 style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.78)", display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                <Clock size={14} style={{ color: "hsl(265 80% 70%)" }} />
                 Semester Projections
               </h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-success/10 rounded-md p-3">
-                  <p className="text-muted-foreground">If you attend all remaining</p>
-                  <p className="text-lg font-bold text-success">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div style={{ background: "rgba(52,199,89,0.10)", border: "1px solid rgba(52,199,89,0.2)", borderRadius: 12, padding: "14px" }}>
+                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", marginBottom: 4 }}>If attend all remaining</p>
+                  <p style={{ fontSize: 22, fontWeight: 900, color: "hsl(145 65% 55%)" }}>
                     {stats.projectedFinalPercentage.toFixed(1)}%
                   </p>
                 </div>
-                <div className="bg-danger/10 rounded-md p-3">
-                  <p className="text-muted-foreground">If you miss all remaining</p>
-                  <p className="text-lg font-bold text-danger">
+                <div style={{ background: "rgba(255,69,58,0.10)", border: "1px solid rgba(255,69,58,0.2)", borderRadius: 12, padding: "14px" }}>
+                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", marginBottom: 4 }}>If miss all remaining</p>
+                  <p style={{ fontSize: 22, fontWeight: 900, color: "hsl(0 72% 62%)" }}>
                     {stats.projectedWorstPercentage.toFixed(1)}%
                   </p>
                 </div>
@@ -268,36 +257,14 @@ const CourseStatsModal = ({ stats, open, onClose }: CourseStatsModalProps) => {
             </div>
           )}
 
-          {/* Room Info */}
-          <div className="text-xs text-muted-foreground pt-2 border-t border-border">
-            <span>Rooms: {stats.rooms.join(", ")}</span>
+          {/* ── Rooms ── */}
+          <div style={{ paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.07)", fontSize: 11, color: "rgba(255,255,255,0.28)" }}>
+            Rooms: {stats.rooms.join(", ")}
           </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 };
-
-// Helper component for stat cards
-const StatCard = ({
-  icon,
-  label,
-  value,
-  subtext,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  subtext: string;
-}) => (
-  <div className="bg-muted/30 rounded-md p-3 space-y-1">
-    <div className="flex items-center gap-2 text-muted-foreground">
-      {icon}
-      <span className="text-xs">{label}</span>
-    </div>
-    <p className="font-semibold">{value}</p>
-    <p className="text-xs text-muted-foreground">{subtext}</p>
-  </div>
-);
 
 export default CourseStatsModal;

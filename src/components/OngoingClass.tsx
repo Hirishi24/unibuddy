@@ -16,8 +16,6 @@ interface ClassStatus {
   timeUntil?: string;
 }
 
-// Format end time for display (classes end at :50, not :00)
-// endTime in block is start of last slot, actual end is that hour + 50 minutes
 const getDisplayEndTime = (block: ClassBlock): string => {
   const [hours] = block.endTime.split(":").map(Number);
   return `${hours.toString().padStart(2, "0")}:50`;
@@ -28,261 +26,228 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
   const [status, setStatus] = useState<ClassStatus>({ type: "none" });
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
+    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    // Check if selected date is today
     const today = new Date();
     const isToday =
       selectedDate.getDate() === today.getDate() &&
       selectedDate.getMonth() === today.getMonth() &&
       selectedDate.getFullYear() === today.getFullYear();
 
-    if (!isToday || blocks.length === 0) {
-      setStatus({ type: "none" });
-      return;
-    }
+    if (!isToday || blocks.length === 0) { setStatus({ type: "none" }); return; }
 
-    // Parse time string (HH:MM format) and create Date object for today
-    const parseTime = (timeStr: string): Date => {
-      const [hours, minutes] = timeStr.split(":").map(Number);
-      const date = new Date();
-      date.setHours(hours, minutes, 0, 0);
-      return date;
+    const parseTime = (t: string): Date => {
+      const [h, m] = t.split(":").map(Number);
+      const d = new Date(); d.setHours(h, m, 0, 0); return d;
     };
 
-    // Get actual end time (classes end at :50 of the last hour)
-    const getActualEndTime = (block: ClassBlock): Date => {
-      const [hours] = block.endTime.split(":").map(Number);
-      const date = new Date();
-      date.setHours(hours, 50, 0, 0); // End at :50 of the last slot hour
-      return date;
+    const getActualEnd = (block: ClassBlock): Date => {
+      const [h] = block.endTime.split(":").map(Number);
+      const d = new Date(); d.setHours(h, 50, 0, 0); return d;
     };
 
-    const formatTimeDiff = (diffMs: number): string => {
-      const totalSeconds = Math.floor(diffMs / 1000);
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-      
-      if (hours > 0) {
-        return `${hours}h ${minutes}m ${seconds}s`;
-      }
-      if (minutes > 0) {
-        return `${minutes}m ${seconds}s`;
-      }
-      return `${seconds}s`;
+    const fmt = (ms: number): string => {
+      const s = Math.floor(ms / 1000);
+      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+      if (h > 0) return `${h}h ${m}m ${sec}s`;
+      if (m > 0) return `${m}m ${sec}s`;
+      return `${sec}s`;
     };
 
     const now = currentTime;
     let foundOngoing = false;
     let nextClass: ClassBlock | null = null;
 
-    // Sort blocks by start time
-    const sortedBlocks = [...blocks].sort((a, b) => {
-      return parseTime(a.startTime).getTime() - parseTime(b.startTime).getTime();
-    });
+    const sorted = [...blocks].sort((a, b) => parseTime(a.startTime).getTime() - parseTime(b.startTime).getTime());
 
-    for (const block of sortedBlocks) {
-      const startTime = parseTime(block.startTime);
-      const endTime = getActualEndTime(block);
-
-      if (now >= startTime && now < endTime) {
-        // Currently in a class
-        const diffMs = endTime.getTime() - now.getTime();
-        setStatus({
-          type: "ongoing",
-          currentClass: block,
-          timeLeft: formatTimeDiff(diffMs),
-        });
-        foundOngoing = true;
-        break;
-      } else if (now < startTime && !nextClass) {
-        // Found upcoming class
-        nextClass = block;
+    for (const block of sorted) {
+      const start = parseTime(block.startTime);
+      const end   = getActualEnd(block);
+      if (now >= start && now < end) {
+        setStatus({ type: "ongoing", currentClass: block, timeLeft: fmt(end.getTime() - now.getTime()) });
+        foundOngoing = true; break;
       }
+      if (now < start && !nextClass) nextClass = block;
     }
 
     if (!foundOngoing) {
       if (nextClass) {
-        const startTime = parseTime(nextClass.startTime);
-        const diffMs = startTime.getTime() - now.getTime();
-        setStatus({
-          type: "upcoming",
-          nextClass: nextClass,
-          timeUntil: formatTimeDiff(diffMs),
-        });
+        const start = parseTime(nextClass.startTime);
+        setStatus({ type: "upcoming", nextClass, timeUntil: fmt(start.getTime() - now.getTime()) });
       } else {
-        // All classes are done for today
         setStatus({ type: "done" });
       }
     }
   }, [currentTime, blocks, selectedDate]);
 
-  // Don't show anything if not today or no classes
-  if (status.type === "none") {
-    return null;
-  }
+  if (status.type === "none") return null;
 
-  // All classes done for the day
-  if (status.type === "done") {
-    return (
-      <div className="bg-gradient-to-br from-success/10 via-success/5 to-background border-2 border-success/30 rounded-xl p-4 mb-6 animate-fade-in">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-success/20 rounded-lg">
-            <Coffee className="h-5 w-5 text-success" />
-          </div>
-          <div>
-            <p className="font-semibold text-foreground">All done for today! 🎉</p>
-            <p className="text-sm text-muted-foreground">No more classes scheduled</p>
-          </div>
-          <div className="ml-auto text-sm text-muted-foreground font-mono">
-            {format(currentTime, "HH:mm:ss")}
-          </div>
+  const TypeBadge = ({ block }: { block: ClassBlock }) => (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 3,
+      fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+      background: block.isLab ? "rgba(168,130,255,0.18)" : "rgba(60,130,255,0.18)",
+      border: `1px solid ${block.isLab ? "rgba(168,130,255,0.3)" : "rgba(60,130,255,0.28)"}`,
+      color: block.isLab ? "hsl(265 80% 72%)" : "hsl(220 90% 72%)",
+    }}>
+      {block.isLab ? <><Beaker size={9} /> Lab</> : <><BookOpen size={9} /> Theory</>}
+    </span>
+  );
+
+  const ClassMeta = ({ block }: { block: ClassBlock }) => (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 12, fontSize: 12, marginTop: 6 }}>
+      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(255,255,255,0.55)" }}>
+        <Clock size={12} /> {block.startTime} – {getDisplayEndTime(block)}
+      </span>
+      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(255,255,255,0.55)" }}>
+        <MapPin size={12} /> {block.room}
+      </span>
+      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(255,255,255,0.45)" }}>
+        <User size={12} /> {block.faculty}
+      </span>
+    </div>
+  );
+
+  const TimerBox = ({ value, label, color }: { value: string; label: string; color: string }) => (
+    <div style={{ textAlign: "right" }}>
+      <div style={{
+        background: `${color}18`,
+        border: `1px solid ${color}35`,
+        borderRadius: 14, padding: "10px 16px",
+        backdropFilter: "blur(10px)",
+      }}>
+        <div style={{ fontSize: 22, fontWeight: 900, color, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
+          {value}
+        </div>
+        <div style={{ fontSize: 10, color: `${color}cc`, fontWeight: 600, marginTop: 3 }}>{label}</div>
+      </div>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "monospace", marginTop: 6 }}>
+        {format(currentTime, "HH:mm:ss")}
+      </div>
+    </div>
+  );
+
+  const cardBase: React.CSSProperties = {
+    backdropFilter: "blur(28px) saturate(180%)",
+    WebkitBackdropFilter: "blur(28px) saturate(180%)",
+    borderRadius: 18,
+    padding: "18px 20px",
+    marginBottom: 20,
+  };
+
+  // All done
+  if (status.type === "done") return (
+    <div style={{
+      ...cardBase,
+      background: "rgba(52,199,89,0.08)",
+      border: "1px solid rgba(52,199,89,0.22)",
+      boxShadow: "0 4px 24px rgba(52,199,89,0.08)",
+    }} className="animate-fade-in">
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{
+          width: 38, height: 38, borderRadius: 12, flexShrink: 0,
+          background: "rgba(52,199,89,0.18)", border: "1px solid rgba(52,199,89,0.28)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <Coffee size={17} style={{ color: "hsl(145 65% 55%)" }} />
+        </div>
+        <div>
+          <p style={{ fontWeight: 700, color: "rgba(255,255,255,0.85)", fontSize: 14 }}>All done for today! 🎉</p>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.38)" }}>No more classes scheduled</p>
+        </div>
+        <div style={{ marginLeft: "auto", fontSize: 12, color: "rgba(255,255,255,0.3)", fontFamily: "monospace" }}>
+          {format(currentTime, "HH:mm:ss")}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 
-  // Upcoming class
-  if (status.type === "upcoming" && status.nextClass) {
-    return (
-      <div className="bg-gradient-to-br from-warning/10 via-warning/5 to-background border-2 border-warning/30 rounded-xl p-4 mb-6 animate-fade-in">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <CalendarClock className="h-5 w-5 text-warning" />
-              <span className="text-xs font-semibold text-warning uppercase tracking-wide">
-                Next Class
-              </span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${status.nextClass.isLab ? 'bg-purple-500/20 text-purple-500' : 'bg-blue-500/20 text-blue-500'}`}>
-                {status.nextClass.isLab ? (
-                  <span className="flex items-center gap-1"><Beaker className="h-3 w-3" /> Lab</span>
-                ) : (
-                  <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" /> Theory</span>
-                )}
-              </span>
-              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-muted text-muted-foreground">
-                {status.nextClass.duration} {status.nextClass.duration > 1 ? 'hours' : 'hour'}
-              </span>
-            </div>
-            
-            <h3 className="text-lg font-bold text-foreground mb-1">
-              {status.nextClass.course}
-            </h3>
-            <p className="text-sm text-muted-foreground mb-2">
-              {status.nextClass.courseTitle}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 text-sm mb-2">
-              <div className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground">
-                  {status.nextClass.startTime} - {getDisplayEndTime(status.nextClass)}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground">{status.nextClass.room}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 text-sm">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">{status.nextClass.faculty}</span>
-            </div>
+  // Upcoming
+  if (status.type === "upcoming" && status.nextClass) return (
+    <div style={{
+      ...cardBase,
+      background: "rgba(255,165,0,0.08)",
+      border: "1px solid rgba(255,165,0,0.22)",
+      boxShadow: "0 4px 24px rgba(255,165,0,0.07)",
+    }} className="animate-fade-in">
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+            <CalendarClock size={15} style={{ color: "hsl(40 95% 62%)", flexShrink: 0 }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: "hsl(40 95% 62%)", letterSpacing: "0.07em", textTransform: "uppercase" }}>
+              Next Class
+            </span>
+            <TypeBadge block={status.nextClass} />
+            <span style={{
+              fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 99,
+              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.11)",
+              color: "rgba(255,255,255,0.45)",
+            }}>
+              {status.nextClass.duration} {status.nextClass.duration > 1 ? "hrs" : "hr"}
+            </span>
           </div>
-
-          <div className="text-right">
-            <div className="bg-warning/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-warning/30">
-              <div className="text-2xl font-bold text-warning tabular-nums">
-                {status.timeUntil}
-              </div>
-              <div className="text-xs text-warning/80 font-medium">
-                until start
-              </div>
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground font-mono">
-              {format(currentTime, "HH:mm:ss")}
-            </div>
-          </div>
+          <h3 style={{ fontSize: 17, fontWeight: 800, color: "rgba(255,255,255,0.9)", marginBottom: 2 }}>
+            {status.nextClass.course}
+          </h3>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{status.nextClass.courseTitle}</p>
+          <ClassMeta block={status.nextClass} />
         </div>
+        <TimerBox value={status.timeUntil!} label="until start" color="hsl(40 95% 62%)" />
       </div>
-    );
-  }
+    </div>
+  );
 
-  // Ongoing class
-  if (status.type === "ongoing" && status.currentClass) {
-    return (
-      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-2 border-primary/30 rounded-xl p-4 mb-6 animate-fade-in">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="relative">
-                <Clock className="h-5 w-5 text-primary animate-pulse" />
-                <div className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full animate-ping" />
-              </div>
-              <span className="text-xs font-semibold text-primary uppercase tracking-wide">
-                Ongoing Class
-              </span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${status.currentClass.isLab ? 'bg-purple-500/20 text-purple-500' : 'bg-blue-500/20 text-blue-500'}`}>
-                {status.currentClass.isLab ? (
-                  <span className="flex items-center gap-1"><Beaker className="h-3 w-3" /> Lab</span>
-                ) : (
-                  <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" /> Theory</span>
-                )}
-              </span>
-              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-muted text-muted-foreground">
-                {status.currentClass.duration} {status.currentClass.duration > 1 ? 'hours' : 'hour'}
-              </span>
+  // Ongoing
+  if (status.type === "ongoing" && status.currentClass) return (
+    <div style={{
+      ...cardBase,
+      background: "rgba(168,130,255,0.09)",
+      border: "1px solid rgba(168,130,255,0.28)",
+      boxShadow: "0 4px 24px rgba(120,80,255,0.14)",
+    }} className="animate-fade-in">
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+            {/* Live indicator */}
+            <div style={{ position: "relative", width: 16, height: 16, flexShrink: 0 }}>
+              <div style={{
+                width: 8, height: 8, borderRadius: "50%",
+                background: "hsl(265 80% 65%)",
+                position: "absolute", top: 4, left: 4,
+                animation: "pulse 1.5s ease-in-out infinite",
+              }} />
+              <div style={{
+                width: 16, height: 16, borderRadius: "50%",
+                background: "rgba(168,130,255,0.25)",
+                position: "absolute", top: 0, left: 0,
+                animation: "ping 1.5s cubic-bezier(0,0,0.2,1) infinite",
+              }} />
             </div>
-            
-            <h3 className="text-lg font-bold text-foreground mb-1">
-              {status.currentClass.course}
-            </h3>
-            <p className="text-sm text-muted-foreground mb-2">
-              {status.currentClass.courseTitle}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 text-sm mb-2">
-              <div className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground">
-                  {status.currentClass.startTime} - {getDisplayEndTime(status.currentClass)}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground">{status.currentClass.room}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 text-sm">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">{status.currentClass.faculty}</span>
-            </div>
+            <span style={{ fontSize: 10, fontWeight: 700, color: "hsl(265 80% 72%)", letterSpacing: "0.07em", textTransform: "uppercase" }}>
+              Ongoing Class
+            </span>
+            <TypeBadge block={status.currentClass} />
+            <span style={{
+              fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 99,
+              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.11)",
+              color: "rgba(255,255,255,0.45)",
+            }}>
+              {status.currentClass.duration} {status.currentClass.duration > 1 ? "hrs" : "hr"}
+            </span>
           </div>
-
-          <div className="text-right">
-            <div className="bg-primary/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-primary/30">
-              <div className="text-2xl font-bold text-primary tabular-nums">
-                {status.timeLeft}
-              </div>
-              <div className="text-xs text-primary/80 font-medium">
-                left
-              </div>
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground font-mono">
-              {format(currentTime, "HH:mm:ss")}
-            </div>
-          </div>
+          <h3 style={{ fontSize: 17, fontWeight: 800, color: "rgba(255,255,255,0.9)", marginBottom: 2 }}>
+            {status.currentClass.course}
+          </h3>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{status.currentClass.courseTitle}</p>
+          <ClassMeta block={status.currentClass} />
         </div>
+        <TimerBox value={status.timeLeft!} label="left" color="hsl(265 80% 72%)" />
       </div>
-    );
-  }
+    </div>
+  );
 
   return null;
 };

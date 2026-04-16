@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SubjectStats, DetailedCourseStats } from "@/hooks/useAttendance";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight, TrendingUp } from "lucide-react";
 import CourseStatsModal from "./CourseStatsModal";
 import { courseTitles } from "@/data/timetable";
 
@@ -15,11 +15,11 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
 
   const sortedStats = [...stats].sort((a, b) => a.course.localeCompare(b.course));
 
-  const getPercentageClass = (percentage: number, hasData: boolean) => {
-    if (!hasData) return "text-muted-foreground";
-    if (percentage >= 75) return "attendance-percentage-safe";
-    if (percentage >= 65) return "attendance-percentage-warning";
-    return "attendance-percentage-danger";
+  const getPercentageColor = (pct: number, hasData: boolean) => {
+    if (!hasData) return "rgba(255,255,255,0.3)";
+    if (pct >= 75) return "hsl(145 65% 55%)";
+    if (pct >= 65) return "hsl(40 95% 62%)";
+    return "hsl(0 72% 62%)";
   };
 
   const handleRowClick = (course: string) => {
@@ -29,105 +29,127 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
 
   const selectedStats = selectedCourse ? getDetailedCourseStats(selectedCourse) : null;
 
+  const allEmpty = stats.every((s) => s.totalBlocks === 0);
+
   return (
-    <div className="bg-card rounded-lg card-shadow overflow-hidden animate-fade-in border border-border" style={{ animationDelay: "0.2s" }}>
-      <div className="p-4 border-b border-border flex items-center gap-2">
-        <BookOpen className="h-5 w-5 text-primary" />
-        <h2 className="font-semibold text-foreground">Course Wise Breakdown </h2>
+    <div className="glass" style={{ overflow: "hidden" }}>
+      {/* Header */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10,
+        padding: "18px 20px",
+        borderBottom: "1px solid rgba(255,255,255,0.07)",
+      }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 10,
+          background: "linear-gradient(135deg, hsl(265 80% 55%), hsl(220 80% 52%))",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 2px 10px rgba(120,80,255,0.35)",
+          flexShrink: 0,
+        }}>
+          <BookOpen size={15} style={{ color: "white" }} />
+        </div>
+        <div>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.88)" }}>
+            Course Wise Breakdown
+          </h2>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.32)" }}>
+            Click any row for detailed bunk estimation
+          </p>
+        </div>
+        <div style={{ marginLeft: "auto" }}>
+          <TrendingUp size={16} style={{ color: "rgba(255,255,255,0.2)" }} />
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      {/* Table */}
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }} className="glass-table">
           <thead>
-            <tr className="border-b border-border bg-muted/50">
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Course 
-              </th>
-              <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">
-                Hours
-              </th>
-              <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">
-                Attended
-              </th>
-              <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">
-                %
-              </th>
-              <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">
-                Need to Attend  (for 75%)
-              </th>
-              <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
-                Bunks Left
-              </th>
-              <th className="w-8"></th>
+            <tr>
+              {["Course", "Hours", "Attended", "%", "Need (75%)", "Bunks Left", ""].map((h, i) => (
+                <th key={i} style={{ textAlign: i === 0 ? "left" : i === 5 ? "right" : "center" }}>
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {sortedStats.map((subject) => {
               const hasData = subject.totalBlocks > 0;
+              const detailed = getDetailedCourseStats(subject.course);
+              const pctColor = getPercentageColor(subject.percentage, hasData);
+              const bunksLeft = detailed?.canBunkWithoutOdMl ?? 0;
+              const maxBunks = detailed
+                ? detailed.semesterTotal - detailed.minRequiredFor75
+                : 0;
+              const bunkPct = maxBunks > 0 ? bunksLeft / maxBunks : 0;
+              const bunkColor =
+                bunkPct <= 0 ? "hsl(0 72% 62%)"
+                : bunkPct < 0.3 ? "hsl(0 72% 62%)"
+                : bunkPct < 0.5 ? "hsl(40 95% 62%)"
+                : "hsl(145 65% 55%)";
+
               return (
                 <tr
                   key={subject.course}
-                  className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors cursor-pointer"
                   onClick={() => handleRowClick(subject.course)}
+                  style={{ cursor: "pointer", transition: "background 0.15s" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                 >
-                  <td className="py-3 px-4">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-foreground">
+                  {/* Course name */}
+                  <td>
+                    <div>
+                      <span style={{ fontWeight: 700, color: "rgba(255,255,255,0.88)", display: "block" }}>
                         {subject.course}
                       </span>
-                      <span className="text-xs text-muted-foreground">
+                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.33)" }}>
                         {courseTitles[subject.course] || ""}
                       </span>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-center text-muted-foreground">
-                    {hasData ? subject.totalBlocks : "-"}
+                  {/* Hours */}
+                  <td style={{ textAlign: "center", color: "rgba(255,255,255,0.45)" }}>
+                    {hasData ? subject.totalBlocks : "—"}
                   </td>
-                  <td className="py-3 px-4 text-center text-muted-foreground">
-                    {hasData ? subject.attended : "-"}
+                  {/* Attended */}
+                  <td style={{ textAlign: "center", color: "rgba(255,255,255,0.45)" }}>
+                    {hasData ? subject.attended : "—"}
                   </td>
-                  <td className="py-3 px-4 text-center">
-                    <span
-                      className={`text-sm font-semibold ${getPercentageClass(
-                        subject.percentage,
-                        hasData
-                      )}`}
-                    >
-                      {hasData ? `${subject.percentage.toFixed(0)}%` : "-"}
+                  {/* % */}
+                  <td style={{ textAlign: "center" }}>
+                    <span style={{ fontWeight: 800, fontSize: 13, color: pctColor }}>
+                      {hasData ? `${subject.percentage.toFixed(0)}%` : "—"}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-center">
-                    {(() => {
-                      const detailed = getDetailedCourseStats(subject.course);
-                      if (!detailed || !hasData) return <span className="text-muted-foreground">-</span>;
-                      const mustAttend = detailed.mustAttendFor75;
-                      return mustAttend > 0 ? (
-                        <span className="text-sm font-semibold text-danger">
-                          {mustAttend}
+                  {/* Need to attend */}
+                  <td style={{ textAlign: "center" }}>
+                    {detailed && hasData ? (
+                      detailed.mustAttendFor75 > 0 ? (
+                        <span style={{ fontWeight: 700, fontSize: 13, color: "hsl(0 72% 62%)" }}>
+                          {detailed.mustAttendFor75}
                         </span>
                       ) : (
-                        <span className="text-sm text-success">-</span>
-                      );
-                    })()}
+                        <span style={{ color: "hsl(145 65% 55%)", fontSize: 13 }}>✓</span>
+                      )
+                    ) : (
+                      <span style={{ color: "rgba(255,255,255,0.25)" }}>—</span>
+                    )}
                   </td>
-                  <td className="py-3 px-4 text-right">
-                    {(() => {
-                      const detailed = getDetailedCourseStats(subject.course);
-                      if (!detailed) return <span className="text-muted-foreground">-</span>;
-                      const bunksLeft = detailed.canBunkWithoutOdMl;
-                      const maxBunks = detailed.semesterTotal - detailed.minRequiredFor75;
-                      const percentage = maxBunks > 0 ? (bunksLeft / maxBunks) * 100 : 0;
-                      const colorClass = percentage <= 0 ? 'text-danger' : percentage < 30 ? 'text-danger' : percentage < 50 ? 'text-warning' : 'text-success';
-                      return (
-                        <span className="text-sm font-semibold">
-                          <span className="text-muted-foreground/60">{bunksLeft}/</span>
-                          <span className={colorClass}>{maxBunks}</span>
-                        </span>
-                      );
-                    })()}
+                  {/* Bunks left */}
+                  <td style={{ textAlign: "right" }}>
+                    {detailed ? (
+                      <span style={{ fontWeight: 700, fontSize: 13 }}>
+                        <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>{bunksLeft}/</span>
+                        <span style={{ color: bunkColor }}>{maxBunks}</span>
+                      </span>
+                    ) : (
+                      <span style={{ color: "rgba(255,255,255,0.25)" }}>—</span>
+                    )}
                   </td>
-                  <td className="py-3 pr-2">
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  {/* Arrow */}
+                  <td style={{ paddingRight: 12 }}>
+                    <ChevronRight size={14} style={{ color: "rgba(255,255,255,0.2)" }} />
                   </td>
                 </tr>
               );
@@ -136,16 +158,20 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
         </table>
       </div>
 
-      {stats.every((s) => s.totalBlocks === 0) && (
-        <div className="p-6 text-center text-muted-foreground text-sm">
+      {allEmpty && (
+        <div style={{ padding: "28px 20px", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
           Mark attendance to see subject-wise breakdown
         </div>
       )}
 
-      <div className="px-4 py-3 border-t border-border bg-muted/30">
-        <p className="text-xs text-muted-foreground text-center">
-          Click on any course to see detailed bunk estimation &amp; statistics
-        </p>
+      {/* Footer */}
+      <div style={{
+        padding: "12px 20px",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
+        background: "rgba(255,255,255,0.02)",
+        fontSize: 11, color: "rgba(255,255,255,0.25)", textAlign: "center",
+      }}>
+        Click any course row to see detailed bunk estimation & projections
       </div>
 
       <CourseStatsModal
