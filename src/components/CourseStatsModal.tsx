@@ -38,18 +38,18 @@ const CourseStatsModal = ({ stats, open, onClose }: CourseStatsModalProps) => {
     icon, label, value, subtext, col,
   }: { icon: React.ReactNode; label: string; value: string; subtext: string; col?: string }) => (
     <div style={{
-      background: "rgba(255,255,255,0.05)",
-      border: "1px solid rgba(255,255,255,0.09)",
+      background: "var(--muted)",
+      border: "1px solid var(--border)",
       borderRadius: 14, padding: "14px 16px",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
         {icon}
-        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", fontWeight: 600 }}>{label}</span>
+        <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontWeight: 600 }}>{label}</span>
       </div>
-      <p style={{ fontSize: 18, fontWeight: 800, color: col || "rgba(255,255,255,0.88)", lineHeight: 1, marginBottom: 3 }}>
+      <p style={{ fontSize: 18, fontWeight: 800, color: col || "hsl(var(--foreground))", lineHeight: 1, marginBottom: 3 }}>
         {value}
       </p>
-      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.32)" }}>{subtext}</p>
+      <p style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>{subtext}</p>
     </div>
   );
 
@@ -58,12 +58,12 @@ const CourseStatsModal = ({ stats, open, onClose }: CourseStatsModalProps) => {
       <DialogContent
         className="max-w-lg max-h-[90vh] overflow-y-auto"
         style={{
-          background: "hsl(230 22% 11%)",
-          border: "1px solid rgba(255,255,255,0.12)",
+          background: "var(--background)",
+          border: "1px solid var(--border)",
           borderRadius: 22,
-          boxShadow: "0 24px 80px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.15)",
-          backdropFilter: "blur(40px)",
-          color: "rgba(255,255,255,0.88)",
+          boxShadow: "var(--shadow-card)",
+          backdropFilter: "var(--glass-blur)",
+          color: "hsl(var(--foreground))",
           padding: "28px",
         }}
       >
@@ -71,10 +71,10 @@ const CourseStatsModal = ({ stats, open, onClose }: CourseStatsModalProps) => {
           <DialogTitle style={{ display: "flex", alignItems: "center", gap: 10, lineHeight: 1.2 }}>
             {meta.icon}
             <div>
-              <span style={{ fontSize: 18, fontWeight: 800, color: "rgba(255,255,255,0.92)" }}>
+              <span style={{ fontSize: 18, fontWeight: 800, color: "hsl(var(--foreground))" }}>
                 {stats.course}
               </span>
-              <p style={{ fontSize: 12, fontWeight: 400, color: "rgba(255,255,255,0.38)", marginTop: 2 }}>
+              <p style={{ fontSize: 12, fontWeight: 400, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>
                 {stats.courseTitle}
               </p>
             </div>
@@ -158,11 +158,11 @@ const CourseStatsModal = ({ stats, open, onClose }: CourseStatsModalProps) => {
             {/* Max bunks info */}
             <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "12px 14px", marginBottom: 12 }}>
               {[
-                { label: "Max bunks for 75%", val: `${stats.semesterTotal - stats.minRequiredFor75} hrs`, col: "rgba(255,255,255,0.75)" },
+                { label: "Max bunks for 75%", val: `${stats.semesterTotal - stats.minRequiredFor75} hrs`, col: "hsl(var(--foreground) / 0.8)" },
                 { label: "Already missed",    val: `${stats.missed} hrs`,                                col: "hsl(0 72% 62%)" },
               ].map(r => (
                 <div key={r.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, lastChild: { marginBottom: 0 } }}>
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.42)" }}>{r.label}</span>
+                  <span style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>{r.label}</span>
                   <span style={{ fontSize: 13, fontWeight: 700, color: r.col }}>{r.val}</span>
                 </div>
               ))}

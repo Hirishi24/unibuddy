@@ -54,16 +54,16 @@ const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent, selectedDate, o
     <div
       className="animate-scale-in"
       style={{
-        background: "rgba(255,255,255,0.055)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        border: `1px solid ${status ? statusColor.ring : "rgba(255,255,255,0.10)"}`,
+        background: "var(--glass-bg)",
+        backdropFilter: "var(--glass-blur)",
+        WebkitBackdropFilter: "var(--glass-blur)",
+        border: `1px solid ${status ? statusColor.ring : "var(--glass-border)"}`,
         borderRadius: 16,
         padding: "16px",
         marginBottom: 10,
         boxShadow: status
           ? `0 0 0 1px ${statusColor.ring}, 0 4px 20px ${statusColor.glow}`
-          : "0 2px 12px rgba(0,0,0,0.25)",
+          : "var(--shadow-card)",
         transition: "border-color 0.2s, box-shadow 0.2s",
       }}
     >
@@ -74,11 +74,11 @@ const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent, selectedDate, o
             <h3
               onClick={() => onCourseClick?.(block.course)}
               style={{
-                fontSize: 15, fontWeight: 800, color: "rgba(255,255,255,0.92)",
+                fontSize: 15, fontWeight: 800, color: "hsl(var(--foreground) / 0.95)",
                 cursor: "pointer", transition: "color 0.15s",
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = "hsl(265 80% 78%)")}
-              onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.92)")}
+              onMouseEnter={e => (e.currentTarget.style.color = "hsl(265 80% 65%)")}
+              onMouseLeave={e => (e.currentTarget.style.color = "hsl(var(--foreground) / 0.95)")}
             >
               {block.course}
             </h3>
@@ -98,14 +98,14 @@ const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent, selectedDate, o
             )}
             <span style={{
               fontSize: 10, fontWeight: 600, padding: "1px 7px", borderRadius: 99,
-              background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)",
-              color: "rgba(255,255,255,0.5)",
+              background: "var(--muted)", border: "1px solid var(--border)",
+              color: "hsl(var(--muted-foreground))",
             }}>{getDurationLabel()}</span>
           </div>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 6 }}>
+          <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 6 }}>
             {block.courseTitle}
           </p>
-          <div style={{ display: "flex", gap: 14, fontSize: 12, color: "rgba(255,255,255,0.42)" }}>
+          <div style={{ display: "flex", gap: 14, fontSize: 12, color: "hsl(var(--muted-foreground) / 0.8)" }}>
             <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <Clock size={12} />
               {block.startTime} – {getEndTimeDisplay()}
@@ -134,8 +134,8 @@ const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent, selectedDate, o
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           padding: "10px 16px", borderRadius: 12,
-          background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
-          fontSize: 12, color: "rgba(255,255,255,0.3)",
+          background: "var(--muted)", border: "1px solid var(--border)",
+          fontSize: 12, color: "hsl(var(--muted-foreground))",
         }}>
           <Lock size={13} />
           <span>{getLockedMessage()}</span>

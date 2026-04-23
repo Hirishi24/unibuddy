@@ -3,6 +3,7 @@ import { getAllCourses, DayName, getBlocksForDay, ClassBlock, courseTitles, cour
 import { format, parseISO, isValid } from "date-fns";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { getStoredSession, getStoredData, setStoredData, getStoredProfile, setStoredProfile } from "@/lib/storage";
 
 // Attendance is stored per block (not per individual slot)
 export interface DailyAttendanceRecord {
@@ -79,10 +80,50 @@ export const useAttendance = () => {
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(() => getStoredProfile());
 
-  // Fetch from backend on mount if enabled
+  const [dataSource, setDataSource] = useState<"Live Portal" | "Local Cache" | "Local Storage">("Local Storage");
+
+  // Fetch from backend or portal on mount
   useEffect(() => {
-    if (USE_BACKEND) {
+    const session = getStoredSession();
+    const cachedData = getStoredData();
+
+    if (session) {
+      setIsLoading(true);
+      fetch("http://localhost:3001/api/scrape/fetch", {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${session.accessToken}`,
+          "Content-Type": "application/json"
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.attendance) {
+          // Use data from portal
+          setDataSource("Live Portal");
+          if (data.profile) {
+            setProfile(data.profile);
+            setStoredProfile(data.profile);
+          }
+          // Optionally merge with local attendance if needed, but here we prioritize portal
+          console.log("Hydrated with live portal data", data);
+          setStoredData(data);
+        } else if (cachedData) {
+          setDataSource("Local Cache");
+          if (cachedData.profile) setProfile(cachedData.profile);
+          console.log("Using cached portal data");
+        }
+      })
+      .catch(err => {
+        console.error("Portal fetch failed, falling back to cache", err);
+        if (cachedData) {
+          setDataSource("Local Cache");
+        }
+      })
+      .finally(() => setIsLoading(false));
+    } else if (USE_BACKEND) {
       setIsLoading(true);
       fetch(`${API_URL}/attendance`)
         .then((res) => res.json())
@@ -193,6 +234,38 @@ export const useAttendance = () => {
         }
       });
     });
+    
+    // Automation: If portal data exists, override with live stats
+    const portalData = getStoredData();
+    if (portalData && portalData.attendance && portalData.attendance.length > 0) {
+      return portalData.attendance.map((a: any) => {
+        const percentage = a.percentage;
+        let canBunk = 0;
+        let mustAttend = 0;
+        let status: "safe" | "danger" | "neutral" = "neutral";
+
+        if (percentage >= 75) {
+          status = "safe";
+          canBunk = Math.floor(a.attendedHours / 0.75 - a.totalHours);
+          canBunk = Math.max(0, canBunk);
+        } else {
+          status = "danger";
+          mustAttend = Math.ceil(3 * a.totalHours - 4 * a.attendedHours);
+          mustAttend = Math.max(0, mustAttend);
+        }
+
+        return {
+          course: a.courseCode,
+          courseTitle: a.courseTitle,
+          totalBlocks: a.totalHours,
+          attended: a.attendedHours,
+          percentage,
+          canBunk,
+          mustAttend,
+          status,
+        };
+      });
+    }
 
     return courses.map((course) => {
       const stats = courseStats[course];
@@ -239,7 +312,7 @@ export const useAttendance = () => {
         canBunk: 0,
         mustAttend: 0,
         status: "neutral" as const,
-        message: "Start marking attendance to see bunk status",
+        message: "Start marking attendance to see estimation status",
         currentPercentage: 0,
         worstCourse: null as string | null,
       };
@@ -272,7 +345,7 @@ export const useAttendance = () => {
       status: "safe" as const,
       message:
         minBunkCourse.canBunk > 0
-          ? `${minBunkCourse.course}: Can bunk ${minBunkCourse.canBunk} class${minBunkCourse.canBunk > 1 ? "es" : ""}`
+          ? `${minBunkCourse.course}: You can skip ${minBunkCourse.canBunk} class${minBunkCourse.canBunk > 1 ? "es" : ""}`
           : `${minBunkCourse.course}: Attend next class to stay above 75%`,
       currentPercentage: minBunkCourse.percentage,
       worstCourse: minBunkCourse.course,
@@ -381,7 +454,7 @@ export const useAttendance = () => {
     // Save file
     const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const blob = new Blob([wbout], { type: "application/octet-stream" });
-    saveAs(blob, `ClassBuddy_Attendance_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
+    saveAs(blob, `Unibuddy_Attendance_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
   }, [attendanceByDate, getSubjectStats]);
 
   // Import attendance from Excel
@@ -455,96 +528,80 @@ export const useAttendance = () => {
 
   // Get detailed stats for a specific course (for bunk estimation modal)
   const getDetailedCourseStats = useCallback((course: string): DetailedCourseStats | null => {
-    const meta = courseMetadata[course];
-    if (!meta) return null;
-
-    // Calculate current attendance for this course
+    const portalData = getStoredData();
     let attended = 0;
     let missed = 0;
+    let totalClasses = 0;
+    let rooms: string[] = [];
 
-    Object.entries(attendanceByDate).forEach(([dateKey, dayRecord]) => {
-      const date = parseISO(dateKey);
-      if (!isValid(date)) return;
+    // AUTOMATION: Try to get data from Portal first
+    const portalCourse = portalData?.attendance?.find((a: any) => a.courseCode === course);
+    
+    if (portalCourse) {
+      attended = portalCourse.attendedHours;
+      totalClasses = portalCourse.totalHours;
+      missed = totalClasses - attended;
+      rooms = courseMetadata[course]?.rooms || ["TBA"];
+    } else {
+      // Fallback to manual calculation
+      const meta = courseMetadata[course];
+      if (!meta) return null;
+      rooms = meta.rooms;
+      totalClasses = meta.totalClasses;
 
-      const dayName = getDayNameFromDate(date);
-      if (!dayName) return;
-
-      const blocks = getBlocksForDay(dayName);
-      blocks.forEach((block) => {
-        if (block.course === course) {
-          const status = dayRecord[block.blockId];
-          if (status === "present") {
-            attended += block.duration;
-          } else if (status === "absent") {
-            missed += block.duration;
+      Object.entries(attendanceByDate).forEach(([dateKey, dayRecord]) => {
+        const date = parseISO(dateKey);
+        if (!isValid(date)) return;
+        const dayName = getDayNameFromDate(date);
+        if (!dayName) return;
+        getBlocksForDay(dayName).forEach((block) => {
+          if (block.course === course) {
+            const status = dayRecord[block.blockId];
+            if (status === "present") attended += block.duration;
+            else if (status === "absent") missed += block.duration;
           }
-        }
+        });
       });
-    });
+    }
 
     const classesHeld = attended + missed;
-    const remainingClasses = meta.totalClasses - classesHeld;
+    const meta = courseMetadata[course] || { 
+      totalClasses: totalClasses || 45, 
+      odMlAllowed: Math.ceil((totalClasses || 45) * 0.15), 
+      minRequired: Math.ceil((totalClasses || 45) * 0.6) 
+    };
+    
+    const semesterTotal = meta.totalClasses || totalClasses;
+    const remainingClasses = Math.max(0, semesterTotal - classesHeld);
     const currentPercentage = classesHeld > 0 ? (attended / classesHeld) * 100 : 0;
 
-    // Required for 75% of total semester classes
-    const requiredFor75 = Math.ceil(meta.totalClasses * 0.75);
-    
-    // SIMPLE BUNK CALCULATION:
-    // Max bunks allowed for semester = Total - Required for 75%
-    const maxBunksAllowed = meta.totalClasses - requiredFor75;
-    
-    // Remaining bunks = Max bunks - Already missed
+    // Analytics calculations
+    const requiredFor75 = Math.ceil(semesterTotal * 0.75);
+    const maxBunksAllowed = semesterTotal - requiredFor75;
     const canBunkWithoutOdMl = Math.max(0, maxBunksAllowed - missed);
-    
-    // How many more must attend to reach 75%
     const mustAttendFor75 = Math.max(0, requiredFor75 - attended);
-
-    // With OD/ML calculations
-    // If using max OD/ML, need only 60% of (totalClasses - odMlAllowed) = minRequired
-    // So max bunks with OD/ML = totalClasses - minRequired
-    const maxBunksWithOdMl = meta.totalClasses - meta.minRequired;
+    
+    const maxBunksWithOdMl = semesterTotal - meta.minRequired;
     const canBunkWithOdMl = Math.max(0, maxBunksWithOdMl - missed);
     
-    // Effective attendance if OD/ML is maxed out
-    const effectiveAttendance = classesHeld > 0 
-      ? ((attended + Math.min(missed, meta.odMlAllowed)) / classesHeld) * 100 
+    const projectedFinalPercentage = semesterTotal > 0 
+      ? ((attended + remainingClasses) / semesterTotal) * 100 
       : 0;
-
-    // Projections
-    const projectedFinalPercentage = meta.totalClasses > 0 
-      ? ((attended + remainingClasses) / meta.totalClasses) * 100 
-      : 0;
-    const projectedWorstPercentage = meta.totalClasses > 0 
-      ? (attended / meta.totalClasses) * 100 
-      : 0;
-
-    // Safety margin: how many hours above the 75% threshold
     const safetyMargin = attended - Math.ceil(classesHeld * 0.75);
 
-    // Determine status
     let status: "safe" | "warning" | "danger" | "critical";
-    if (currentPercentage >= 85) {
-      status = "safe";
-    } else if (currentPercentage >= 75) {
-      status = "warning";
-    } else if (currentPercentage >= 65) {
-      status = "danger";
-    } else {
-      status = "critical";
-    }
-
-    // If no data yet, neutral
-    if (classesHeld === 0) {
-      status = "safe";
-    }
+    if (currentPercentage >= 85) status = "safe";
+    else if (currentPercentage >= 75) status = "warning";
+    else if (currentPercentage >= 65) status = "danger";
+    else status = "critical";
 
     return {
       course,
-      courseTitle: courseTitles[course] || course,
-      rooms: meta.rooms,
-      semesterTotal: meta.totalClasses,
+      courseTitle: portalCourse?.courseTitle || courseTitles[course] || course,
+      rooms,
+      semesterTotal,
       odMlAllowed: meta.odMlAllowed,
-      classesAfterOdMl: meta.classesAfterOdMl,
+      classesAfterOdMl: semesterTotal - meta.odMlAllowed,
       minRequiredFor75: requiredFor75,
       minRequired: meta.minRequired,
       classesHeld,
@@ -554,10 +611,10 @@ export const useAttendance = () => {
       canBunkWithoutOdMl,
       mustAttendFor75,
       canBunkWithOdMl,
-      effectiveAttendance,
+      effectiveAttendance: classesHeld > 0 ? ((attended + Math.min(missed, meta.odMlAllowed)) / classesHeld) * 100 : 0,
       remainingClasses,
       projectedFinalPercentage,
-      projectedWorstPercentage,
+      projectedWorstPercentage: semesterTotal > 0 ? (attended / semesterTotal) * 100 : 0,
       safetyMargin,
       status,
     };
@@ -587,5 +644,7 @@ export const useAttendance = () => {
     importFromExcel,
     getDetailedCourseStats,
     getAllDetailedStats,
+    profile,
+    isLoading
   };
 };

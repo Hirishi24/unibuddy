@@ -99,13 +99,13 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
 
   const ClassMeta = ({ block }: { block: ClassBlock }) => (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 12, fontSize: 12, marginTop: 6 }}>
-      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(255,255,255,0.55)" }}>
+      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "hsl(var(--muted-foreground))" }}>
         <Clock size={12} /> {block.startTime} – {getDisplayEndTime(block)}
       </span>
-      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(255,255,255,0.55)" }}>
+      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "hsl(var(--muted-foreground))" }}>
         <MapPin size={12} /> {block.room}
       </span>
-      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(255,255,255,0.45)" }}>
+      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "hsl(var(--muted-foreground) / 0.8)" }}>
         <User size={12} /> {block.faculty}
       </span>
     </div>
@@ -124,18 +124,21 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
         </div>
         <div style={{ fontSize: 10, color: `${color}cc`, fontWeight: 600, marginTop: 3 }}>{label}</div>
       </div>
-      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "monospace", marginTop: 6 }}>
+      <div style={{ fontSize: 11, color: "hsl(var(--muted-foreground) / 0.6)", fontFamily: "monospace", marginTop: 6 }}>
         {format(currentTime, "HH:mm:ss")}
       </div>
     </div>
   );
 
   const cardBase: React.CSSProperties = {
-    backdropFilter: "blur(28px) saturate(180%)",
-    WebkitBackdropFilter: "blur(28px) saturate(180%)",
+    backdropFilter: "var(--glass-blur)",
+    WebkitBackdropFilter: "var(--glass-blur)",
     borderRadius: 18,
     padding: "18px 20px",
     marginBottom: 20,
+    background: "var(--glass-bg-strong)",
+    border: "1px solid var(--glass-border)",
+    boxShadow: "var(--shadow-card)",
   };
 
   // All done
@@ -155,10 +158,10 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
           <Coffee size={17} style={{ color: "hsl(145 65% 55%)" }} />
         </div>
         <div>
-          <p style={{ fontWeight: 700, color: "rgba(255,255,255,0.85)", fontSize: 14 }}>All done for today! 🎉</p>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.38)" }}>No more classes scheduled</p>
+          <p style={{ fontWeight: 700, color: "hsl(var(--foreground) / 0.9)", fontSize: 14 }}>All done for today! 🎉</p>
+          <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>No more classes scheduled</p>
         </div>
-        <div style={{ marginLeft: "auto", fontSize: 12, color: "rgba(255,255,255,0.3)", fontFamily: "monospace" }}>
+        <div style={{ marginLeft: "auto", fontSize: 12, color: "hsl(var(--muted-foreground) / 0.6)", fontFamily: "monospace" }}>
           {format(currentTime, "HH:mm:ss")}
         </div>
       </div>
@@ -189,10 +192,10 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
               {status.nextClass.duration} {status.nextClass.duration > 1 ? "hrs" : "hr"}
             </span>
           </div>
-          <h3 style={{ fontSize: 17, fontWeight: 800, color: "rgba(255,255,255,0.9)", marginBottom: 2 }}>
+          <h3 style={{ fontSize: 17, fontWeight: 800, color: "hsl(var(--foreground))", marginBottom: 2 }}>
             {status.nextClass.course}
           </h3>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{status.nextClass.courseTitle}</p>
+          <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>{status.nextClass.courseTitle}</p>
           <ClassMeta block={status.nextClass} />
         </div>
         <TimerBox value={status.timeUntil!} label="until start" color="hsl(40 95% 62%)" />
@@ -238,10 +241,10 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
               {status.currentClass.duration} {status.currentClass.duration > 1 ? "hrs" : "hr"}
             </span>
           </div>
-          <h3 style={{ fontSize: 17, fontWeight: 800, color: "rgba(255,255,255,0.9)", marginBottom: 2 }}>
+          <h3 style={{ fontSize: 17, fontWeight: 800, color: "hsl(var(--foreground))", marginBottom: 2 }}>
             {status.currentClass.course}
           </h3>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{status.currentClass.courseTitle}</p>
+          <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>{status.currentClass.courseTitle}</p>
           <ClassMeta block={status.currentClass} />
         </div>
         <TimerBox value={status.timeLeft!} label="left" color="hsl(265 80% 72%)" />

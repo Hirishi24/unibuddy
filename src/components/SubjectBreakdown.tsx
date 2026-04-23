@@ -16,7 +16,7 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
   const sortedStats = [...stats].sort((a, b) => a.course.localeCompare(b.course));
 
   const getPercentageColor = (pct: number, hasData: boolean) => {
-    if (!hasData) return "rgba(255,255,255,0.3)";
+    if (!hasData) return "hsl(var(--muted-foreground) / 0.5)";
     if (pct >= 75) return "hsl(145 65% 55%)";
     if (pct >= 65) return "hsl(40 95% 62%)";
     return "hsl(0 72% 62%)";
@@ -37,23 +37,23 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
       <div style={{
         display: "flex", alignItems: "center", gap: 10,
         padding: "18px 20px",
-        borderBottom: "1px solid rgba(255,255,255,0.07)",
+        borderBottom: "1px solid var(--border)",
       }}>
         <div style={{
           width: 32, height: 32, borderRadius: 10,
-          background: "linear-gradient(135deg, hsl(265 80% 55%), hsl(220 80% 52%))",
+          background: "linear-gradient(135deg, hsl(0 88% 48%), hsl(15 85% 44%))",
           display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 2px 10px rgba(120,80,255,0.35)",
+          boxShadow: "0 2px 10px rgba(200,20,20,0.4)",
           flexShrink: 0,
         }}>
           <BookOpen size={15} style={{ color: "white" }} />
         </div>
         <div>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.88)" }}>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "hsl(var(--foreground) / 0.9)" }}>
             Course Wise Breakdown
           </h2>
-          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.32)" }}>
-            Click any row for detailed bunk estimation
+          <p style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>
+            Click any row for detailed estimation
           </p>
         </div>
         <div style={{ marginLeft: "auto" }}>
@@ -94,26 +94,26 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
                   key={subject.course}
                   onClick={() => handleRowClick(subject.course)}
                   style={{ cursor: "pointer", transition: "background 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
+                  onMouseEnter={e => (e.currentTarget.style.background = "var(--glass-bg-hover)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                 >
                   {/* Course name */}
                   <td>
                     <div>
-                      <span style={{ fontWeight: 700, color: "rgba(255,255,255,0.88)", display: "block" }}>
+                      <span style={{ fontWeight: 700, color: "hsl(var(--foreground))", display: "block" }}>
                         {subject.course}
                       </span>
-                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.33)" }}>
+                      <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>
                         {courseTitles[subject.course] || ""}
                       </span>
                     </div>
                   </td>
                   {/* Hours */}
-                  <td style={{ textAlign: "center", color: "rgba(255,255,255,0.45)" }}>
+                  <td style={{ textAlign: "center", color: "hsl(var(--muted-foreground))" }}>
                     {hasData ? subject.totalBlocks : "—"}
                   </td>
                   {/* Attended */}
-                  <td style={{ textAlign: "center", color: "rgba(255,255,255,0.45)" }}>
+                  <td style={{ textAlign: "center", color: "hsl(var(--muted-foreground))" }}>
                     {hasData ? subject.attended : "—"}
                   </td>
                   {/* % */}
@@ -133,18 +133,18 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
                         <span style={{ color: "hsl(145 65% 55%)", fontSize: 13 }}>✓</span>
                       )
                     ) : (
-                      <span style={{ color: "rgba(255,255,255,0.25)" }}>—</span>
+                      <span style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>—</span>
                     )}
                   </td>
                   {/* Bunks left */}
                   <td style={{ textAlign: "right" }}>
                     {detailed ? (
                       <span style={{ fontWeight: 700, fontSize: 13 }}>
-                        <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>{bunksLeft}/</span>
+                        <span style={{ color: "hsl(var(--muted-foreground))", fontSize: 11 }}>{bunksLeft}/</span>
                         <span style={{ color: bunkColor }}>{maxBunks}</span>
                       </span>
                     ) : (
-                      <span style={{ color: "rgba(255,255,255,0.25)" }}>—</span>
+                      <span style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>—</span>
                     )}
                   </td>
                   {/* Arrow */}
@@ -167,11 +167,11 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
       {/* Footer */}
       <div style={{
         padding: "12px 20px",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-        background: "rgba(255,255,255,0.02)",
-        fontSize: 11, color: "rgba(255,255,255,0.25)", textAlign: "center",
+        borderTop: "1px solid var(--border)",
+        background: "var(--muted)",
+        fontSize: 11, color: "hsl(var(--muted-foreground))", textAlign: "center",
       }}>
-        Click any course row to see detailed bunk estimation & projections
+        Click any course row to see detailed estimation & projections
       </div>
 
       <CourseStatsModal

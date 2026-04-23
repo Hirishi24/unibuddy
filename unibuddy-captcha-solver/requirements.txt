@@ -1,0 +1,12 @@
+torch
+torchvision
+pandas==2.2.1
+pillow==10.2.0
+numpy
+onnx
+onnxruntime
+onnx2tf
+tensorflow
+sng4onnx
+psutil
+onnx_graphsurgeon

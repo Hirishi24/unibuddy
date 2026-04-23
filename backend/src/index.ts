@@ -4,16 +4,43 @@ import { initializeDatabase, seedTimetable, seedHolidays } from './db/init.js';
 import attendanceRoutes from './routes/attendance.js';
 import timetableRoutes from './routes/timetable.js';
 import calendarRoutes from './routes/calendar.js';
+import authRoutes from './routes/auth.js';
+import scrapeRoutes from './routes/scrape.js';
+import rateLimit from 'express-rate-limit';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Global Rate Limiter
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 mins
+  max: 100, // 100 requests per IP
+  message: { error: 'Too many requests, please try again later.' }
+});
+
+// Auth specific limiter
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // 10 login attempts per hour
+  message: { success: false, message: 'Too many login attempts. Try again in an hour.' }
+});
+
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:3000'],
+  origin: [
+    'http://localhost:8080', 
+    'http://localhost:8081', 
+    'http://localhost:5173', 
+    'http://localhost:3000',
+    'http://127.0.0.1:8080',
+    'http://127.0.0.1:8081',
+    'http://127.0.0.1:5173'
+  ],
   credentials: true,
 }));
 app.use(express.json());
+app.use('/api/', apiLimiter);
+app.use('/api/auth/login', authLimiter);
 
 // Request logging
 app.use((req, res, next) => {
@@ -34,6 +61,8 @@ try {
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/timetable', timetableRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/scrape', scrapeRoutes);
 
 // Root route
 app.get('/', (req, res) => {
