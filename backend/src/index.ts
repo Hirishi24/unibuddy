@@ -67,7 +67,7 @@ app.use('/api/scrape', scrapeRoutes);
 // Root route
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Class Buddy Backend API',
+    message: 'Unibuddy Backend API',
     version: '1.0.0',
     endpoints: {
       health: '/api/health',
@@ -105,7 +105,7 @@ app.use((req, res) => {
 const server = app.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`
 ╔════════════════════════════════════════════╗
-║   Class Buddy Backend Server               ║
+║   Unibuddy Backend Server                  ║
 ║   Running on http://localhost:${PORT}         ║
 ╚════════════════════════════════════════════╝
 

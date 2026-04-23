@@ -1,7 +1,7 @@
 {
-  "name": "class-buddy-backend",
+  "name": "unibuddy-backend",
   "version": "1.0.0",
-  "description": "Backend API for Class Buddy attendance tracker",
+  "description": "Backend API for Unibuddy attendance tracker",
   "main": "dist/index.js",
   "scripts": {
     "dev": "bun run src/index.ts",
