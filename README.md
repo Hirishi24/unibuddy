@@ -48,10 +48,10 @@ npm run dev
 ```
 The terminal will display a local URL (e.g., `http://localhost:5173` or `http://localhost:8080`) to view the application in your browser.
 
-### Step 3: Running Python Utilities (Optional)
-If you need to interact with the Captcha Solver model or generate Word doc reports (`generate_report.py`):
+### Step 3: Start the AI Captcha Solver (Python)
+The backend requires this microservice to parse login captchas. Open a **third terminal** in the root project directory:
 ```bash
-# Provide a python virtual environment
+# Setup a python virtual environment (first time only)
 python -m venv .venv
 
 # Activate it (Windows)
@@ -59,8 +59,11 @@ python -m venv .venv
 # Activate it (Mac/Linux)
 source .venv/bin/activate
 
-# Install requirements
+# Install the AI dependencies (first time only)
 pip install -r unibuddy-captcha-solver/requirements.txt
+
+# Start the Captcha AI Server
+python unibuddy-captcha-solver/hybrid/api.py
 ```
 
 ## 📝 License
