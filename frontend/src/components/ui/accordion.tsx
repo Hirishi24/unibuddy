@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Accordion as AccordionPrimitive } from "radix-ui"
 
-import { cn } from "../../lib/cn-helper.ts"
+import { cn } from "@/lib/cn-helper.ts"
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 
 function Accordion({

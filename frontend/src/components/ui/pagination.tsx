@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { cn } from "../../lib/cn-helper.ts"
+import { cn } from "@/lib/cn-helper.ts"
 import { Button } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
 

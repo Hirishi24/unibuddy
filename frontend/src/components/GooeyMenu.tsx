@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "../../lib/utils";
+import { cn } from "@/lib/cn-helper.ts";
 
 interface GooeyMenuItem {
   key: string;
