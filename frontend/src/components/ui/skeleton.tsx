@@ -1,4 +1,4 @@
-import { cn } from "@/lib/cn-helper.ts"
+import { cn } from "@/cn-helper.ts"
 
 function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
   return (

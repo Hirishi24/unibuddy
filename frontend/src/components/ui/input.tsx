@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { cn } from "@/lib/cn-helper.ts"
+import { cn } from "@/cn-helper.ts"
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
