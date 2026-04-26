@@ -1,0 +1,455 @@
+[
+  {
+    "day": "Monday",
+    "subjects": [
+      {
+        "raw": "LBA 253(S 607)",
+        "code": "LBA 253(S 607)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 306(C 808)",
+        "code": "CSE 306(C 808)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 306(C 808)",
+        "code": "CSE 306(C 808)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null,
+      {
+        "raw": "SEC 174(C 602)",
+        "code": "SEC 174(C 602)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "SEC 174(C 602)",
+        "code": "SEC 174(C 602)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "SEC 174(C 602)",
+        "code": "SEC 174(C 602)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null
+    ],
+    "startTimeOffset": 0
+  },
+  {
+    "day": "Tuesday",
+    "subjects": [
+      {
+        "raw": "LBA 253(S 607)",
+        "code": "LBA 253(S 607)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 456(C 802)",
+        "code": "CSE 456(C 802)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 456(C 802)",
+        "code": "CSE 456(C 802)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null,
+      {
+        "raw": "CSE 455(C 808)",
+        "code": "CSE 455(C 808)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 455(C 808)",
+        "code": "CSE 455(C 808)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null,
+      null
+    ],
+    "startTimeOffset": 0
+  },
+  {
+    "day": "Wednesday",
+    "subjects": [
+      {
+        "raw": "LBA 253(S 607)",
+        "code": "LBA 253(S 607)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null,
+      {
+        "raw": "CSE 456(C 305)",
+        "code": "CSE 456(C 305)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 456(C 305)",
+        "code": "CSE 456(C 305)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null,
+      {
+        "raw": "CSE 304(C 802)",
+        "code": "CSE 304(C 802)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 306(C 802)",
+        "code": "CSE 306(C 802)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null
+    ],
+    "startTimeOffset": 0
+  },
+  {
+    "day": "Thursday",
+    "subjects": [
+      {
+        "raw": "CSE 423(C 909)",
+        "code": "CSE 423(C 909)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 304(C 802)",
+        "code": "CSE 304(C 802)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 304(C 802)",
+        "code": "CSE 304(C 802)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 456(C 802)",
+        "code": "CSE 456(C 802)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null,
+      {
+        "raw": "CSE 455(C 1009)",
+        "code": "CSE 455(C 1009)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 455(C 1009)",
+        "code": "CSE 455(C 1009)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null
+    ],
+    "startTimeOffset": 0
+  },
+  {
+    "day": "Friday",
+    "subjects": [
+      {
+        "raw": "CSE 423(C 911)",
+        "code": "CSE 423(C 911)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 423(C 911)",
+        "code": "CSE 423(C 911)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null,
+      null,
+      {
+        "raw": "CSE 306(C 802)",
+        "code": "CSE 306(C 802)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 306(C 802)",
+        "code": "CSE 306(C 802)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 455(C 802)",
+        "code": "CSE 455(C 802)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null
+    ],
+    "startTimeOffset": 0
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "startTimeOffset": 0
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "L-T-P-C",
+        "code": "L-T-P-C",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Faculty Name",
+        "code": "Faculty Name",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Class Room Name",
+        "code": "Class Room Name",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "AUTOMATA AND COMPILER DESIGN",
+        "code": "AUTOMATA AND COMPILER DESIGN",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-0-3",
+        "code": "3-0-0-3",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Dr. Shadab Ahmad ( 25131 )",
+        "code": "Dr. Shadab Ahmad ( 25131 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(C 802)",
+        "code": "(C 802)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "SOFTWARE ENGINEERING AND PROJECT MANAGEMENT",
+        "code": "SOFTWARE ENGINEERING AND PROJECT MANAGEMENT",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-1-4",
+        "code": "3-0-1-4",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Dr. Tamizharasan Kanagamani ( 25220 ), Mr. Adalf Mullainathan ( 24125 )",
+        "code": "Dr. Tamizharasan Kanagamani ( 25220 ), Mr. Adalf Mullainathan ( 24125 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(C 802),(C 808)",
+        "code": "(C 802),(C 808)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "NATURAL LANGUAGE PROCESSING",
+        "code": "NATURAL LANGUAGE PROCESSING",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-0-3",
+        "code": "3-0-0-3",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Dr. Yandrapati Prakash Babu ( 25257 )",
+        "code": "Dr. Yandrapati Prakash Babu ( 25257 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(C 909),(C 911)",
+        "code": "(C 909),(C 911)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "ARTIFICIAL INTELLIGENCE",
+        "code": "ARTIFICIAL INTELLIGENCE",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-1-4",
+        "code": "3-0-1-4",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Dr. Zubair Ahmad Lone ( 25420 ), Mr. Ajay Dilip Kumar Marapatla ( 24140 )",
+        "code": "Dr. Zubair Ahmad Lone ( 25420 ), Mr. Ajay Dilip Kumar Marapatla ( 24140 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(C 1009),(C 802),(C 808)",
+        "code": "(C 1009),(C 802),(C 808)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "DIGITAL IMAGE PROCESSING",
+        "code": "DIGITAL IMAGE PROCESSING",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-1-4",
+        "code": "3-0-1-4",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Dr. PRIYANKA ( 17055 ), Dr. Vishnu Chandrabanshi ( 25247 )",
+        "code": "Dr. PRIYANKA ( 17055 ), Dr. Vishnu Chandrabanshi ( 25247 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(C 305),(C 802)",
+        "code": "(C 305),(C 802)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "ARTIFICIAL INTELLIGENCE (AI) AND ETHICS",
+        "code": "ARTIFICIAL INTELLIGENCE (AI) AND ETHICS",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-0-3",
+        "code": "3-0-0-3",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Dr. Idris Hassan Bhat ( 22157 )",
+        "code": "Dr. Idris Hassan Bhat ( 22157 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(S 607)",
+        "code": "(S 607)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "FULL STACK DEVELOPMENT - II",
+        "code": "FULL STACK DEVELOPMENT - II",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-0-3",
+        "code": "3-0-0-3",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Mr. Careerskill ( V00025 )",
+        "code": "Mr. Careerskill ( V00025 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(C 602)",
+        "code": "(C 602)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  }
+]

@@ -1,4 +1,5 @@
-import { ClassBlock } from "@/data/timetable";
+import { ClassBlock } from "@/shared/types";
+
 import ClassCard from "./ClassCard";
 import { DailyAttendanceRecord } from "@/hooks/useAttendance";
 

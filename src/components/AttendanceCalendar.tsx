@@ -1,6 +1,6 @@
 import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, isSameDay } from "date-fns";
-import { SEMESTER_START, SEMESTER_END, getNoClassReason, holidays } from "@/data/academicCalendar";
+import { SEMESTER_START, SEMESTER_END, getNoClassReason, holidays } from "@/data/globalAcademicCalendar";
 import { CalendarDays } from "lucide-react";
 import { useMemo } from "react";
 
@@ -120,10 +120,10 @@ const AcademicCalendar = ({
 
         .att-cal-icon {
           width: 30px; height: 30px; border-radius: 9px;
-          background: linear-gradient(135deg, hsl(0 88% 48%), hsl(15 85% 44%));
+          background: linear-gradient(135deg, hsl(230 85% 58%), hsl(265 75% 58%));
           display: flex; align-items: center; justify-content: center;
           color: white; flex-shrink: 0;
-          box-shadow: 0 2px 8px rgba(200,20,20,0.35);
+          box-shadow: 0 2px 8px rgba(99,102,241,0.35);
         }
 
         .att-cal-title {
@@ -182,24 +182,24 @@ const AcademicCalendar = ({
         }
 
         .att-day-btn:hover {
-          background: rgba(220,30,30,0.08);
-          border-color: rgba(220,30,30,0.2);
+          background: rgba(99,102,241,0.08);
+          border-color: rgba(99,102,241,0.2);
           color: hsl(var(--foreground));
         }
 
         .att-day-btn[data-today] {
-          background: rgba(220,30,30,0.06);
-          border-color: rgba(220,30,30,0.25);
-          color: hsl(0 88% 55%);
+          background: rgba(99,102,241,0.08);
+          border-color: rgba(99,102,241,0.3);
+          color: hsl(230 85% 65%);
           font-weight: 800;
         }
 
         .att-day-btn[data-selected] {
-          background: linear-gradient(135deg, hsl(0 88% 48%), hsl(15 85% 44%)) !important;
-          border-color: rgba(220,30,30,0.7) !important;
+          background: linear-gradient(135deg, hsl(230 85% 58%), hsl(265 75% 58%)) !important;
+          border-color: rgba(99,102,241,0.7) !important;
           color: white !important;
           font-weight: 800;
-          box-shadow: 0 4px 15px rgba(220,30,30,0.5);
+          box-shadow: 0 4px 15px rgba(99,102,241,0.45);
         }
 
         .att-day-dot {
@@ -215,7 +215,7 @@ const AcademicCalendar = ({
           display: flex; flex-wrap: wrap; gap: 14px;
           padding: 12px 20px 16px;
           border-top: 1px solid var(--border);
-          background: rgba(0,0,0,0.1);
+          background: hsl(var(--muted));
         }
 
         .att-cal-legend-item {

@@ -37,9 +37,9 @@ export const SwitchMode: FC<SwitchModeProps> = ({
         width,
         height,
         borderRadius: height,
-        border: `2px solid ${isDark ? "rgba(220,30,30,0.35)" : "rgba(200,200,200,0.4)"}`,
+        border: `2px solid ${isDark ? "rgba(99,102,241,0.3)" : "rgba(200,200,200,0.4)"}`,
         background: isDark
-          ? "linear-gradient(135deg, hsl(0 5% 8%), hsl(0 8% 12%))"
+          ? "linear-gradient(135deg, hsl(225 20% 9%), hsl(225 25% 12%))"
           : "linear-gradient(135deg, #f0f0f5, #e8e8ee)",
         cursor: "pointer",
         overflow: "hidden",
@@ -47,7 +47,7 @@ export const SwitchMode: FC<SwitchModeProps> = ({
         padding: 0,
         transition: "border-color 0.3s, background 0.4s",
         boxShadow: isDark
-          ? "0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,80,80,0.08)"
+          ? "0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(99,102,241,0.08)"
           : "0 2px 12px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
       }}
     >
@@ -55,7 +55,7 @@ export const SwitchMode: FC<SwitchModeProps> = ({
       <div style={{
         position: "absolute", inset: 0, borderRadius: height,
         background: isDark
-          ? "radial-gradient(circle at 75% 50%, rgba(220,30,30,0.12), transparent 60%)"
+          ? "radial-gradient(circle at 75% 50%, rgba(99,102,241,0.12), transparent 60%)"
           : "radial-gradient(circle at 25% 50%, rgba(255,200,50,0.15), transparent 60%)",
         transition: "background 0.4s",
         pointerEvents: "none",
@@ -94,11 +94,11 @@ export const SwitchMode: FC<SwitchModeProps> = ({
         height: knobSize,
         borderRadius: "50%",
         background: isDark
-          ? "linear-gradient(145deg, hsl(0 8% 14%), hsl(0 5% 10%))"
+          ? "linear-gradient(145deg, hsl(225 18% 14%), hsl(225 20% 10%))"
           : "linear-gradient(145deg, #fafafa, #ececf0)",
-        border: `2px solid ${isDark ? "rgba(220,30,30,0.3)" : "rgba(200,200,200,0.5)"}`,
+        border: `2px solid ${isDark ? "rgba(99,102,241,0.25)" : "rgba(200,200,200,0.5)"}`,
         boxShadow: isDark
-          ? "0 2px 8px rgba(0,0,0,0.5), 0 0 12px rgba(220,30,30,0.15), inset 0 1px 0 rgba(255,255,255,0.08)"
+          ? "0 2px 8px rgba(0,0,0,0.5), 0 0 12px rgba(99,102,241,0.12), inset 0 1px 0 rgba(255,255,255,0.08)"
           : "0 2px 8px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8)",
         display: "flex", alignItems: "center", justifyContent: "center",
         zIndex: 5,

@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { PortalScraper } from '../services/portalScraper.js';
+import { StorageService } from '../services/storageService.js';
+import { calculateSemesterTotals } from '../services/projectionEngine.js';
 
 const router = Router();
 const scraper = PortalScraper.getInstance();
@@ -30,11 +32,39 @@ router.post('/fetch', authenticate, async (req, res) => {
     // In a real implementation, we might check if the scraper instance 
     // already has a valid session. For this demo, we'll try to fetch.
     const data = await scraper.fetchAllData();
+    
+    // Calculate server-side projections for the whole semester
+    let projections = {};
+    if (data.timetable) {
+      projections = calculateSemesterTotals(data.timetable, data.attendance);
+    }
 
-    res.json({
+    const responseData = {
       ...data,
+      projections,
       source: "Live Portal"
-    });
+    };
+
+    // --- VAULT INTEGRATION ---
+
+    try {
+      const storage = StorageService.getInstance();
+      
+      // Save user-specific data
+      await storage.saveUser(req.user.username, responseData);
+      
+      // Save section-shared timetable
+      if (data.profile?.section) {
+        await storage.saveSection(data.profile.section, data.timetable);
+      }
+    } catch (vErr) {
+      console.warn("Vaulting failed, but returning data anyway:", vErr);
+    }
+
+
+    res.json(responseData);
+
+
 
   } catch (error: any) {
     console.error('Scrape fetch error:', error.message);

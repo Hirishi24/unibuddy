@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
-import { ClassBlock } from "@/data/timetable";
-import { Clock, MapPin, Coffee, CalendarClock, User, Beaker, BookOpen } from "lucide-react";
+import { ClassBlock } from "@/shared/types";
+import { getSwapInfo } from "@/data/globalAcademicCalendar";
+
+import { Clock, MapPin, Coffee, CalendarClock, User, Beaker, BookOpen, Ban, Info, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
+import { isBlockCancelled } from "@/data/globalAcademicCalendar";
 
 interface OngoingClassProps {
   blocks: ClassBlock[];
@@ -25,6 +28,8 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [status, setStatus] = useState<ClassStatus>({ type: "none" });
 
+  const swapInfo = getSwapInfo(selectedDate);
+
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(interval);
@@ -32,12 +37,12 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
 
   useEffect(() => {
     const today = new Date();
-    const isToday =
+    const isDateToday =
       selectedDate.getDate() === today.getDate() &&
       selectedDate.getMonth() === today.getMonth() &&
       selectedDate.getFullYear() === today.getFullYear();
 
-    if (!isToday || blocks.length === 0) { setStatus({ type: "none" }); return; }
+    if (!isDateToday || blocks.length === 0) { setStatus({ type: "none" }); return; }
 
     const parseTime = (t: string): Date => {
       const [h, m] = t.split(":").map(Number);
@@ -60,17 +65,24 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
     const now = currentTime;
     let foundOngoing = false;
     let nextClass: ClassBlock | null = null;
+    let currentCancellation: string | null = null;
 
     const sorted = [...blocks].sort((a, b) => parseTime(a.startTime).getTime() - parseTime(b.startTime).getTime());
 
     for (const block of sorted) {
       const start = parseTime(block.startTime);
       const end   = getActualEnd(block);
+      const cancelled = isBlockCancelled(selectedDate, block.startTime, block.endTime, block.isLab);
+
       if (now >= start && now < end) {
+        if (cancelled) {
+          currentCancellation = cancelled;
+          continue; 
+        }
         setStatus({ type: "ongoing", currentClass: block, timeLeft: fmt(end.getTime() - now.getTime()) });
         foundOngoing = true; break;
       }
-      if (now < start && !nextClass) nextClass = block;
+      if (now < start && !nextClass && !cancelled) nextClass = block;
     }
 
     if (!foundOngoing) {
@@ -78,7 +90,7 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
         const start = parseTime(nextClass.startTime);
         setStatus({ type: "upcoming", nextClass, timeUntil: fmt(start.getTime() - now.getTime()) });
       } else {
-        setStatus({ type: "done" });
+        setStatus({ type: "done", timeLeft: currentCancellation || undefined });
       }
     }
   }, [currentTime, blocks, selectedDate]);
@@ -105,9 +117,6 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
       <span style={{ display: "flex", alignItems: "center", gap: 4, color: "hsl(var(--muted-foreground))" }}>
         <MapPin size={12} /> {block.room}
       </span>
-      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "hsl(var(--muted-foreground) / 0.8)" }}>
-        <User size={12} /> {block.faculty}
-      </span>
     </div>
   );
 
@@ -124,9 +133,6 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
         </div>
         <div style={{ fontSize: 10, color: `${color}cc`, fontWeight: 600, marginTop: 3 }}>{label}</div>
       </div>
-      <div style={{ fontSize: 11, color: "hsl(var(--muted-foreground) / 0.6)", fontFamily: "monospace", marginTop: 6 }}>
-        {format(currentTime, "HH:mm:ss")}
-      </div>
     </div>
   );
 
@@ -139,27 +145,63 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
     background: "var(--glass-bg-strong)",
     border: "1px solid var(--glass-border)",
     boxShadow: "var(--shadow-card)",
+    position: "relative",
+    overflow: "hidden"
   };
 
-  // All done
+  const SwapBanner = () => {
+    if (!swapInfo) return null;
+    return (
+      <div style={{
+        margin: "-18px -20px 18px -20px",
+        background: "linear-gradient(90deg, hsl(210 100% 50% / 0.15), hsl(250 100% 60% / 0.15))",
+        borderBottom: "1px solid hsl(210 100% 50% / 0.2)",
+        padding: "8px 20px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 10,
+        marginBottom: 18
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <RefreshCw size={12} className="text-blue-400 animate-spin-slow" />
+          <span style={{ fontSize: 10, fontWeight: 800, color: "hsl(210 100% 70%)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+             Day Order Change: Following {swapInfo.followsDay} Timetable
+          </span>
+        </div>
+        {swapInfo.reason && !swapInfo.reason.toLowerCase().includes("following") && (
+          <div style={{ fontSize: 9, fontWeight: 700, color: "hsl(var(--muted-foreground))", background: "hsl(var(--muted))", padding: "2px 8px", borderRadius: 6 }}>
+            {swapInfo.reason}
+          </div>
+        )}
+      </div>
+
+
+    );
+  };
+
   if (status.type === "done") return (
     <div style={{
       ...cardBase,
-      background: "rgba(52,199,89,0.08)",
-      border: "1px solid rgba(52,199,89,0.22)",
-      boxShadow: "0 4px 24px rgba(52,199,89,0.08)",
+      background: status.timeLeft ? "rgba(255,69,58,0.06)" : "rgba(52,199,89,0.08)",
+      border: `1px solid ${status.timeLeft ? "rgba(255,69,58,0.2)" : "rgba(52,199,89,0.2)"}`,
     }} className="animate-fade-in">
+      <SwapBanner />
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{
           width: 38, height: 38, borderRadius: 12, flexShrink: 0,
-          background: "rgba(52,199,89,0.18)", border: "1px solid rgba(52,199,89,0.28)",
+          background: status.timeLeft ? "rgba(255,69,58,0.12)" : "rgba(52,199,89,0.12)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          <Coffee size={17} style={{ color: "hsl(145 65% 55%)" }} />
+          {status.timeLeft ? <Ban size={17} style={{ color: "hsl(0 75% 65%)" }} /> : <Coffee size={17} style={{ color: "hsl(145 65% 55%)" }} />}
         </div>
         <div>
-          <p style={{ fontWeight: 700, color: "hsl(var(--foreground) / 0.9)", fontSize: 14 }}>All done for today! 🎉</p>
-          <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>No more classes scheduled</p>
+          <p style={{ fontWeight: 700, color: "hsl(var(--foreground) / 0.9)", fontSize: 14 }}>
+            {status.timeLeft ? "Currently Cancelled" : "All done for today! 🎉"}
+          </p>
+          <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>
+            {status.timeLeft || "No more classes scheduled"}
+          </p>
         </div>
         <div style={{ marginLeft: "auto", fontSize: 12, color: "hsl(var(--muted-foreground) / 0.6)", fontFamily: "monospace" }}>
           {format(currentTime, "HH:mm:ss")}
@@ -168,83 +210,35 @@ const OngoingClass = ({ blocks, selectedDate }: OngoingClassProps) => {
     </div>
   );
 
-  // Upcoming
   if (status.type === "upcoming" && status.nextClass) return (
-    <div style={{
-      ...cardBase,
-      background: "rgba(255,165,0,0.08)",
-      border: "1px solid rgba(255,165,0,0.22)",
-      boxShadow: "0 4px 24px rgba(255,165,0,0.07)",
-    }} className="animate-fade-in">
+    <div style={{ ...cardBase, background: "hsl(var(--primary) / 0.06)", border: "1px solid hsl(var(--primary) / 0.18)" }} className="animate-fade-in">
+      <SwapBanner />
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-            <CalendarClock size={15} style={{ color: "hsl(40 95% 62%)", flexShrink: 0 }} />
-            <span style={{ fontSize: 10, fontWeight: 700, color: "hsl(40 95% 62%)", letterSpacing: "0.07em", textTransform: "uppercase" }}>
-              Next Class
-            </span>
+            <CalendarClock size={15} style={{ color: "hsl(var(--primary))" }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: "hsl(var(--primary))", textTransform: "uppercase" }}>Next Class</span>
             <TypeBadge block={status.nextClass} />
-            <span style={{
-              fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 99,
-              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.11)",
-              color: "rgba(255,255,255,0.45)",
-            }}>
-              {status.nextClass.duration} {status.nextClass.duration > 1 ? "hrs" : "hr"}
-            </span>
           </div>
-          <h3 style={{ fontSize: 17, fontWeight: 800, color: "hsl(var(--foreground))", marginBottom: 2 }}>
-            {status.nextClass.course}
-          </h3>
-          <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>{status.nextClass.courseTitle}</p>
+          <h3 style={{ fontSize: 17, fontWeight: 800, color: "hsl(var(--foreground))" }}>{status.nextClass.course}</h3>
           <ClassMeta block={status.nextClass} />
         </div>
-        <TimerBox value={status.timeUntil!} label="until start" color="hsl(40 95% 62%)" />
+        <TimerBox value={status.timeUntil!} label="until start" color="hsl(var(--primary))" />
       </div>
     </div>
   );
 
-  // Ongoing
   if (status.type === "ongoing" && status.currentClass) return (
-    <div style={{
-      ...cardBase,
-      background: "rgba(168,130,255,0.09)",
-      border: "1px solid rgba(168,130,255,0.28)",
-      boxShadow: "0 4px 24px rgba(120,80,255,0.14)",
-    }} className="animate-fade-in">
+    <div style={{ ...cardBase, background: "rgba(168,130,255,0.09)", border: "1px solid rgba(168,130,255,0.28)" }} className="animate-fade-in">
+      <SwapBanner />
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-            {/* Live indicator */}
-            <div style={{ position: "relative", width: 16, height: 16, flexShrink: 0 }}>
-              <div style={{
-                width: 8, height: 8, borderRadius: "50%",
-                background: "hsl(265 80% 65%)",
-                position: "absolute", top: 4, left: 4,
-                animation: "pulse 1.5s ease-in-out infinite",
-              }} />
-              <div style={{
-                width: 16, height: 16, borderRadius: "50%",
-                background: "rgba(168,130,255,0.25)",
-                position: "absolute", top: 0, left: 0,
-                animation: "ping 1.5s cubic-bezier(0,0,0.2,1) infinite",
-              }} />
-            </div>
-            <span style={{ fontSize: 10, fontWeight: 700, color: "hsl(265 80% 72%)", letterSpacing: "0.07em", textTransform: "uppercase" }}>
-              Ongoing Class
-            </span>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "hsl(265 80% 65%)", animation: "pulse 1.5s infinite" }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: "hsl(265 80% 72%)", textTransform: "uppercase" }}>Ongoing Class</span>
             <TypeBadge block={status.currentClass} />
-            <span style={{
-              fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 99,
-              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.11)",
-              color: "rgba(255,255,255,0.45)",
-            }}>
-              {status.currentClass.duration} {status.currentClass.duration > 1 ? "hrs" : "hr"}
-            </span>
           </div>
-          <h3 style={{ fontSize: 17, fontWeight: 800, color: "hsl(var(--foreground))", marginBottom: 2 }}>
-            {status.currentClass.course}
-          </h3>
-          <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>{status.currentClass.courseTitle}</p>
+          <h3 style={{ fontSize: 17, fontWeight: 800, color: "hsl(var(--foreground))" }}>{status.currentClass.course}</h3>
           <ClassMeta block={status.currentClass} />
         </div>
         <TimerBox value={status.timeLeft!} label="left" color="hsl(265 80% 72%)" />

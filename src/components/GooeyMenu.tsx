@@ -37,12 +37,12 @@ export const GooeyMenu = ({ data, className }: GooeyMenuProps) => {
         {data.map((item) => (
           <div
             key={item.key}
-            className="flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-300 hover:bg-white/5 group"
+            className="flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-300 hover:bg-muted group"
           >
-            <span className={cn("text-xs text-white/40 font-medium", item.labelClass)}>
+            <span className={cn("text-xs text-muted-foreground font-medium", item.labelClass)}>
               {item.label}
             </span>
-            <span className={cn("text-xs font-semibold text-white/80", item.valueClass)}>
+            <span className={cn("text-xs font-semibold text-foreground/80", item.valueClass)}>
               {item.value}
             </span>
           </div>

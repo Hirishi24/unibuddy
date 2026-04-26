@@ -1,0 +1,510 @@
+[
+  {
+    "day": "Monday",
+    "subjects": [
+      {
+        "raw": "LBA 253(S 607)",
+        "code": "LBA 253(S 607)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 455(S 412)",
+        "code": "CSE 455(S 412)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 455(S 412)",
+        "code": "CSE 455(S 412)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null,
+      {
+        "raw": "CSE 456(C 707)",
+        "code": "CSE 456(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 306(C 707)",
+        "code": "CSE 306(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 306(C 707)",
+        "code": "CSE 306(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 423(C 702)",
+        "code": "CSE 423(C 702)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 0
+  },
+  {
+    "day": "Tuesday",
+    "subjects": [
+      {
+        "raw": "LBA 253(S 607)",
+        "code": "LBA 253(S 607)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 304(C 707)",
+        "code": "CSE 304(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 304(C 707)",
+        "code": "CSE 304(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 455(C 707)",
+        "code": "CSE 455(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null,
+      null,
+      {
+        "raw": "CSE 306(C 1006)",
+        "code": "CSE 306(C 1006)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 423(C 702)",
+        "code": "CSE 423(C 702)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 0
+  },
+  {
+    "day": "Wednesday",
+    "subjects": [
+      {
+        "raw": "LBA 253(S 607)",
+        "code": "LBA 253(S 607)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "FIC 120",
+        "code": "FIC 120",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "FIC 120",
+        "code": "FIC 120",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null,
+      {
+        "raw": "CSE 304(C 707)",
+        "code": "CSE 304(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 455(C 707)",
+        "code": "CSE 455(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 455(C 707)",
+        "code": "CSE 455(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null
+    ],
+    "startTimeOffset": 0
+  },
+  {
+    "day": "Thursday",
+    "subjects": [
+      {
+        "raw": "CSE 423(C 909)",
+        "code": "CSE 423(C 909)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "SEC 176(C 707)",
+        "code": "SEC 176(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "SEC 176(C 707)",
+        "code": "SEC 176(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "SEC 176(C 707)",
+        "code": "SEC 176(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null,
+      {
+        "raw": "CSE 456(S 613)",
+        "code": "CSE 456(S 613)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 456(S 613)",
+        "code": "CSE 456(S 613)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null
+    ],
+    "startTimeOffset": 0
+  },
+  {
+    "day": "Friday",
+    "subjects": [
+      {
+        "raw": "CSE 423(C 911)",
+        "code": "CSE 423(C 911)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 423(C 911)",
+        "code": "CSE 423(C 911)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 306(V 601)",
+        "code": "CSE 306(V 601)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 306(V 601)",
+        "code": "CSE 306(V 601)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null,
+      {
+        "raw": "CSE 456(C 707)",
+        "code": "CSE 456(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "CSE 456(C 707)",
+        "code": "CSE 456(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null
+    ],
+    "startTimeOffset": 0
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      {
+        "raw": "FIC 120",
+        "code": "FIC 120",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "FIC 120",
+        "code": "FIC 120",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null
+    ],
+    "startTimeOffset": 0
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "L-T-P-C",
+        "code": "L-T-P-C",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Faculty Name",
+        "code": "Faculty Name",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Class Room Name",
+        "code": "Class Room Name",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "AUTOMATA AND COMPILER DESIGN",
+        "code": "AUTOMATA AND COMPILER DESIGN",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-0-3",
+        "code": "3-0-0-3",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Mr. V R P S Sastry Yadavilli ( 25035 )",
+        "code": "Mr. V R P S Sastry Yadavilli ( 25035 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(C 707)",
+        "code": "(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "SOFTWARE ENGINEERING AND PROJECT MANAGEMENT",
+        "code": "SOFTWARE ENGINEERING AND PROJECT MANAGEMENT",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-1-4",
+        "code": "3-0-1-4",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Dr. Tamizharasan Kanagamani ( 25220 ), Mr. Ramesh Sahoo ( 25238 )",
+        "code": "Dr. Tamizharasan Kanagamani ( 25220 ), Mr. Ramesh Sahoo ( 25238 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(C 1006),(C 707),(V 601)",
+        "code": "(C 1006),(C 707),(V 601)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "NATURAL LANGUAGE PROCESSING",
+        "code": "NATURAL LANGUAGE PROCESSING",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-0-3",
+        "code": "3-0-0-3",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Dr. Yandrapati Prakash Babu ( 25257 )",
+        "code": "Dr. Yandrapati Prakash Babu ( 25257 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(C 702),(C 909),(C 911)",
+        "code": "(C 702),(C 909),(C 911)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "ARTIFICIAL INTELLIGENCE",
+        "code": "ARTIFICIAL INTELLIGENCE",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-1-4",
+        "code": "3-0-1-4",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Dr. Ananya Mahanti ( 25040 ), Dr. Tabiya Manzoor ( 25173 )",
+        "code": "Dr. Ananya Mahanti ( 25040 ), Dr. Tabiya Manzoor ( 25173 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(C 707),(S 412)",
+        "code": "(C 707),(S 412)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "DIGITAL IMAGE PROCESSING",
+        "code": "DIGITAL IMAGE PROCESSING",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-1-4",
+        "code": "3-0-1-4",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Dr. Anila Makkapati ( 25261 ), Dr. Madhusudan Naik ( 25162 )",
+        "code": "Dr. Anila Makkapati ( 25261 ), Dr. Madhusudan Naik ( 25162 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(C 707),(S 613)",
+        "code": "(C 707),(S 613)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "FOUNDATIONS OF ELECTRICAL AND ELECTRONICS ENGINEERING",
+        "code": "FOUNDATIONS OF ELECTRICAL AND ELECTRONICS ENGINEERING",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "2-0-1-3",
+        "code": "2-0-1-3",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Dr. Pravin Kumar ( 26066 ), Dr. Sheshadri Shekhar Rauth ( 26032 )",
+        "code": "Dr. Pravin Kumar ( 26066 ), Dr. Sheshadri Shekhar Rauth ( 26032 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      null
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "ARTIFICIAL INTELLIGENCE (AI) AND ETHICS",
+        "code": "ARTIFICIAL INTELLIGENCE (AI) AND ETHICS",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-0-3",
+        "code": "3-0-0-3",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Dr. Idris Hassan Bhat ( 22157 )",
+        "code": "Dr. Idris Hassan Bhat ( 22157 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(S 607)",
+        "code": "(S 607)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  },
+  {
+    "day": "Saturday",
+    "subjects": [
+      {
+        "raw": "GENERATIVE AI - II",
+        "code": "GENERATIVE AI - II",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "3-0-0-3",
+        "code": "3-0-0-3",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "Mr. Careerskill ( V00027 )",
+        "code": "Mr. Careerskill ( V00027 )",
+        "room": "TBA",
+        "faculty": "TBA"
+      },
+      {
+        "raw": "(C 707)",
+        "code": "(C 707)",
+        "room": "TBA",
+        "faculty": "TBA"
+      }
+    ],
+    "startTimeOffset": 4
+  }
+]

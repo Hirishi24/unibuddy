@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { getAllCourses, DayName, getBlocksForDay, ClassBlock } from "@/data/timetable";
+import { getAllCoursesFromTimetable, getBlocksForDay } from "@/utils/timetableUtils";
+import { ClassBlock, DayName } from "@/shared/types";
+
 import { format, parseISO, isValid } from "date-fns";
 import { attendanceApi, type AttendanceByDate as ApiAttendanceByDate } from "@/lib/api";
 
@@ -142,7 +144,7 @@ export const useAttendance = () => {
 
   // Calculate stats per course (blocks, not individual slots)
   const getSubjectStats = useCallback((): SubjectStats[] => {
-    const courses = getAllCourses();
+    const courses = getAllCoursesFromTimetable({});
     const courseStats: Record<string, { attended: number; total: number }> = {};
 
     courses.forEach((course) => {
@@ -157,7 +159,7 @@ export const useAttendance = () => {
       const dayName = getDayNameFromDate(date);
       if (!dayName) return;
 
-      const blocks = getBlocksForDay(dayName);
+      const blocks = getBlocksForDay(dayName, {});
       blocks.forEach((block) => {
         const status = dayRecord[block.blockId];
         if (status === "present") {
@@ -281,7 +283,7 @@ export const useAttendance = () => {
   const getBlocksForDate = useCallback((date: Date): ClassBlock[] => {
     const dayName = getDayNameFromDate(date);
     if (!dayName) return [];
-    return getBlocksForDay(dayName);
+    return getBlocksForDay(dayName, {});
   }, []);
 
   // Sync local data to backend (for manual migration)

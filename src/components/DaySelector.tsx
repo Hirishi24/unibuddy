@@ -1,4 +1,5 @@
-import { days } from "@/data/timetable";
+import { days } from "@/utils/timetableUtils";
+
 
 interface DaySelectorProps {
   selectedDay: string;

@@ -2,7 +2,9 @@ import { useState } from "react";
 import { SubjectStats, DetailedCourseStats } from "@/hooks/useAttendance";
 import { BookOpen, ChevronRight, TrendingUp } from "lucide-react";
 import CourseStatsModal from "./CourseStatsModal";
-import { courseTitles } from "@/data/timetable";
+import { courseTitles } from "@/utils/timetableUtils";
+import { ClassBlock } from "@/shared/types";
+
 
 interface SubjectBreakdownProps {
   stats: SubjectStats[];
@@ -41,11 +43,12 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
       }}>
         <div style={{
           width: 32, height: 32, borderRadius: 10,
-          background: "linear-gradient(135deg, hsl(0 88% 48%), hsl(15 85% 44%))",
+          background: "linear-gradient(135deg, hsl(230 85% 58%), hsl(265 75% 58%))",
           display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 2px 10px rgba(200,20,20,0.4)",
+          boxShadow: "0 2px 10px rgba(99,102,241,0.35)",
           flexShrink: 0,
         }}>
+
           <BookOpen size={15} style={{ color: "white" }} />
         </div>
         <div>
@@ -57,7 +60,7 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
           </p>
         </div>
         <div style={{ marginLeft: "auto" }}>
-          <TrendingUp size={16} style={{ color: "rgba(255,255,255,0.2)" }} />
+          <TrendingUp size={16} style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
         </div>
       </div>
 
@@ -66,15 +69,16 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
         <table style={{ width: "100%", borderCollapse: "collapse" }} className="glass-table">
           <thead>
             <tr>
-              {["Course", "Hours", "Attended", "%", "Need (75%)", "Bunks Left", ""].map((h, i) => (
-                <th key={i} style={{ textAlign: i === 0 ? "left" : i === 5 ? "right" : "center" }}>
+              {["Course", "Conducted", "Attended", "Absent", "OD", "Worst Case %", "Need (75%)", "Bunks Left", ""].map((h, i) => (
+                <th key={i} style={{ textAlign: i === 0 ? "left" : i === 6 ? "right" : "center" }}>
                   {h}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {sortedStats.map((subject) => {
+            {sortedStats.map((subject, index) => {
+
               const hasData = subject.totalBlocks > 0;
               const detailed = getDetailedCourseStats(subject.course);
               const pctColor = getPercentageColor(subject.percentage, hasData);
@@ -92,7 +96,9 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
               return (
                 <tr
                   key={subject.course}
+                  id={index === 0 ? "tour-expand-row" : undefined}
                   onClick={() => handleRowClick(subject.course)}
+
                   style={{ cursor: "pointer", transition: "background 0.15s" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--glass-bg-hover)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -104,34 +110,56 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
                         {subject.course}
                       </span>
                       <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>
-                        {courseTitles[subject.course] || ""}
+                        {subject.title || courseTitles[subject.course] || ""}
                       </span>
+
                     </div>
                   </td>
-                  {/* Hours */}
-                  <td style={{ textAlign: "center", color: "hsl(var(--muted-foreground))" }}>
-                    {hasData ? subject.totalBlocks : "—"}
+                  {/* Conducted */}
+                  <td style={{ textAlign: "center", color: "hsl(var(--muted-foreground))", whiteSpace: "nowrap" }}>
+                    {hasData ? `${subject.conducted} / ${subject.totalBlocks}` : "—"}
                   </td>
+
                   {/* Attended */}
                   <td style={{ textAlign: "center", color: "hsl(var(--muted-foreground))" }}>
                     {hasData ? subject.attended : "—"}
                   </td>
+                  {/* Absent */}
+                  <td style={{ textAlign: "center", color: "hsl(0 72% 62%)" }}>
+                    {hasData ? subject.absent : "—"}
+                  </td>
+                  {/* OD */}
+                  <td style={{ textAlign: "center", color: "hsl(var(--muted-foreground))" }}>
+                    {hasData ? subject.od : "—"}
+                  </td>
+
                   {/* % */}
                   <td style={{ textAlign: "center" }}>
                     <span style={{ fontWeight: 800, fontSize: 13, color: pctColor }}>
-                      {hasData ? `${subject.percentage.toFixed(0)}%` : "—"}
+                      {hasData ? `${subject.percentage.toFixed(1)}%` : "—"}
                     </span>
                   </td>
-                  {/* Need to attend */}
+                  {/* Status */}
                   <td style={{ textAlign: "center" }}>
                     {detailed && hasData ? (
-                      detailed.mustAttendFor75 > 0 ? (
-                        <span style={{ fontWeight: 700, fontSize: 13, color: "hsl(0 72% 62%)" }}>
-                          {detailed.mustAttendFor75}
-                        </span>
-                      ) : (
-                        <span style={{ color: "hsl(145 65% 55%)", fontSize: 13 }}>✓</span>
-                      )
+                      <>
+                        {subject.status === "safe" && (
+                          <div style={{ display: "inline-block", padding: "2px 8px", borderRadius: 6, background: "rgba(16,185,129,0.1)", color: "#10b981", fontSize: 10, fontWeight: 800 }}>
+                            SAFE
+                          </div>
+                        )}
+                        {subject.status === "warning" && (
+                          <div style={{ display: "inline-block", padding: "2px 8px", borderRadius: 6, background: "rgba(245,158,11,0.1)", color: "#f59e0b", fontSize: 10, fontWeight: 800 }}>
+                            WARNING ({subject.mustAttend}h)
+                          </div>
+                        )}
+                        {subject.status === "danger" && (
+                          <div style={{ display: "inline-block", padding: "2px 8px", borderRadius: 6, background: "rgba(239,68,68,0.1)", color: "#ef4444", fontSize: 10, fontWeight: 800 }}>
+                            DANGER ({subject.mustAttend}h)
+                          </div>
+                        )}
+
+                      </>
                     ) : (
                       <span style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>—</span>
                     )}
@@ -149,7 +177,7 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
                   </td>
                   {/* Arrow */}
                   <td style={{ paddingRight: 12 }}>
-                    <ChevronRight size={14} style={{ color: "rgba(255,255,255,0.2)" }} />
+                    <ChevronRight size={14} style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
                   </td>
                 </tr>
               );
@@ -159,7 +187,7 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
       </div>
 
       {allEmpty && (
-        <div style={{ padding: "28px 20px", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
+        <div style={{ padding: "28px 20px", textAlign: "center", color: "hsl(var(--muted-foreground))", fontSize: 13 }}>
           Mark attendance to see subject-wise breakdown
         </div>
       )}

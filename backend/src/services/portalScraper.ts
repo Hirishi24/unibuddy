@@ -153,8 +153,14 @@ export class PortalScraper {
   }
 
   async fetchAllData(): Promise<Omit<ScrapeResult, 'source'>> {
-    const postPage = (id: string) =>
-      this.client.post(
+    const postPage = async (id: string) => {
+      // 1. "Warm Up" the specific report session by hitting the resource dispatcher
+      await this.client.get(`/students/report/studentreportresources.jsp?ids=${id}`, {
+        headers: { "Cookie": `JSESSIONID=${this.jsessionid}` }
+      });
+
+      // 2. Perform the actual POST fetch
+      return this.client.post(
         "/students/report/studentreportresources.jsp",
         new URLSearchParams({ ids: id }).toString(),
         { 
@@ -162,23 +168,31 @@ export class PortalScraper {
                 "Content-Type": "application/x-www-form-urlencoded",
                 "Cookie": `JSESSIONID=${this.jsessionid}`,
                 "X-Requested-With": "XMLHttpRequest",
-                "Referer": `${this.baseURL}/HRDSystem`
+                "Referer": "https://student.srmap.edu.in/srmapstudentcorner/HRDSystem"
             } 
         }
       );
+    };
 
-    console.log("Starting parallel data fetch...");
+    console.log("Starting parallel data fetch with session warming...");
     const fetchStart = Date.now();
 
     const [resAttendance, resTimetable, resProfile, resDashboard] = await Promise.all([
-        postPage("3").then(r => { console.log("✅ Attendance data received"); return r; }),
-        postPage("10").then(r => { console.log("✅ Timetable data received"); return r; }),
-        postPage("1").then(r => { console.log("✅ Profile data received"); return r; }),
-        this.client.get('/HRDSystem', { headers: { 'Cookie': `JSESSIONID=${this.jsessionid}` } }).then(r => { console.log("✅ Dashboard data received"); return r; }),
+        postPage("3"),
+        postPage("10"),
+        postPage("1"),
+        this.client.get('/HRDSystem', { headers: { 'Cookie': `JSESSIONID=${this.jsessionid}` } }),
     ]);
 
+    // Validation: If any response looks like a login page, the session is dead
+    if (resAttendance.data.includes("txtUserName") || resAttendance.data.includes("Login")) {
+      console.error("FAIL: Session expired during fetch. Data is invalid.");
+      throw new Error("SESSION_EXPIRED");
+    }
+
     const fetchEnd = Date.now();
-    console.log(`All data components received in ${((fetchEnd - fetchStart) / 1000).toFixed(2)}s. Starting parse...`);
+    console.log(`All data components received in ${((fetchEnd - fetchStart) / 1000).toFixed(2)}s.`);
+
 
 
     console.log("Parsing Attendance...");
@@ -191,19 +205,58 @@ export class PortalScraper {
       $table = $attendance("table").filter((_, el) => $attendance(el).text().includes("Course Code"));
     }
 
+    // FIXED INDICES based on portal screenshot
+    const codeIdx = 0;
+    const titleIdx = 1;
+    const totalIdx = 2;   // Classes Conducted
+    const presentIdx = 3; // Present(P)
+    const absentIdx = 4; // Absent(A)
+    const odIdx = 5;     // OD/ML Taken
+    const pctIdx = 8;    // Attendance %
+
+
     $table.find("tr").each((i, row) => {
       const td = $attendance(row).find("td");
-      // Header or empty row check
-      if (td.length >= 8 && !td.eq(0).text().includes("Course Code")) {
+      // Check for a data row (usually has the subject code)
+      if (td.length >= 8 && !td.eq(codeIdx).text().includes("Subject Code")) {
+        const rowData = td.map((_, el) => $attendance(el).text().trim()).get();
+        
+        const totalVal = parseInt(rowData[totalIdx]) || 0;
+        const attendedVal = parseInt(rowData[presentIdx]) || 0;
+        const absentVal = parseInt(rowData[absentIdx]) || 0;
+        const odVal = parseInt(rowData[odIdx]) || 0;
+        const percentageVal = parseFloat(rowData[pctIdx]) || 0;
+
+        // Smart Room Detection (Checking all columns for room-like codes)
+        const roomRegex = /\b(ALC|S\d{3}|F\d{3}|G\d{3}|E\d{3}|M\d{3}|AUDI|CL-\d|LAB-\d)\b/i;
+        let detectedRoom = "TBA";
+        for (const cell of rowData) {
+          const match = cell.match(roomRegex);
+          if (match) { detectedRoom = match[0]; break; }
+        }
+
         attendance.push({
-          courseCode: td.eq(0).text().trim(),
-          courseTitle: td.eq(1).text().trim(),
-          totalHours: parseInt(td.eq(2).text().trim()) || 0,
-          attendedHours: parseInt(td.eq(3).text().trim()) || 0,
-          percentage: parseFloat(td.eq(td.length - 1).text().trim()) || 0,
+          courseCode: rowData[codeIdx],
+          courseTitle: rowData[titleIdx],
+          faculty: "Portal Faculty", 
+          totalHours: totalVal,
+          attendedHours: attendedVal,
+          odHours: odVal,
+          room: detectedRoom, 
+          percentage: percentageVal,
+          allColumns: rowData 
         });
       }
     });
+
+
+
+
+
+
+
+
+
     console.log(`Parsed ${attendance.length} attendance records`);
 
     console.log("Parsing Profile...");
@@ -238,15 +291,68 @@ export class PortalScraper {
     console.log("Parsing Timetable...");
     const $timetable = cheerio.load(resTimetable.data);
     const timetable: any[] = [];
+    let lastDay = "";
+
     $timetable("tr").slice(2).each((i, row) => {
       const td = $timetable(row).find("td");
-      if (td.length > 1) {
-        timetable.push({
-          day: td.eq(0).text().trim(),
-          subjects: td.slice(1).map((_, el) => $timetable(el).text().trim()).get()
-        });
+      if (td.length > 3) {
+        // Find which column contains the day name (e.g., "Mon" or "Monday")
+        let dayIndex = -1;
+        const dayPatterns = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+        for (let j = 0; j < 3; j++) {
+           const text = td.eq(j).text().trim().toLowerCase();
+           if (dayPatterns.some(p => text.startsWith(p))) {
+             dayIndex = j;
+             break;
+           }
+        }
+
+        let day = lastDay;
+        let subjectsStartIndex = 0;
+
+        if (dayIndex !== -1) {
+          day = td.eq(dayIndex).text().trim();
+          lastDay = day;
+          subjectsStartIndex = dayIndex + 1;
+        } else {
+          // If no day name found, it might be an afternoon row for the lastDay
+          // In this case, the subjects usually start from index 1 or 2
+          // We'll check for cells that have content
+          subjectsStartIndex = 1; 
+        }
+
+        if (day) {
+          const subjects: any[] = [];
+          td.slice(subjectsStartIndex).each((_, el) => {
+
+            const $cell = $timetable(el);
+            const raw = $cell.text().trim();
+            const colSpan = parseInt($cell.attr("colspan") || "1");
+            
+            for (let c = 0; c < colSpan; c++) {
+              if (!raw || raw === "-" || raw.length < 3) {
+                subjects.push(null);
+              } else {
+                const parts = raw.split(/[\n/|]/).map(p => p.trim()).filter(Boolean);
+                subjects.push({
+                  raw: raw,
+                  code: parts[0],
+                  room: parts[1] || "TBA",
+                  faculty: parts[2] || "TBA"
+                });
+              }
+            }
+          });
+
+          // If dayIndex is -1, it's an afternoon row, so we start after slot 4
+          const startTimeOffset = dayIndex === -1 ? 4 : 0;
+          timetable.push({ day, subjects, startTimeOffset });
+        }
+
       }
     });
+
+
     console.log(`Parsed ${timetable.length} timetable days`);
 
     return {

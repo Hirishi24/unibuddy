@@ -80,6 +80,7 @@ const Login = () => {
 
   const handleGuest = () => {
     clearStoredSession();
+    localStorage.setItem("is-guest", "true");
     navigate("/");
   };
 
@@ -102,8 +103,7 @@ const Login = () => {
         <SwitchMode width={52} height={26} />
       </div>
 
-      {/* Scanline effect */}
-      <div className="scanline" />
+
 
       {/* Orbs */}
       <div className="orb orb-1" />
@@ -293,22 +293,22 @@ const Login = () => {
           overflow: hidden;
           font-family: 'Inter', system-ui, sans-serif;
           background: var(--background);
-          --background-hex: #0a0a0a;
-          --login-glow: hsl(0 85% 18% / 0.85);
-          --login-glow-soft: hsl(0 70% 10% / 0.9);
-          --orb-glow-1: hsl(0 90% 40% / 0.35);
-          --orb-glow-2: hsl(0 75% 30% / 0.28);
-          --orb-glow-3: hsl(15 80% 35% / 0.22);
+          --background-hex: #0d0f17;
+          --login-glow: hsl(230 70% 18% / 0.85);
+          --login-glow-soft: hsl(225 50% 10% / 0.9);
+          --orb-glow-1: hsl(230 80% 45% / 0.3);
+          --orb-glow-2: hsl(265 70% 40% / 0.22);
+          --orb-glow-3: hsl(210 60% 35% / 0.18);
           transition: background 0.4s ease;
         }
 
         :root:not(.dark) .login-root {
-          --background-hex: #f8f9fa;
-          --login-glow: hsl(0 85% 90% / 0.85);
-          --login-glow-soft: hsl(0 70% 95% / 0.9);
-          --orb-glow-1: hsl(0 80% 90% / 0.6);
-          --orb-glow-2: hsl(15 70% 92% / 0.5);
-          --orb-glow-3: hsl(0 60% 94% / 0.4);
+          --background-hex: #f5f7fa;
+          --login-glow: hsl(230 70% 94% / 0.85);
+          --login-glow-soft: hsl(220 50% 96% / 0.9);
+          --orb-glow-1: hsl(230 70% 92% / 0.6);
+          --orb-glow-2: hsl(265 60% 93% / 0.5);
+          --orb-glow-3: hsl(210 50% 94% / 0.4);
         }
 
         .login-bg {
@@ -332,19 +332,6 @@ const Login = () => {
           animation: fadeUp 0.5s 0.7s both;
         }
 
-        .scanline {
-          position: absolute; top: 0; left: 0; right: 0;
-          height: 2px;
-          background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.18), transparent);
-          z-index: 2;
-          animation: scanMove 6s linear infinite;
-          pointer-events: none;
-        }
-
-        @keyframes scanMove {
-          from { top: -2px; }
-          to   { top: 100%; }
-        }
 
         /* ═══════════ ORBS ═══════════ */
         .orb {
@@ -403,15 +390,15 @@ const Login = () => {
           width: 6px; height: 6px; border-radius: 50%;
           background: hsl(var(--primary));
           box-shadow: 0 0 6px hsl(var(--primary) / 0.7);
-          animation: redPulseAlt 2s ease-in-out infinite;
+          animation: indigoPulse 2s ease-in-out infinite;
         }
 
-        @keyframes redPulseAlt {
+        @keyframes indigoPulse {
           0%,100% { opacity:1; }
           50% { opacity:0.4; }
         }
 
-        .fp-sep { color: rgba(255,255,255,0.12); }
+        .fp-sep { color: hsl(var(--muted-foreground) / 0.3); }
         .fp-time { color: hsl(var(--primary) / 0.6); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em; }
 
         /* ═══════════ LAYOUT ═══════════ */
@@ -465,7 +452,7 @@ const Login = () => {
           position: absolute; inset: -16px;
           background: radial-gradient(circle, hsl(var(--primary) / 0.2) 0%, transparent 65%);
           border-radius: 50%;
-          animation: redPulseAlt 3s ease-in-out infinite;
+          animation: indigoPulse 3s ease-in-out infinite;
           pointer-events: none;
         }
 
@@ -587,9 +574,9 @@ const Login = () => {
           background: conic-gradient(
             from 0deg at 50% 50%,
             transparent 0deg,
-            rgba(255,80,80,0.03) 60deg,
-            rgba(255,80,80,0.06) 90deg,
-            rgba(255,80,80,0.02) 120deg,
+            rgba(99,102,241,0.03) 60deg,
+            rgba(129,140,248,0.05) 90deg,
+            rgba(99,102,241,0.02) 120deg,
             transparent 200deg
           );
           animation: shineRot 8s linear infinite;
@@ -702,12 +689,12 @@ const Login = () => {
         .show-pass-btn {
           background: none; border: none; cursor: pointer;
           padding: 0 14px;
-          color: rgba(255,255,255,0.3);
+          color: hsl(var(--muted-foreground) / 0.5);
           display: flex; align-items: center;
           transition: color 0.2s; flex-shrink: 0;
         }
 
-        .show-pass-btn:hover { color: rgba(255,255,255,0.65); }
+        .show-pass-btn:hover { color: hsl(var(--foreground) / 0.7); }
 
         /* Forgot */
         .forgot-row { display: flex; justify-content: flex-end; margin-top: -4px; }
@@ -816,7 +803,7 @@ const Login = () => {
         /* Footer note */
         .form-footer-note {
           text-align: center;
-          font-size: 11px; color: rgba(255,255,255,0.20);
+          font-size: 11px; color: hsl(var(--muted-foreground) / 0.5);
           margin-top: 18px;
           animation: fadeUp 0.5s 0.45s both;
           line-height: 1.5;

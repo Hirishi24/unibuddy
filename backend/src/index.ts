@@ -1,4 +1,9 @@
 import express from 'express';
+import { StorageService } from './services/storageService.js';
+
+// Initialize storage vault on startup
+StorageService.getInstance();
+
 import cors from 'cors';
 import { initializeDatabase, seedTimetable, seedHolidays } from './db/init.js';
 import attendanceRoutes from './routes/attendance.js';
