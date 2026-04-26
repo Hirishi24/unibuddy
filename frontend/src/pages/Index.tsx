@@ -70,7 +70,7 @@ const Index = () => {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate("/login");
+    navigate("/");
     toast({ title: "Logged out", description: "All session data cleared locally." });
   };
 

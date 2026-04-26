@@ -120,8 +120,8 @@ const Login = () => {
 
     localStorage.setItem('unibuddy_scraped_data', JSON.stringify(dummyData));
     localStorage.setItem('unibuddy_profile', JSON.stringify(dummyData.profile));
-
-    navigate("/");
+    navigate("/dashboard");
+    toast({ title: "Logged in as Guest", description: "Showing dummy academic data." });
   };
 
   return (
