@@ -193,7 +193,7 @@ const Index = () => {
                 </DropdownMenu>
               </div>
             ) : (
-              <button onClick={() => navigate("/login")} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold flex items-center gap-2 hover:brightness-110 trans-all"><LogIn size={14}/> Login</button>
+            <button onClick={() => navigate("/")} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold flex items-center gap-2 hover:brightness-110 trans-all"><LogIn size={14}/> Login</button>
             )}
             <div style={{ display: "flex", gap: 6 }}>
               {[
