@@ -2,72 +2,73 @@
 
 Unibuddy is a modern, intelligent web application designed for students to automate the tracking of their academic progress. It securely interacts with the student portal (specifically tailored for SRM University AP) to provide real-time updates on attendance, live class statuses, and dynamic schedule analytics.
 
-## 🚀 Core Features
+## 🚀 Project Structure
 
-- **Automated Portal Integration**: Eliminates manual data entry by transparently logging into the student portal in the background.
-- **AI-Powered Captcha Solving**: Incorporates a microservice with a Convolutional Recurrent Neural Network (CRNN) to seamlessly bypass the student portal's captcha.
-- **Attendance Analytics & Bunk Estimator**: Provides deep insights into attendance percentages. Tells you exactly how many classes you can afford to safely miss, or need to attend, to maintain a 75% minimum.
-- **Live Class Schedule**: Shows ongoing or next upcoming classes using an interactive "Liquid Glass" gooey UI.
-- **Session Management Heartbeat**: Prevents annoying portal timeouts by maintaining an active background connection.
+The project is organized into three specialized directories for independent deployment:
+
+- **`/frontend`**: The React/Vite user interface.
+- **`/backend`**: The Node.js/Express API and scraping engine.
+- **`/unibuddy-captcha-solver`**: The Python/AI service for captcha recognition.
+
+---
 
 ## 🏗️ Architecture & Tech Stack
 
-The application is structured using a hybrid, microservice-inspired architecture:
-
 1. **Frontend (User Interface)**
    - **Tech:** React, TypeScript, Vite, Tailwind CSS, shadcn/ui.
-   - **Details:** A responsive, visually excellent UI with modern glassmorphism. It supports dynamic Red/Black dark modes and high-contrast light modes. 
+   - **Deployment:** [Vercel](https://vercel.com) (Recommended) or Netlify.
 2. **Main Backend (Data & API Layer)**
    - **Tech:** Node.js / Bun, Express, Cheerio, SQLite.
-   - **Details:** Orchestrates user authentication, parallel portal data scraping (Attendance, Timetable, Profile), rate-limiting, and intermediate data caching.
+   - **Deployment:** [Render](https://render.com) or Railway.
 3. **AI Captcha Solver Service**
-   - **Tech:** Python, PyTorch (Vision), ONNX Runtime.
-   - **Details:** Specialized independent service that receives portal captcha images and runs them through a custom-trained AI model to return text predictions.
+   - **Tech:** Python, FastAPI, PyTorch, ONNX Runtime.
+   - **Deployment:** [Render](https://render.com) (Web Service) or Koyeb.
 
-## 💻 Getting Started (Local Development)
+---
 
-Because Unibuddy relies on multiple services, you must run the components concurrently in separate terminal windows.
+## 💻 Local Development
 
-### Prerequisites
-- Node.js (v18+) and npm
-- [Bun](https://bun.sh/) (Recommended for running the API backend)
-- Python 3.9+ (For the AI tools)
+To run the full system locally, you must start each service in its own terminal:
 
-### Step 1: Start the Backend (API Server)
+### 1. Start the Backend (API Server)
 ```bash
 cd backend
 bun install
 bun run dev
 ```
 
-### Step 2: Start the Frontend (UI Server)
+### 2. Start the Frontend (UI Server)
 ```bash
-# In the root project directory
+cd frontend
 npm install
 npm run dev
 ```
-The terminal will display a local URL (e.g., `http://localhost:5173` or `http://localhost:8080`) to view the application in your browser.
 
-### Step 3: Start the AI Captcha Solver (Python)
-The backend requires this microservice to parse login captchas. Open a **third terminal** in the root project directory:
+### 3. Start the AI Captcha Solver
 ```bash
-# Setup a python virtual environment (first time only)
-python -m venv .venv
-
-# Activate it (Windows)
-.venv\Scripts\activate
-# Activate it (Mac/Linux)
-source .venv/bin/activate
-
-# Install the AI dependencies (first time only)
-pip install -r unibuddy-captcha-solver/requirements.txt
-
-# Start the Captcha AI Server
-python unibuddy-captcha-solver/hybrid/api.py
+cd unibuddy-captcha-solver
+# Activate your venv if needed
+python hybrid/api.py
 ```
+
+---
+
+## ☁️ Deployment Strategy (Free Tier)
+
+For a university project viva, the following stack is recommended for free hosting:
+
+| Service | Platform | Link |
+| :--- | :--- | :--- |
+| **Frontend** | Vercel | [vercel.com](https://vercel.com) |
+| **Main Backend** | Render | [render.com](https://render.com) |
+| **Captcha Solver** | Render | [render.com](https://render.com) |
+
+> [!TIP]
+> When deploying the Backend and Captcha Solver on Render, the first request might take ~30 seconds as the free instance "wakes up" from sleep.
+
+---
 
 ## 📝 License
 MIT
 
-
-##SoftwareEngineering
+## #SoftwareEngineering

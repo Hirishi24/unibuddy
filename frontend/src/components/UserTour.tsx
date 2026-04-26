@@ -14,7 +14,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     title: "Welcome to Unibuddy",
     description: "Your intelligent attendance companion. Let me show you everything in under 60 seconds — you'll love this.",
-    icon: <GraduationCap className="w-7 h-7" />,
+    icon: <img src="/favicon.png" alt="Unibuddy" className="w-7 h-7 rounded-md" />,
     gradient: "linear-gradient(135deg, hsl(230 85% 60%), hsl(265 75% 60%))",
     anchorId: "",
     tip: "This tour only shows once. You can always restart it from settings."
@@ -70,7 +70,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     title: "You're All Set! 🎓",
     description: "Login with your SRM AP credentials to auto-sync your real portal data. Everything stays local and private — we never store your password.",
-    icon: <Sparkles className="w-7 h-7" />,
+    icon: <Target className="w-7 h-7" />,
     gradient: "linear-gradient(135deg, hsl(230 85% 60%), hsl(265 75% 60%))",
     anchorId: "",
     tip: "Pro tip: Bookmark this page and check it daily before class."
@@ -361,7 +361,7 @@ export const UserTour = () => {
                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(99,102,241,0.3)'; }}
               >
                 {currentStep === TOUR_STEPS.length - 1 ? (
-                  <>Get Started <Sparkles size={13} /></>
+                  <>Get Started</>
                 ) : (
                   <>Next <ArrowRight size={13} /></>
                 )}

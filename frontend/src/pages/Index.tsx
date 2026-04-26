@@ -126,8 +126,8 @@ const Index = () => {
         }}>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 36, height: 36, background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent) / 0.8))", borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px hsl(var(--primary) / 0.3)" }}>
-              <GraduationCap className="h-4 w-4 text-white" />
+            <div style={{ width: 36, height: 36, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px hsl(var(--primary) / 0.3)", overflow: "hidden" }}>
+              <img src="/favicon.png" alt="Unibuddy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -163,7 +163,7 @@ const Index = () => {
                         <span style={{ fontSize: 13, fontWeight: 800, color: "white" }}>{profile.name?.charAt(0) || "S"}</span>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: "hsl(var(--foreground))", lineHeight: 1.2 }}>{profile.name?.split(' ')[0] || "Student"}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "hsl(var(--foreground))", lineHeight: 1.2 }}>{profile.name || "Student"}</span>
                         <span style={{ fontSize: 10, fontWeight: 500, color: "hsl(var(--muted-foreground))" }}>{profile.regNo || "AP23..."}</span>
                       </div>
                       <ChevronDown size={12} style={{ opacity: 0.4, marginLeft: 2, transition: "transform 0.2s", transform: isProfileOpen ? "rotate(180deg)" : "rotate(0)" }} />
@@ -220,9 +220,7 @@ const Index = () => {
                 {safeSubjects} <span className="font-medium text-lg" style={{ color: "hsl(var(--muted-foreground))" }}>/ {subjectStats.length} Subjects Safe</span>
               </p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-              <Sparkles size={18} className="text-primary" />
-            </div>
+
           </div>
         </div>
 

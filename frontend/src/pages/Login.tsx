@@ -14,7 +14,6 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
-  const [time, setTime] = useState(new Date());
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -24,17 +23,15 @@ const Login = () => {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  useEffect(() => {
-    const t = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      const response = await fetch("http://localhost:3001/api/auth/login", {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -81,12 +78,51 @@ const Login = () => {
   const handleGuest = () => {
     clearStoredSession();
     localStorage.setItem("is-guest", "true");
+    
+    // Hardcode start time to 3:00 PM (15:00) 
+    // Formula is: (9 + startTimeOffset + idx) => (9 + 6 + 0) = 15
+    const startTimeOffset = 6;
+    
+    const dummyData = {
+      profile: {
+        name: "Ramesh Sahoo(Guest)",
+        regNo: "AP22110010000",
+        program: "B.Tech Computer Science",
+        semester: "Semester 6",
+        section: "A",
+        cgpa: "9.42"
+      },
+      attendance: [
+        { courseCode: "CSE 306", courseTitle: "Software Engineering", attendedHours: "35", totalHours: "40", odHours: "0" },
+        { courseCode: "CSE 312", courseTitle: "Compiler Design", attendedHours: "20", totalHours: "30", odHours: "2" },
+        { courseCode: "CSE 305", courseTitle: "Computer Networks", attendedHours: "28", totalHours: "32", odHours: "1" },
+        { courseCode: "CSE 304", courseTitle: "Database Management", attendedHours: "42", totalHours: "45", odHours: "0" },
+        { courseCode: "MAT 202", courseTitle: "Discrete Mathematics", attendedHours: "24", totalHours: "32", odHours: "0" },
+        { courseCode: "LBA 253", courseTitle: "Professional Ethics", attendedHours: "15", totalHours: "15", odHours: "0" }
+      ],
+      timetable: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => ({
+        day,
+        startTimeOffset: startTimeOffset,
+        subjects: [
+          { code: "CSE 306", room: "ALC-1", faculty: "Ramesh Sahoo", isLab: false },
+          { code: "CSE 312", room: "A-202", faculty: "Dr. Arun Kumar", isLab: true },
+          { code: "CSE 305", room: "B-105", faculty: "Prof. Sarah", isLab: false },
+          { code: "-", room: "-", faculty: "-", isLab: false },
+          { code: "CSE 304", room: "ALC-2", faculty: "Dr. Manish", isLab: false },
+          { code: "MAT 202", room: "C-301", faculty: "Prof. David", isLab: false }
+        ]
+      })),
+      subjects: [],
+      source: "Guest Explorer Mode",
+      cgpa: "9.42",
+      lastUpdated: new Date().toISOString()
+    };
+
+    localStorage.setItem('unibuddy_scraped_data', JSON.stringify(dummyData));
+    localStorage.setItem('unibuddy_profile', JSON.stringify(dummyData.profile));
+
     navigate("/");
   };
-
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const timeStr = `${pad(time.getHours())}:${pad(time.getMinutes())}:${pad(time.getSeconds())}`;
-  const dateStr = time.toLocaleDateString("en-IN", { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
 
   return (
     <div className="login-root">
@@ -114,8 +150,6 @@ const Login = () => {
       <div className="floating-pill">
         <div className="fp-dot" />
         <span>UNIBUDDY</span>
-        <span className="fp-sep">·</span>
-        <span className="fp-time">{timeStr}</span>
       </div>
 
       {/* ── Split layout ── */}
@@ -128,7 +162,7 @@ const Login = () => {
             <div className="brand-logo-wrap">
               <div className="brand-logo-ring">
                 <div className="brand-logo-inner">
-                  <GraduationCap size={36} style={{ color: "white", filter: "drop-shadow(0 0 12px hsl(var(--primary) / 0.6))" }} />
+                  <img src="/favicon.png" alt="Unibuddy" style={{ width: "100%", height: "100%", borderRadius: 24, objectFit: "cover", filter: "drop-shadow(0 0 12px hsl(var(--primary) / 0.6))" }} />
                 </div>
               </div>
               <div className="brand-logo-glow" />
@@ -153,13 +187,7 @@ const Login = () => {
               ))}
             </div>
 
-            {/* Date display */}
-            <div className="brand-date">
-              <div className="brand-date-inner">
-                <span className="brand-date-time">{timeStr}</span>
-                <span className="brand-date-label">{dateStr}</span>
-              </div>
-            </div>
+
           </div>
 
           {/* Decorative vertical line */}
@@ -278,9 +306,14 @@ const Login = () => {
             </button>
 
             {/* Footer note */}
-            <p className="form-footer-note">
-              🔒 Your credentials are used only to authenticate. We don't store them.
-            </p>
+            <div style={{ marginTop: "18px", display: "flex", flexDirection: "column", gap: "6px" }}>
+              <p className="form-footer-note" style={{ marginTop: 0 }}>
+                🔒 Your credentials are used only to authenticate. We don't store them.
+              </p>
+              <p className="form-footer-note disclaimer-text" style={{ marginTop: 0, fontSize: "9px" }}>
+                Disclaimer: Not affiliated with SRMAP University. Built strictly for educational project purposes and not intended for commercial usage.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -812,6 +845,19 @@ const Login = () => {
         @keyframes fadeUp {
           from { opacity:0; transform: translateY(10px); }
           to   { opacity:1; transform: translateY(0); }
+        }
+
+        /* Light Theme Contrast Overrides */
+        html:not(.dark) .form-footer-note,
+        html:not(.dark) .disclaimer-text,
+        html:not(.dark) .brand-tagline,
+        html:not(.dark) .sep-text,
+        html:not(.dark) .guest-btn,
+        html:not(.dark) .floating-pill,
+        html:not(.dark) .form-sub,
+        html:not(.dark) .field-label {
+          color: #000000 !important;
+          opacity: 1 !important;
         }
 
         /* ═══════════ RESPONSIVE ═══════════ */

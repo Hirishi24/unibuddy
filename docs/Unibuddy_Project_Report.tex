@@ -1,0 +1,159 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{booktabs}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\title{\textbf{Unibuddy: A Comprehensive Student Portal Wrapper \\ Project Report}}
+\author{}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Project Overview}
+\textbf{Unibuddy} is an advanced student portal wrapper and academic companion tailored for university students. Its primary objective is to automate the extraction of student data (attendance, timetable, courses, profile) from the university's legacy web portal and present it in a modern, highly interactive, and visually stunning dashboard. 
+
+The project solves the problem of navigating clunky, slow, and non-mobile-friendly legacy portals by automating the login process (including solving image captchas via an AI model), caching data locally, and calculating critical metrics like "Bunk Estimation" (safe bunks remaining to maintain 75\% attendance) and "Semester Projections".
+
+\section{System Architecture \& Data Flow}
+The architecture of Unibuddy is divided into three distinct microservices to ensure scalability, modularity, and separation of concerns:
+
+\begin{enumerate}
+    \item \textbf{Frontend Application (React/Vite):} Handles user interaction, data visualization, and caching.
+    \item \textbf{Backend API (Node.js/Express):} Acts as a proxy, handling session management, web scraping, and data normalization.
+    \item \textbf{Captcha Solver Service (Python/FastAPI):} An isolated machine learning service running an ONNX CRNN model to automatically decode captcha images during the login process.
+\end{enumerate}
+
+\subsection{Data Flow Diagram Explanation}
+\begin{enumerate}
+    \item \textbf{Login Phase:} The user enters their registration number and password on the frontend.
+    \item \textbf{Captcha Bypass:} The backend requests the login page from the university server, downloads the captcha image, and sends it to the Python Captcha Solver API.
+    \item \textbf{Session Establishment:} Once the captcha is decoded, the backend submits the login payload. If successful, it captures the \texttt{JSESSIONID} cookie.
+    \item \textbf{Data Hydration:} The backend subsequently scrapes the attendance table and timetable using \texttt{cheerio}, parses the HTML into JSON, and returns it to the frontend.
+    \item \textbf{Local Storage:} The frontend stores this JSON payload in \texttt{localStorage} to allow instant subsequent loads without re-scraping.
+\end{enumerate}
+
+\section{Technology Stack \& Rationale}
+
+\subsection{Frontend}
+\begin{itemize}
+    \item \textbf{React.js \& TypeScript:} Used for building a robust, component-based user interface. TypeScript ensures type safety, reducing runtime errors.
+    \item \textbf{Vite:} A next-generation frontend tooling system used instead of Webpack for significantly faster hot-module replacement (HMR) and optimized build times.
+    \item \textbf{Tailwind CSS \& Shadcn UI:} Used for styling. Tailwind allows utility-first CSS for rapid prototyping, while Shadcn UI provides accessible, unstyled components that we heavily customized to create our signature "Arctic Indigo" industrial-grade aesthetic.
+\end{itemize}
+
+\subsection{Backend}
+\begin{itemize}
+    \item \textbf{Node.js with Express:} A lightweight, asynchronous runtime perfect for handling I/O heavy operations like web scraping and proxying requests.
+    \item \textbf{Bun:} Used as the runtime executor (\texttt{bun run}) for significantly faster startup times compared to standard Node.
+    \item \textbf{Cheerio \& Axios:} Axios is used to maintain HTTP sessions with the university portal. Cheerio is used to parse the raw HTML responses and extract the data using jQuery-like selectors.
+\end{itemize}
+
+\subsection{Machine Learning / Captcha Service}
+\begin{itemize}
+    \item \textbf{Python \& FastAPI:} FastAPI provides a high-performance, async API to serve the ML model.
+    \item \textbf{ONNX Runtime:} Used to run a pre-trained Convolutional Recurrent Neural Network (CRNN). ONNX is chosen over PyTorch for production inference because it is significantly faster and has a much smaller memory footprint.
+\end{itemize}
+
+\section{Project Structure \& File Reference}
+\subsection{Root Directory}
+\begin{itemize}
+    \item \texttt{package.json}: Frontend dependencies and Vite build scripts.
+    \item \texttt{vite.config.ts}: Configuration for the Vite bundler.
+    \item \texttt{tailwind.config.ts}: Defines our custom color palette (e.g., primary indigo variables), spacing, and animations.
+\end{itemize}
+
+\subsection{Frontend (\texttt{/src})}
+\begin{itemize}
+    \item \texttt{index.css}: The heart of the design system. Contains all CSS variables for the Light/Dark mode "Arctic Indigo" theme, custom gradients, and glassmorphism utilities.
+    \item \texttt{pages/Index.tsx}: The main dashboard view. Orchestrates the layout, user profile header, and grid of widgets.
+    \item \texttt{pages/Login.tsx}: The authentication screen featuring fluid animations and error handling.
+    \item \texttt{components/OngoingClass.tsx}: Computes the current time against the timetable to show what class is currently running or coming up next.
+    \item \texttt{components/CourseStatsModal.tsx}: A detailed modal showing "Bunk Estimation" math (how many classes can be missed to stay above 75\%).
+    \item \texttt{components/AttendanceCalendar.tsx}: Renders a visual calendar highlighting present, absent, and holiday dates.
+    \item \texttt{hooks/useAttendance.ts}: The core logic hook. Parses raw block data, calculates percentages, handles ML (Medical Leave) and OD (On Duty) edge cases.
+    \item \texttt{lib/storage.ts}: Manages saving and retrieving scraped JSON data to browser \texttt{localStorage}.
+\end{itemize}
+
+\subsection{Backend (\texttt{/backend})}
+\begin{itemize}
+    \item \texttt{src/index.ts}: The Express server entry point. Configures CORS, rate limiting, and mounts routes.
+    \item \texttt{src/routes/scrape.ts}: API endpoint that triggers the portal scraping process.
+    \item \texttt{src/services/portalScraper.ts}: The heavy lifter. Logs into the university portal, extracts HTML tables, and maps them to clean TypeScript interfaces. Includes a "Heartbeat" mechanism to keep the JSESSIONID alive.
+\end{itemize}
+
+\subsection{Captcha Solver (\texttt{/unibuddy-captcha-solver})}
+\begin{itemize}
+    \item \texttt{hybrid/api.py}: The FastAPI server.
+    \item \texttt{hybrid/captcha\_crnn.onnx}: The exported neural network weights.
+\end{itemize}
+
+\section{Version Control \& Branching Strategy}
+The project utilizes Git for version control with a specific branching strategy:
+\begin{itemize}
+    \item \textbf{\texttt{main}:} The stable, production-ready branch.
+    \item \textbf{\texttt{v2}:} Iterative improvements and backend integration phases.
+    \item \textbf{\texttt{v3}:} The current active branch. This branch represents a massive architectural and UI/UX overhaul, stripping away hardcoded legacy styles and implementing a centralized CSS variable system for dynamic Light/Dark themes and the "Arctic Indigo" design language.
+\end{itemize}
+
+\section{Expected Viva Questions \& Answers}
+
+\textbf{Q1: Why did you separate the Captcha Solver into a Python microservice instead of doing it in Node.js?} \\
+\textit{Answer:} Machine learning inference (running the ONNX model) is computationally heavy and Python has the most robust ecosystem for it (NumPy, Torch, ONNXRuntime). Node.js is single-threaded and running complex matrix multiplications would block the event loop, severely degrading the performance of the web server.
+
+\textbf{Q2: How does the "Bunk Estimation" algorithm work?} \\
+\textit{Answer:} The algorithm calculates total semester hours and currently attended hours. It finds the \texttt{minRequiredFor75} by taking 75\% of total hours. It then subtracts current attendance and allowed Medical Leaves/On Duty hours to determine exactly how many more hours the student can safely miss before dipping below the threshold.
+
+\textbf{Q3: What happens if the university portal changes its HTML structure?} \\
+\textit{Answer:} Our backend uses Cheerio to parse the HTML based on CSS selectors (like table rows and IDs). If the university changes their layout, our scraper will fail to parse the data. We would need to update the specific CSS selectors in \texttt{portalScraper.ts} to match the new DOM structure.
+
+\textbf{Q4: How did you implement Light and Dark mode?} \\
+\textit{Answer:} Instead of hardcoding colors (like \texttt{text-black} or \texttt{text-white}), we defined CSS variables in \texttt{index.css} (e.g., \texttt{--foreground}, \texttt{--background}, \texttt{--primary}). We apply the \texttt{.dark} class to the HTML root, which reassigns these CSS variables to darker hues. Tailwind CSS is configured to use these CSS variables, allowing seamless, flicker-free theme switching.
+
+\textbf{Q5: What is the purpose of the \texttt{JSESSIONID} and how do you handle it?} \\
+\textit{Answer:} \texttt{JSESSIONID} is a session cookie issued by the university's Java-based backend. Our Node.js scraper captures it upon successful login and attaches it to subsequent Axios requests to prove we are authenticated. We also implemented a "Heartbeat" ping every 2 minutes in \texttt{portalScraper.ts} to prevent the university server from terminating the session due to inactivity.
+
+\section{Conclusion}
+Unibuddy demonstrates a complete, full-stack software engineering lifecycle—from overcoming legacy system constraints via automated scraping and ML captcha bypassing, to delivering a highly polished, responsive, and data-driven user interface. 
+
+\vspace{1cm}
+\begin{center}
+\textit{Note: Insert screenshots of the Login Page, Main Dashboard, and Course Stats Modal here during presentation compilation.}
+\end{center}
+
+\end{document}
