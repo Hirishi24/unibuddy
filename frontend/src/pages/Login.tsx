@@ -3,7 +3,7 @@ import { GraduationCap, Eye, EyeOff, Lock, Hash, ArrowRight, Zap, Shield, Chevro
 import { useNavigate } from "react-router-dom";
 import SwitchMode from "@/components/ui/switch-mode";
 import { useToast } from "@/hooks/use-toast";
-import { setStoredSession, clearStoredSession } from "@/lib/storage";
+import { setStoredSession, clearStoredSession } from "@/storage.ts";
 
 const Login = () => {
   const { toast } = useToast();

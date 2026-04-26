@@ -3,7 +3,7 @@ import { getAllCoursesFromTimetable, getBlocksForDay } from "@/utils/timetableUt
 import { ClassBlock, DayName } from "@/shared/types";
 
 import { format, parseISO, isValid } from "date-fns";
-import { attendanceApi, type AttendanceByDate as ApiAttendanceByDate } from "@/lib/api";
+import { attendanceApi, type AttendanceByDate as ApiAttendanceByDate } from "@/api.ts";
 
 // Attendance is stored per block (not per individual slot)
 export interface DailyAttendanceRecord {

@@ -8,7 +8,7 @@ import { getNoClassReason, getNoClassMessage, getEffectiveDay, isBlockCancelled,
 import { format, parseISO, isValid, isAfter, addDays } from "date-fns";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { getStoredSession, getStoredData, setStoredData, getStoredProfile, setStoredProfile } from "@/lib/storage";
+import { getStoredSession, getStoredData, setStoredData, getStoredProfile, setStoredProfile } from "@/storage.ts";
 
 // --- INTERFACES ---
 export interface DailyAttendanceRecord {
