@@ -57,13 +57,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:8080", 
-        "http://localhost:8081", 
-        "http://localhost:5173",
-        "http://127.0.0.1:8080",
-        "http://127.0.0.1:8081"
-    ],
+    allow_origins=["*"], # Allowing all origins for the solver as it's an internal-only API
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -111,5 +105,6 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=504, detail="timeout")
 
 if __name__ == "__main__":
-    print("Starting Unibuddy Captcha Solver on port 6006...")
-    uvicorn.run(app, host="0.0.0.0", port=6006, reload=False)
+    port = int(os.getenv("PORT", 6006))
+    print(f"Starting Unibuddy Captcha Solver on port {port}...")
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=False)
