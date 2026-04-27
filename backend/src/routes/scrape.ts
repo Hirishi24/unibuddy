@@ -25,10 +25,7 @@ const authenticate = (req: any, res: any, next: any) => {
   }
 };
 
-router.post('/fetch', (req, res, next) => {
-  console.log(`DEBUG: Scrape fetch request received. Headers: ${JSON.stringify(req.headers)}`);
-  next();
-}, authenticate, async (req, res) => {
+router.post('/fetch', authenticate, async (req, res) => {
   try {
     console.log(`Fetching data for user: ${req.user.username}`);
     
