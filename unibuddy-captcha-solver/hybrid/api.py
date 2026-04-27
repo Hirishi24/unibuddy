@@ -14,14 +14,25 @@ IDX2CHAR = {i + 1: c for i, c in enumerate(CHARS)}
 
 # Manual preprocessing to replace torchvision (saves ~500MB RAM)
 def preprocess_image(img):
-    # 1. Resize to target dimensions
+    # 1. Ensure it's grayscale
+    if img.mode != 'L':
+        img = img.convert('L')
+    
+    # 2. Resize to target dimensions (width=120, height=32)
+    # Note: PIL.resize is (width, height)
     img = img.resize((120, 32), Image.Resampling.BILINEAR)
-    # 2. Convert to numpy and scale to [0, 1]
+    
+    # 3. Convert to numpy and scale to [0, 1] exactly like ToTensor()
     img_np = np.array(img).astype(np.float32) / 255.0
-    # 3. Normalize (mean=0.5, std=0.5) => (x - 0.5) / 0.5
+    
+    # 4. Normalize (mean=0.5, std=0.5) => (x - 0.5) / 0.5
     img_np = (img_np - 0.5) / 0.5
-    # 4. Add channel and batch dimensions => (1, 1, 32, 120)
+    
+    # 5. Add channel and batch dimensions => (1, 1, 32, 120)
+    # Shape must be (batch, channel, height, width)
     img_np = np.expand_dims(img_np, axis=(0, 1))
+    
+    print(f"DEBUG: Preprocessed shape: {img_np.shape}, mean: {img_np.mean():.4f}, std: {img_np.std():.4f}")
     return img_np
 
 import os
