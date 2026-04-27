@@ -145,7 +145,12 @@ export class PortalScraper {
           this.startKeepAlive();
           return { sessionId: this.jsessionid };
         } else {
-          console.warn(`Attempt ${attempts} failed: Invalid credentials or incorrect captcha.`);
+          console.warn(`FAILED: Login verification failed for ${username}.`);
+          if (dashboard.data.includes('Invalid Captcha')) {
+            console.warn("Reason: Captcha was incorrect.");
+          } else if (dashboard.data.includes('Invalid Credentials')) {
+            console.error("Reason: Credentials were incorrect.");
+          }
         }
       } catch (error: any) {
         console.error(`Attempt ${attempts} failed: ${error.message}`);
