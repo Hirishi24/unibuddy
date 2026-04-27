@@ -56,7 +56,7 @@ const Login = () => {
           description: "Fetching your portal data...",
         });
 
-        navigate("/");
+        navigate("/dashboard");
       } else {
         toast({
           variant: "destructive",
