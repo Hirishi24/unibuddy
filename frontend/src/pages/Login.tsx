@@ -138,9 +138,17 @@ const Login = () => {
       {/* Grid */}
       <div className="login-grid" />
 
-      {/* Theme toggle (Top Right) */}
-      <div className="login-theme-toggle">
-        <SwitchMode width={52} height={26} />
+      {/* Header Bar */}
+      <div className="login-header">
+        <div className="login-logo-group">
+          <div className="login-logo-icon">
+            <img src="/favicon.png" alt="UB" />
+          </div>
+          <span className="login-logo-text">Unibuddy</span>
+        </div>
+        <div className="login-header-actions">
+          <SwitchMode width={48} height={24} />
+        </div>
       </div>
 
 
@@ -150,11 +158,7 @@ const Login = () => {
       <div className="orb orb-2" />
       <div className="orb orb-3" />
 
-      {/* ── Floating brand pill (replaces top bar) ── */}
-      <div className="floating-pill">
-        <div className="fp-dot" />
-        <span>UNIBUDDY</span>
-      </div>
+
 
       {/* ── Split layout ── */}
       <div className="login-layout">
@@ -496,10 +500,23 @@ const Login = () => {
         /* Title */
         .brand-title-group { display: flex; flex-direction: column; gap: 6px; }
 
+        /* --- NEW HEADER --- */
+        .login-header {
+          position: fixed; top: 0; left: 0; right: 0;
+          height: 70px; padding: 0 24px;
+          display: flex; align-items: center; justify-content: space-between;
+          z-index: 100;
+        }
+
+        .login-logo-group { display: flex; align-items: center; gap: 10px; }
+        .login-logo-icon { width: 32px; height: 32px; border-radius: 9px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .login-logo-icon img { width: 100%; height: 100%; object-fit: cover; }
+        .login-logo-text { font-size: 17px; font-weight: 900; color: hsl(var(--foreground)); letter-spacing: -0.02em; }
+
         .brand-title {
-          font-size: 48px; font-weight: 900;
+          font-size: 44px; font-weight: 950;
           color: hsl(var(--foreground));
-          letter-spacing: -2px;
+          letter-spacing: -2.5px;
           line-height: 1;
           margin: 0;
         }
@@ -600,8 +617,8 @@ const Login = () => {
         }
 
         @keyframes cardIn {
-          from { opacity:0; transform: translateX(30px) scale(0.96); }
-          to   { opacity:1; transform: translateX(0) scale(1); }
+          from { opacity:0; transform: translateY(20px) scale(0.98); }
+          to   { opacity:1; transform: translateY(0) scale(1); }
         }
 
         /* Shine */
@@ -866,10 +883,26 @@ const Login = () => {
 
         /* ═══════════ RESPONSIVE ═══════════ */
         @media (max-width: 768px) {
+          .login-header { padding: 0 20px; height: 60px; }
           .brand-panel { display: none; }
-          .form-panel { width: 100%; padding: 24px 20px; }
-          .form-card { padding: 32px 24px 28px; }
+          .form-panel { width: 100%; padding: 80px 16px 24px; align-items: flex-start; }
+          .form-card { 
+            padding: 28px 24px 24px; 
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+          }
+          .form-title { font-size: 26px; }
+          .form-sub { font-size: 12px; }
           .login-layout { justify-content: center; }
+          .corner { display: none; }
+          .submit-btn { padding: 13px; font-size: 14px; }
+        }
+
+        @media (max-height: 700px) and (max-width: 768px) {
+          .form-panel { padding-top: 70px; }
+          .form-header { margin-bottom: 20px; }
+          .form-body { gap: 12px; }
+          .guest-sep { margin: 16px 0 12px; }
         }
       `}</style>
     </div>
