@@ -12,23 +12,38 @@ export async function solveCaptcha(base64Image: string): Promise<string> {
       contentType: 'image/png',
     });
 
-    const solverUrl = process.env.CAPTCHA_SOLVER_URL || 'http://localhost:6006';
-    console.log(`Calling captcha solver at: ${solverUrl}/captcha`);
-    const response = await axios.post(`${solverUrl}/captcha`, formData, {
+    const solverUrl = (process.env.CAPTCHA_SOLVER_URL || 'http://localhost:6006').replace(/\/$/, '');
+    const targetUrl = `${solverUrl}/captcha`;
+    
+    console.log(`DEBUG: Captcha Solver Request`);
+    console.log(`DEBUG: Target URL: ${targetUrl}`);
+    console.log(`DEBUG: Image Buffer Size: ${buffer.length} bytes`);
+    
+    const response = await axios.post(targetUrl, formData, {
       headers: {
         ...formData.getHeaders(),
       },
+      timeout: 15000 // 15 second timeout for AI inference
     });
 
+    console.log(`DEBUG: Captcha Solver Response Status: ${response.status}`);
+    
     if (response.data) {
-      // response.data is the string from PlainTextResponse
       const solution = typeof response.data === 'string' ? response.data : response.data.toString();
-      return solution.trim();
+      const finalSolution = solution.trim();
+      console.log(`DEBUG: Captcha Solver Solution: [${finalSolution}]`);
+      return finalSolution;
     }
     
     throw new Error('Captcha solver returned empty response');
   } catch (error: any) {
-    console.error('Captcha solving failed:', error.message);
+    console.error('DEBUG: Captcha Solver FAILED');
+    if (error.response) {
+      console.error(`DEBUG: Error Status: ${error.response.status}`);
+      console.error(`DEBUG: Error Data: ${JSON.stringify(error.response.data)}`);
+    } else {
+      console.error(`DEBUG: Error Message: ${error.message}`);
+    }
     throw new Error('FAILED_TO_SOLVE_CAPTCHA');
   }
 }
