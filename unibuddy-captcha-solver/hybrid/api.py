@@ -118,6 +118,6 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=504, detail="timeout")
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 7860))
+    port = int(os.getenv("PORT", 6006))  # 6006 for local, HF sets PORT=7860 automatically
     print(f"Starting Unibuddy Captcha Solver on port {port}...")
     uvicorn.run(app, host="0.0.0.0", port=port, reload=False)
