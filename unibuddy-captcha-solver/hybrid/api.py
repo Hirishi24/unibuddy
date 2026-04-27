@@ -70,9 +70,15 @@ async def worker():
     while True:
         img, future = await queue.get()
         try:
+            print(f"DEBUG: Worker processing image with shape {img.shape}")
             logits = session.run(None, {"input": img})[0]
-            future.set_result(decode(logits)[0])
+            result = decode(logits)[0]
+            print(f"DEBUG: Solver Result: [{result}]")
+            future.set_result(result)
         except Exception as e:
+            print(f"DEBUG: WORKER ERROR: {str(e)}")
+            import traceback
+            traceback.print_exc()
             future.set_exception(e)
         finally:
             queue.task_done()
