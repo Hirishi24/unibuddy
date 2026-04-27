@@ -69,9 +69,13 @@ Thumbs.db
 ehthumbs.db
 Icon?
 
-# Backend data (SQLite database)
+# Backend data (Vault & Storage)
 backend/data/*.db
 backend/data/*.db-journal
+backend/storage/
+backend/storage/**/*
+storage/
+**/storage/*.json
 
 # Large files & Zips
 *.zip
