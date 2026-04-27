@@ -8,19 +8,22 @@ import torchvision.transforms as T
 import onnxruntime as ort
 import uvicorn
 import os
-import string
 
 MAX_QUEUE_SIZE = 64
 INFERENCE_TIMEOUT = 10
 
-# Original character set from test.py
-CHARS = string.ascii_uppercase + string.digits + "_"
-IDX2CHAR = {i: c for i, c in enumerate(CHARS)}
+# Character set matching captcha_crnn.onnx training
+# Index 0 = CTC blank token, indices 1-36 = actual characters
+CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+IDX2CHAR = {i + 1: c for i, c in enumerate(CHARS)}
 
-# Original Transforms from test.py
+# Transforms matching captcha_crnn.onnx training
+# The model was trained with Grayscale -> Resize(32,120) -> ToTensor -> Normalize(0.5, 0.5)
 tf = T.Compose([
     T.Grayscale(),
-    T.ToTensor()
+    T.Resize((32, 120)),
+    T.ToTensor(),
+    T.Normalize((0.5,), (0.5,))
 ])
 
 # Get absolute path to the model
@@ -33,18 +36,17 @@ session = ort.InferenceSession(
 )
 
 def decode(logits):
-    # Shape-agnostic decoding to handle both (1, seq, chars) and (seq, 1, chars)
-    preds = np.argmax(logits, axis=2)
-    
-    # If it's (1, seq), take the first row
-    if preds.shape[0] == 1:
-        pred = preds[0]
-    # If it's (seq, 1), take the first column
-    else:
-        pred = preds[:, 0]
-        
-    text = "".join([IDX2CHAR[i] for i in pred]).replace("_", "")
-    return [text]
+    """CTC decoding: skip blanks (index 0) and repeated characters."""
+    preds = logits.argmax(2).T
+    out = []
+    for p in preds:
+        s, prev = "", 0
+        for c in p:
+            if c != prev and c != 0:
+                s += IDX2CHAR[c]
+            prev = c
+        out.append(s)
+    return out
 
 app = FastAPI()
 
@@ -70,10 +72,9 @@ async def worker():
     while True:
         img, future = await queue.get()
         try:
-            print(f"DEBUG: Worker processing image with shape {img.shape}")
             logits = session.run(None, {"input": img})[0]
             result = decode(logits)[0]
-            print(f"DEBUG: Solver Result: [{result}]")
+            print(f"DEBUG: Solved captcha: [{result}]")
             future.set_result(result)
         except Exception as e:
             print(f"DEBUG: WORKER ERROR: {str(e)}")
@@ -91,22 +92,14 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=503, detail="busy")
 
     try:
-        # Pad the 25-height captcha to 32-height instead of stretching
-        # This keeps the letters sharp and accurate
         img = Image.open(file.file).convert("L")
-        img = img.crop((0, 0, 120, 25))
-        
-        # Create a new white background (120x32)
-        padded_img = Image.new('L', (120, 32), 255)
-        padded_img.paste(img, (0, 0)) # Paste at top-left
-        
-        img_tensor = tf(padded_img).unsqueeze(0).numpy()
+        img = tf(img).unsqueeze(0).numpy()
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"invalid image: {str(e)}")
 
     loop = asyncio.get_running_loop()
     future = loop.create_future()
-    await queue.put((img_tensor, future))
+    await queue.put((img, future))
 
     try:
         return await asyncio.wait_for(future, timeout=INFERENCE_TIMEOUT)
@@ -114,6 +107,6 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=504, detail="timeout")
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 7860)) # Hugging Face uses 7860 by default
-    print(f"Starting High Accuracy Solver on port {port}...")
+    port = int(os.getenv("PORT", 7860))
+    print(f"Starting Unibuddy Captcha Solver on port {port}...")
     uvicorn.run(app, host="0.0.0.0", port=port, reload=False)
