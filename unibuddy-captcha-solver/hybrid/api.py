@@ -33,8 +33,16 @@ session = ort.InferenceSession(
 )
 
 def decode(logits):
-    # Original decoding logic from test.py
-    pred = np.argmax(logits, axis=2)[0]
+    # Shape-agnostic decoding to handle both (1, seq, chars) and (seq, 1, chars)
+    preds = np.argmax(logits, axis=2)
+    
+    # If it's (1, seq), take the first row
+    if preds.shape[0] == 1:
+        pred = preds[0]
+    # If it's (seq, 1), take the first column
+    else:
+        pred = preds[:, 0]
+        
     text = "".join([IDX2CHAR[i] for i in pred]).replace("_", "")
     return [text]
 
