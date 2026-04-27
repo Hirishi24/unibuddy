@@ -1,6 +1,11 @@
 // API configuration and service functions for Class Buddy
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const getApiBaseUrl = () => {
+  const url = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  return url.endsWith('/api') ? url : `${url.replace(/\/$/, '')}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Types
 export interface AttendanceByDate {

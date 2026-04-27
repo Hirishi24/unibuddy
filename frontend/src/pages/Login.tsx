@@ -30,7 +30,11 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+      let API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+      if (!API_URL.endsWith("/api")) {
+        API_URL = `${API_URL.replace(/\/$/, '')}/api`;
+      }
+      
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
