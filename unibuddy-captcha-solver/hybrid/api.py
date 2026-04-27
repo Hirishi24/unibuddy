@@ -47,13 +47,27 @@ session = ort.InferenceSession(
 )
 
 def decode(logits):
-    preds = logits.argmax(2).T
+    # Log the shape to debug the [W3] issue
+    print(f"DEBUG: Logits shape: {logits.shape}")
+    
+    # If shape is (seq, batch, chars), we want (batch, seq)
+    if len(logits.shape) == 3:
+        if logits.shape[1] == 1: # (seq, 1, chars)
+            preds = logits.argmax(2).T # -> (1, seq)
+        else: # (batch, seq, chars)
+            preds = logits.argmax(2) # -> (batch, seq)
+    else:
+        preds = logits.argmax(-1)
+        if len(preds.shape) == 1:
+            preds = np.expand_dims(preds, axis=0)
+
     out = []
     for p in preds:
         s, prev = "", 0
         for c in p:
             if c != prev and c != 0:
-                s += IDX2CHAR[c]
+                if c in IDX2CHAR:
+                    s += IDX2CHAR[c]
             prev = c
         out.append(s)
     return out
