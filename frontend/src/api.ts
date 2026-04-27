@@ -1,11 +1,17 @@
 // API configuration and service functions for Class Buddy
 
 const getApiBaseUrl = () => {
+  // If we are on the live website, always use the Render backend
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return 'https://unibuddy-backend-dnez.onrender.com/api';
+  }
+  
   const url = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   return url.endsWith('/api') ? url : `${url.replace(/\/$/, '')}/api`;
 };
 
 const API_BASE_URL = getApiBaseUrl();
+console.log(`DEBUG: Frontend using API at: ${API_BASE_URL}`);
 
 // Types
 export interface AttendanceByDate {
