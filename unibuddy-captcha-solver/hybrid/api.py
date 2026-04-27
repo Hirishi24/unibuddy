@@ -91,11 +91,16 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=503, detail="busy")
 
     try:
-        # Original preprocessing from test.py refined for the model's expectation (32 height)
+        # Pad the 25-height captcha to 32-height instead of stretching
+        # This keeps the letters sharp and accurate
         img = Image.open(file.file).convert("L")
         img = img.crop((0, 0, 120, 25))
-        img = img.resize((120, 32), Image.Resampling.BILINEAR)
-        img_tensor = tf(img).unsqueeze(0).numpy()
+        
+        # Create a new white background (120x32)
+        padded_img = Image.new('L', (120, 32), 255)
+        padded_img.paste(img, (0, 0)) # Paste at top-left
+        
+        img_tensor = tf(padded_img).unsqueeze(0).numpy()
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"invalid image: {str(e)}")
 
