@@ -29,9 +29,8 @@ router.post('/fetch', authenticate, async (req, res) => {
   try {
     console.log(`Fetching data for user: ${req.user.username}`);
     
-    // In a real implementation, we might check if the scraper instance 
-    // already has a valid session. For this demo, we'll try to fetch.
     const data = await scraper.fetchAllData();
+    console.log(`Scrape complete. Attendance: ${data.attendance?.length || 0}, Timetable: ${data.timetable?.length || 0}`);
     
     // Calculate server-side projections for the whole semester
     let projections = {};
@@ -46,28 +45,25 @@ router.post('/fetch', authenticate, async (req, res) => {
     };
 
     // --- VAULT INTEGRATION ---
-
     try {
       const storage = StorageService.getInstance();
-      
-      // Save user-specific data
       await storage.saveUser(req.user.username, responseData);
+      console.log(`Vaulted user data for ${req.user.username}`);
       
-      // Save section-shared timetable
       if (data.profile?.section) {
         await storage.saveSection(data.profile.section, data.timetable);
+        console.log(`Vaulted section timetable: ${data.profile.section}`);
       }
-    } catch (vErr) {
-      console.warn("Vaulting failed, but returning data anyway:", vErr);
+    } catch (vErr: any) {
+      console.warn("Vaulting failed, but returning data anyway:", vErr.message);
     }
 
-
+    console.log(`Sending response with ${JSON.stringify(responseData).length} bytes`);
     res.json(responseData);
-
-
 
   } catch (error: any) {
     console.error('Scrape fetch error:', error.message);
+    console.error('Scrape fetch stack:', error.stack);
     res.status(500).json({ 
       success: false, 
       message: 'Failed to fetch data from portal. Check if session is expired.',
