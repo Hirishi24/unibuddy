@@ -8,22 +8,22 @@ import torchvision.transforms as T
 import onnxruntime as ort
 import uvicorn
 import os
+import string
 
 MAX_QUEUE_SIZE = 64
 INFERENCE_TIMEOUT = 10
 
-CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-IDX2CHAR = {i + 1: c for i, c in enumerate(CHARS)}
+# Original character set from test.py
+CHARS = string.ascii_uppercase + string.digits + "_"
+IDX2CHAR = {i: c for i, c in enumerate(CHARS)}
 
-# High Accuracy Transforms
+# Original Transforms from test.py
 tf = T.Compose([
     T.Grayscale(),
-    T.Resize((32, 120)),
-    T.ToTensor(),
-    T.Normalize((0.5,), (0.5,))
+    T.ToTensor()
 ])
 
-# Get absolute path to the directory containing this script
+# Get absolute path to the model
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "captcha_crnn.onnx")
 
@@ -33,16 +33,10 @@ session = ort.InferenceSession(
 )
 
 def decode(logits):
-    preds = logits.argmax(2).T
-    out = []
-    for p in preds:
-        s, prev = "", 0
-        for c in p:
-            if c != prev and c != 0:
-                s += IDX2CHAR[c]
-            prev = c
-        out.append(s)
-    return out
+    # Original decoding logic from test.py
+    pred = np.argmax(logits, axis=2)[0]
+    text = "".join([IDX2CHAR[i] for i in pred]).replace("_", "")
+    return [text]
 
 app = FastAPI()
 
@@ -83,7 +77,9 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=503, detail="busy")
 
     try:
+        # Original preprocessing from test.py
         img = Image.open(file.file).convert("L")
+        img = img.crop((0, 0, 120, 25))
         img_tensor = tf(img).unsqueeze(0).numpy()
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"invalid image: {str(e)}")
