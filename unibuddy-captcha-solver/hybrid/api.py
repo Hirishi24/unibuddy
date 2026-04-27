@@ -91,9 +91,10 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=503, detail="busy")
 
     try:
-        # Original preprocessing from test.py
+        # Original preprocessing from test.py refined for the model's expectation (32 height)
         img = Image.open(file.file).convert("L")
         img = img.crop((0, 0, 120, 25))
+        img = img.resize((120, 32), Image.Resampling.BILINEAR)
         img_tensor = tf(img).unsqueeze(0).numpy()
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"invalid image: {str(e)}")
