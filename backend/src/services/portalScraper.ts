@@ -29,6 +29,7 @@ export class PortalScraper {
     this.client = axios.create({
       baseURL: this.baseURL,
       withCredentials: true,
+      timeout: 30000, // 30 second timeout to prevent hanging
       headers: {
         "Host": "student.srmap.edu.in",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -183,23 +184,25 @@ export class PortalScraper {
     };
 
     console.log("Starting parallel data fetch with session warming...");
+    console.log(`Using JSESSIONID: ${this.jsessionid.substring(0, 8)}...`);
     const fetchStart = Date.now();
 
-    const [resAttendance, resTimetable, resProfile, resDashboard] = await Promise.all([
-        postPage("3"),
-        postPage("10"),
-        postPage("1"),
-        this.client.get('/HRDSystem', { headers: { 'Cookie': `JSESSIONID=${this.jsessionid}` } }),
-    ]);
+    try {
+      const [resAttendance, resTimetable, resProfile, resDashboard] = await Promise.all([
+          postPage("3"),
+          postPage("10"),
+          postPage("1"),
+          this.client.get('/HRDSystem', { headers: { 'Cookie': `JSESSIONID=${this.jsessionid}` } }),
+      ]);
 
-    // Validation: If any response looks like a login page, the session is dead
-    if (resAttendance.data.includes("txtUserName") || resAttendance.data.includes("Login")) {
-      console.error("FAIL: Session expired during fetch. Data is invalid.");
-      throw new Error("SESSION_EXPIRED");
-    }
+      // Validation: If any response looks like a login page, the session is dead
+      if (resAttendance.data.includes("txtUserName") || resAttendance.data.includes("Login")) {
+        console.error("FAIL: Session expired during fetch. Data is invalid.");
+        throw new Error("SESSION_EXPIRED");
+      }
 
-    const fetchEnd = Date.now();
-    console.log(`All data components received in ${((fetchEnd - fetchStart) / 1000).toFixed(2)}s.`);
+      const fetchEnd = Date.now();
+      console.log(`All data components received in ${((fetchEnd - fetchStart) / 1000).toFixed(2)}s.`);
 
 
 
@@ -369,5 +372,13 @@ export class PortalScraper {
       timetable,
       subjects: attendance.map(a => ({ code: a.courseCode, title: a.courseTitle })),
     };
+
+    } catch (fetchError: any) {
+      console.error(`FETCH ERROR: ${fetchError.message}`);
+      if (fetchError.code === 'ECONNABORTED') {
+        console.error('Portal request timed out (30s limit)');
+      }
+      throw fetchError;
+    }
   }
 }
