@@ -12,6 +12,16 @@ import os
 MAX_QUEUE_SIZE = 64
 INFERENCE_TIMEOUT = 10
 
+TARGET_W = 120
+TARGET_H = 25
+
+def crop_captcha(img):
+    """Crop to the captcha region before resizing — critical for accuracy."""
+    w, h = img.size
+    if w > TARGET_W or h > TARGET_H:
+        img = img.crop((0, 0, TARGET_W, TARGET_H))
+    return img
+
 # Character set matching captcha_crnn.onnx training
 # Index 0 = CTC blank token, indices 1-36 = actual characters
 CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -93,6 +103,7 @@ async def predict(file: UploadFile = File(...)):
 
     try:
         img = Image.open(file.file).convert("L")
+        img = crop_captcha(img)
         img = tf(img).unsqueeze(0).numpy()
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"invalid image: {str(e)}")
