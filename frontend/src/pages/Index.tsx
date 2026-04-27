@@ -117,35 +117,22 @@ const Index = () => {
     <div className="min-h-screen" style={{ background: "var(--col-bg)" }}>
       <UserTour />
 
-      <nav style={{ position: "sticky", top: 12, zIndex: 40, maxWidth: 1280, margin: "0 auto", padding: "0 20px" }}>
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "10px 20px", background: "var(--glass-bg-strong)",
-          backdropFilter: "var(--glass-blur)", WebkitBackdropFilter: "var(--glass-blur)",
-          border: "1px solid var(--glass-border)", borderRadius: 16, boxShadow: "var(--shadow-card)",
-        }}>
+      <nav className="sticky top-3 z-40 w-full max-w-7xl mx-auto px-3 sm:px-5">
+        <div className="flex items-center justify-between p-2 sm:p-3 sm:px-5 glass-strong rounded-2xl shadow-card">
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px hsl(var(--primary) / 0.3)", overflow: "hidden" }}>
               <img src="/favicon.png" alt="Unibuddy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 16, fontWeight: 900, color: "hsl(var(--foreground))", letterSpacing: "-0.02em" }}>Unibuddy</span>
-                <div style={{ 
-                  padding: "4px 12px", 
-                  background: "hsl(var(--primary) / 0.15)", 
-                  border: "1px solid hsl(var(--primary) / 0.3)", 
-                  borderRadius: 10, 
-                  fontSize: 13, fontWeight: 800, color: "hsl(var(--primary))",
-                  display: "flex", alignItems: "center", gap: 6,
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.2)"
-                }}>
-                  <CalendarClock size={14} className="opacity-70" />
-                  {format(selectedDate, "EEE, d MMM")}
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span className="text-sm sm:text-base font-black text-foreground tracking-tighter">Unibuddy</span>
+                  <div className="hidden xs:flex items-center gap-1.5 px-2 py-1 bg-primary/10 border border-primary/20 rounded-lg text-[10px] sm:text-xs font-bold text-primary shadow-sm">
+                    <CalendarClock size={12} className="opacity-70" />
+                    {format(selectedDate, "EEE, d MMM")}
+                  </div>
                 </div>
-              </div>
-              <p style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", margin: 0, opacity: 0.8 }}>Dashboard • {dataSource}</p>
+                <p className="hidden sm:block text-[10px] text-muted-foreground opacity-70">Dashboard • {dataSource}</p>
             </div>
 
           </div>
@@ -157,16 +144,16 @@ const Index = () => {
                   <DropdownMenuTrigger asChild>
                     <button 
                       onClick={() => setIsProfileOpen(prev => !prev)}
-                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 12px 4px 6px", background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))", borderRadius: 99, cursor: "pointer", transition: "all 0.2s" }}
+                      className="flex items-center gap-2 p-1 pr-3 sm:pr-4 bg-muted border border-border rounded-full hover:bg-muted/80 transition-all"
                     >
-                      <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent) / 0.8))", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid hsl(var(--primary) / 0.3)", boxShadow: "0 2px 8px hsl(var(--primary) / 0.3)" }}>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: "white" }}>{profile.name?.charAt(0) || "S"}</span>
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent/80 flex items-center justify-center border border-primary/30 shadow-sm">
+                        <span className="text-xs font-black text-white">{profile.name?.charAt(0) || "S"}</span>
                       </div>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: "hsl(var(--foreground))", lineHeight: 1.2 }}>{profile.name || "Student"}</span>
-                        <span style={{ fontSize: 10, fontWeight: 500, color: "hsl(var(--muted-foreground))" }}>{profile.regNo || "AP23..."}</span>
+                      <div className="hidden md:flex flex-col items-start">
+                        <span className="text-xs font-bold text-foreground leading-none">{profile.name || "Student"}</span>
+                        <span className="text-[9px] font-medium text-muted-foreground">{profile.regNo || "AP23..."}</span>
                       </div>
-                      <ChevronDown size={12} style={{ opacity: 0.4, marginLeft: 2, transition: "transform 0.2s", transform: isProfileOpen ? "rotate(180deg)" : "rotate(0)" }} />
+                      <ChevronDown size={12} className={`opacity-40 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent 
@@ -195,13 +182,13 @@ const Index = () => {
             ) : (
             <button onClick={() => navigate("/")} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold flex items-center gap-2 hover:brightness-110 trans-all"><LogIn size={14}/> Login</button>
             )}
-            <div style={{ display: "flex", gap: 6 }}>
+            <div className="hidden sm:flex gap-2">
               {[
                 { icon: <Download size={14}/>, onClick: handleExport, title: "Export" },
                 { icon: <Upload size={14}/>, onClick: handleImportClick, title: "Import" },
                 { icon: <RotateCcw size={14}/>, onClick: handleReset, title: "Reset" },
               ].map((btn, i) => (
-                <button key={i} onClick={btn.onClick} title={btn.title} className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-muted hover:bg-primary/10 hover:text-primary trans-all">
+                <button key={i} onClick={btn.onClick} title={btn.title} className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-muted hover:bg-primary/10 hover:text-primary transition-all">
                   {btn.icon}
                 </button>
               ))}

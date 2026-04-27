@@ -69,11 +69,15 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
         <table style={{ width: "100%", borderCollapse: "collapse" }} className="glass-table">
           <thead>
             <tr>
-              {["Course", "Conducted", "Attended", "Absent", "OD", "Worst Case %", "Need (75%)", "Bunks Left", ""].map((h, i) => (
-                <th key={i} style={{ textAlign: i === 0 ? "left" : i === 6 ? "right" : "center" }}>
-                  {h}
-                </th>
-              ))}
+              <th className="text-left">Course</th>
+              <th className="text-center hidden md:table-cell">Conducted</th>
+              <th className="text-center hidden sm:table-cell">Attended</th>
+              <th className="text-center hidden lg:table-cell">Absent</th>
+              <th className="text-center hidden lg:table-cell">OD</th>
+              <th className="text-center">%</th>
+              <th className="text-center">Status</th>
+              <th className="text-right">Bunks</th>
+              <th className="w-8"></th>
             </tr>
           </thead>
           <tbody>
@@ -116,52 +120,49 @@ const SubjectBreakdown = ({ stats, getDetailedCourseStats }: SubjectBreakdownPro
                     </div>
                   </td>
                   {/* Conducted */}
-                  <td style={{ textAlign: "center", color: "hsl(var(--muted-foreground))", whiteSpace: "nowrap" }}>
+                  <td className="text-center text-muted-foreground whitespace-nowrap hidden md:table-cell">
                     {hasData ? `${subject.conducted} / ${subject.totalBlocks}` : "—"}
                   </td>
-
                   {/* Attended */}
-                  <td style={{ textAlign: "center", color: "hsl(var(--muted-foreground))" }}>
+                  <td className="text-center text-muted-foreground hidden sm:table-cell">
                     {hasData ? subject.attended : "—"}
                   </td>
                   {/* Absent */}
-                  <td style={{ textAlign: "center", color: "hsl(0 72% 62%)" }}>
+                  <td className="text-center text-danger hidden lg:table-cell">
                     {hasData ? subject.absent : "—"}
                   </td>
                   {/* OD */}
-                  <td style={{ textAlign: "center", color: "hsl(var(--muted-foreground))" }}>
+                  <td className="text-center text-muted-foreground hidden lg:table-cell">
                     {hasData ? subject.od : "—"}
                   </td>
-
                   {/* % */}
-                  <td style={{ textAlign: "center" }}>
-                    <span style={{ fontWeight: 800, fontSize: 13, color: pctColor }}>
+                  <td className="text-center">
+                    <span className="font-black text-xs sm:text-sm" style={{ color: pctColor }}>
                       {hasData ? `${subject.percentage.toFixed(1)}%` : "—"}
                     </span>
                   </td>
                   {/* Status */}
-                  <td style={{ textAlign: "center" }}>
+                  <td className="text-center">
                     {detailed && hasData ? (
-                      <>
+                      <div className="flex justify-center">
                         {subject.status === "safe" && (
-                          <div style={{ display: "inline-block", padding: "2px 8px", borderRadius: 6, background: "rgba(16,185,129,0.1)", color: "#10b981", fontSize: 10, fontWeight: 800 }}>
+                          <div className="px-1.5 sm:px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
                             SAFE
                           </div>
                         )}
                         {subject.status === "warning" && (
-                          <div style={{ display: "inline-block", padding: "2px 8px", borderRadius: 6, background: "rgba(245,158,11,0.1)", color: "#f59e0b", fontSize: 10, fontWeight: 800 }}>
-                            WARNING ({subject.mustAttend}h)
+                          <div className="px-1.5 sm:px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500 text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
+                            WARN
                           </div>
                         )}
                         {subject.status === "danger" && (
-                          <div style={{ display: "inline-block", padding: "2px 8px", borderRadius: 6, background: "rgba(239,68,68,0.1)", color: "#ef4444", fontSize: 10, fontWeight: 800 }}>
-                            DANGER ({subject.mustAttend}h)
+                          <div className="px-1.5 sm:px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-500 text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
+                            DANGER
                           </div>
                         )}
-
-                      </>
+                      </div>
                     ) : (
-                      <span style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>—</span>
+                      <span className="opacity-20">—</span>
                     )}
                   </td>
                   {/* Bunks left */}
