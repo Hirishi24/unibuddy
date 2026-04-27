@@ -14,6 +14,10 @@ import scrapeRoutes from './routes/scrape.js';
 import rateLimit from 'express-rate-limit';
 
 const app = express();
+
+// Essential for express-rate-limit to work correctly on Render/Vercel
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 3001;
 
 // Global Rate Limiter

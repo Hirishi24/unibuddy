@@ -12,8 +12,9 @@ export async function solveCaptcha(base64Image: string): Promise<string> {
       contentType: 'image/png',
     });
 
-    const solverUrl = (process.env.CAPTCHA_SOLVER_URL || 'http://localhost:6006').replace(/\/$/, '');
-    const targetUrl = `${solverUrl}/captcha`;
+    const rawUrl = process.env.CAPTCHA_SOLVER_URL || 'http://localhost:6006';
+    const cleanUrl = rawUrl.replace(/\/$/, '');
+    const targetUrl = cleanUrl.endsWith('/captcha') ? cleanUrl : `${cleanUrl}/captcha`;
     
     console.log(`DEBUG: Captcha Solver Request`);
     console.log(`DEBUG: Target URL: ${targetUrl}`);
