@@ -4,38 +4,24 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from PIL import Image
+import torchvision.transforms as T
 import onnxruntime as ort
 import uvicorn
+import os
 
 MAX_QUEUE_SIZE = 64
 INFERENCE_TIMEOUT = 10
+
 CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 IDX2CHAR = {i + 1: c for i, c in enumerate(CHARS)}
 
-# Manual preprocessing to replace torchvision (saves ~500MB RAM)
-def preprocess_image(img):
-    # 1. Ensure it's grayscale
-    if img.mode != 'L':
-        img = img.convert('L')
-    
-    # 2. Resize to target dimensions (width=120, height=32)
-    # Note: PIL.resize is (width, height)
-    img = img.resize((120, 32), Image.Resampling.BILINEAR)
-    
-    # 3. Convert to numpy and scale to [0, 1] exactly like ToTensor()
-    img_np = np.array(img).astype(np.float32) / 255.0
-    
-    # 4. Normalize (mean=0.5, std=0.5) => (x - 0.5) / 0.5
-    img_np = (img_np - 0.5) / 0.5
-    
-    # 5. Add channel and batch dimensions => (1, 1, 32, 120)
-    # Shape must be (batch, channel, height, width)
-    img_np = np.expand_dims(img_np, axis=(0, 1))
-    
-    print(f"DEBUG: Preprocessed shape: {img_np.shape}, mean: {img_np.mean():.4f}, std: {img_np.std():.4f}")
-    return img_np
-
-import os
+# High Accuracy Transforms
+tf = T.Compose([
+    T.Grayscale(),
+    T.Resize((32, 120)),
+    T.ToTensor(),
+    T.Normalize((0.5,), (0.5,))
+])
 
 # Get absolute path to the directory containing this script
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -47,27 +33,13 @@ session = ort.InferenceSession(
 )
 
 def decode(logits):
-    # Log the shape to debug the [W3] issue
-    print(f"DEBUG: Logits shape: {logits.shape}")
-    
-    # If shape is (seq, batch, chars), we want (batch, seq)
-    if len(logits.shape) == 3:
-        if logits.shape[1] == 1: # (seq, 1, chars)
-            preds = logits.argmax(2).T # -> (1, seq)
-        else: # (batch, seq, chars)
-            preds = logits.argmax(2) # -> (batch, seq)
-    else:
-        preds = logits.argmax(-1)
-        if len(preds.shape) == 1:
-            preds = np.expand_dims(preds, axis=0)
-
+    preds = logits.argmax(2).T
     out = []
     for p in preds:
         s, prev = "", 0
         for c in p:
             if c != prev and c != 0:
-                if c in IDX2CHAR:
-                    s += IDX2CHAR[c]
+                s += IDX2CHAR[c]
             prev = c
         out.append(s)
     return out
@@ -112,13 +84,13 @@ async def predict(file: UploadFile = File(...)):
 
     try:
         img = Image.open(file.file).convert("L")
-        img_np = preprocess_image(img)
+        img_tensor = tf(img).unsqueeze(0).numpy()
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"invalid image: {str(e)}")
 
     loop = asyncio.get_running_loop()
     future = loop.create_future()
-    await queue.put((img_np, future))
+    await queue.put((img_tensor, future))
 
     try:
         return await asyncio.wait_for(future, timeout=INFERENCE_TIMEOUT)
@@ -126,6 +98,6 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=504, detail="timeout")
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 6006))
-    print(f"Starting Unibuddy Captcha Solver on port {port}...")
+    port = int(os.getenv("PORT", 7860)) # Hugging Face uses 7860 by default
+    print(f"Starting High Accuracy Solver on port {port}...")
     uvicorn.run(app, host="0.0.0.0", port=port, reload=False)
