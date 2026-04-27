@@ -58,12 +58,12 @@ try {
   console.error('Database initialization error:', error);
 }
 
-// Routes
-app.use('/api/attendance', attendanceRoutes);
-app.use('/api/timetable', timetableRoutes);
-app.use('/api/calendar', calendarRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/scrape', scrapeRoutes);
+// Routes (Both with and without /api prefix for maximum compatibility)
+app.use(['/api/attendance', '/attendance'], attendanceRoutes);
+app.use(['/api/timetable', '/timetable'], timetableRoutes);
+app.use(['/api/calendar', '/calendar'], calendarRoutes);
+app.use(['/api/auth', '/auth'], authRoutes);
+app.use(['/api/scrape', '/scrape'], scrapeRoutes);
 
 // Root route
 app.get('/', (req, res) => {

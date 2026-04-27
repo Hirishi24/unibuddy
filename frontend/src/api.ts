@@ -11,7 +11,8 @@ const getApiBaseUrl = () => {
 };
 
 const API_BASE_URL = getApiBaseUrl();
-console.log(`DEBUG: Frontend using API at: ${API_BASE_URL}`);
+console.log(`DEBUG: [v3.0.1] Frontend using API at: ${API_BASE_URL}`);
+console.log(`DEBUG: Full Scrape URL: ${API_BASE_URL}/scrape/fetch`);
 
 // Types
 export interface AttendanceByDate {
