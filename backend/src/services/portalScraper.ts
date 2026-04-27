@@ -103,6 +103,9 @@ export class PortalScraper {
         }
         console.log(`Captcha solution: ${captchaSolution}`);
 
+        // Add a small delay to mimic human behavior and stabilize the session
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
         // 4. Submit login payload
         // The SRM AP portal uses txtUserName, txtAuthKey, and ccode
         const payload = new URLSearchParams({
