@@ -12,8 +12,9 @@ export async function solveCaptcha(base64Image: string): Promise<string> {
       contentType: 'image/png',
     });
 
-    console.log(`Calling captcha solver at: http://localhost:6006/captcha`);
-    const response = await axios.post('http://localhost:6006/captcha', formData, {
+    const solverUrl = process.env.CAPTCHA_SOLVER_URL || 'http://localhost:6006';
+    console.log(`Calling captcha solver at: ${solverUrl}/captcha`);
+    const response = await axios.post(`${solverUrl}/captcha`, formData, {
       headers: {
         ...formData.getHeaders(),
       },
