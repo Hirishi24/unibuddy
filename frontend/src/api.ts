@@ -1,13 +1,14 @@
 // API configuration and service functions for Class Buddy
 
 const getApiBaseUrl = () => {
-  // Use env var if set (supports Replit or custom deployments)
+  // Use env var if explicitly set (e.g. for production deployments)
   if (import.meta.env.VITE_API_URL) {
     const url = import.meta.env.VITE_API_URL;
     return url.endsWith('/api') ? url : `${url.replace(/\/$/, '')}/api`;
   }
-  // Default to local backend
-  return 'http://localhost:3001/api';
+  // Use relative path so Vite proxy forwards requests to the backend.
+  // This works in both local dev and Replit (browser never hits localhost:3001 directly).
+  return '/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
