@@ -119,7 +119,15 @@ const Login = () => {
       subjects: [],
       source: "Guest Explorer Mode",
       cgpa: "9.42",
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
+      marks: [
+        { courseCode: "CSE 306", courseTitle: "Software Engineering",   ca1: 27, ca1Max: 30, ca2: 25, ca2Max: 30, cae: 44, caeMax: 50, assignment: 9,  assignmentMax: 10, total: 105, totalMax: 120, grade: "O"  },
+        { courseCode: "CSE 312", courseTitle: "Compiler Design",        ca1: 19, ca1Max: 30, ca2: 22, ca2Max: 30, cae: 36, caeMax: 50, assignment: 7,  assignmentMax: 10, total: 84,  totalMax: 120, grade: "A+" },
+        { courseCode: "CSE 305", courseTitle: "Computer Networks",      ca1: 24, ca1Max: 30, ca2: 26, ca2Max: 30, cae: 41, caeMax: 50, assignment: 8,  assignmentMax: 10, total: 99,  totalMax: 120, grade: "O"  },
+        { courseCode: "CSE 304", courseTitle: "Database Management",    ca1: 28, ca1Max: 30, ca2: 29, ca2Max: 30, cae: 47, caeMax: 50, assignment: 10, assignmentMax: 10, total: 114, totalMax: 120, grade: "O"  },
+        { courseCode: "MAT 202", courseTitle: "Discrete Mathematics",   ca1: 18, ca1Max: 30, ca2: 20, ca2Max: 30, cae: 33, caeMax: 50, assignment: 6,  assignmentMax: 10, total: 77,  totalMax: 120, grade: "A"  },
+        { courseCode: "LBA 253", courseTitle: "Professional Ethics",    ca1: 29, ca1Max: 30, ca2: 28, ca2Max: 30, cae: 48, caeMax: 50, assignment: 10, assignmentMax: 10, total: 115, totalMax: 120, grade: "O"  },
+      ]
     };
 
     localStorage.setItem('unibuddy_scraped_data', JSON.stringify(dummyData));

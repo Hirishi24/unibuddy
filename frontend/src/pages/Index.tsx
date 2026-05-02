@@ -1,13 +1,15 @@
-import { GraduationCap, RotateCcw, CalendarOff, PartyPopper, Moon, Download, Upload, LogIn, UserPlus, ChevronDown, CalendarClock, Sparkles } from "lucide-react";
+import { GraduationCap, RotateCcw, CalendarOff, PartyPopper, Moon, Download, Upload, LogIn, ChevronDown, CalendarClock } from "lucide-react";
 import { getNoClassReason, getNoClassMessage } from "@/data/globalAcademicCalendar";
 import { useAttendance } from "@/hooks/useAttendance";
 import DailySchedule from "@/components/DailySchedule";
 import SubjectBreakdown from "@/components/SubjectBreakdown";
+import MarksBreakdown from "@/components/MarksBreakdown";
 import AcademicCalendar from "@/components/AttendanceCalendar";
 import CourseStatsModal from "@/components/CourseStatsModal";
 import OngoingClass from "@/components/OngoingClass";
 import { GooeyMenu } from "@/components/GooeyMenu";
 import { UserTour } from "@/components/UserTour";
+import { getStoredData } from "@/storage.ts";
 
 import { format } from "date-fns";
 import { useRef, useState } from "react";
@@ -112,6 +114,10 @@ const Index = () => {
   };
 
   const safeSubjects = subjectStats.filter(s => s.percentage >= 75).length;
+
+  const storedData = getStoredData() as any;
+  const marks = storedData?.marks ?? [];
+  const cgpa = storedData?.cgpa ?? profile?.cgpa ?? "";
 
   return (
     <div className="min-h-screen" style={{ background: "var(--col-bg)" }}>
@@ -259,6 +265,11 @@ const Index = () => {
           </div>
         </div>
         <div id="tour-subject-breakdown"><SubjectBreakdown stats={subjectStats} getDetailedCourseStats={getDetailedCourseStats} /></div>
+        {marks.length > 0 && (
+          <div id="tour-marks">
+            <MarksBreakdown marks={marks} cgpa={cgpa ? String(cgpa) : undefined} />
+          </div>
+        )}
       </main>
 
       <CourseStatsModal stats={selectedCourse ? getDetailedCourseStats(selectedCourse) : null} open={courseModalOpen} onClose={() => setCourseModalOpen(false)} />

@@ -1,8 +1,9 @@
-import { Clock, MapPin, Check, X, Lock, Ban, User, Beaker, BookOpen, RotateCcw } from "lucide-react";
+import { Clock, MapPin, Check, X, Lock, Ban, User, Building2 } from "lucide-react";
 import { ClassBlock } from "@/shared/types";
 
 import { isToday, isBefore, startOfDay } from "date-fns";
 import { isBlockCancelled, getSwapInfo } from "@/data/globalAcademicCalendar";
+import { getCabinForFaculty } from "@/lib/facultyCabins";
 
 
 interface ClassCardProps {
@@ -130,13 +131,24 @@ const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent, selectedDate, o
             </div>
 
             {block.faculty && block.faculty !== "TBA" && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "hsl(var(--foreground) / 0.8)" }}>
-                  <div style={{ background: "hsl(var(--muted))", padding: 6, borderRadius: 8 }}>
-                     <User size={14} className="text-purple-400" />
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "hsl(var(--foreground) / 0.8)", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ background: "hsl(var(--muted))", padding: 6, borderRadius: 8 }}>
+                       <User size={14} className="text-purple-400" />
+                    </div>
+                    <span className="font-bold underline decoration-dotted underline-offset-4 text-purple-200">
+                      {block.faculty}
+                    </span>
                   </div>
-                  <span className="font-bold underline decoration-dotted underline-offset-4 text-purple-200">
-                    {block.faculty}
-                  </span>
+                  {(() => {
+                    const cabin = getCabinForFaculty(block.faculty);
+                    return cabin ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 8, background: "rgba(168,130,255,0.12)", border: "1px solid rgba(168,130,255,0.3)" }}>
+                        <Building2 size={11} style={{ color: "#c084fc" }} />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#c084fc" }}>{cabin.cabin}</span>
+                      </div>
+                    ) : null;
+                  })()}
               </div>
             )}
           </div>
