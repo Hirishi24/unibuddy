@@ -8,6 +8,7 @@ export interface ScrapeResult {
   timetable: any[];
   subjects: any[];
   cgpa: any;
+  marks: any[];
   source: "Live Portal" | "Local Cache";
 }
 
@@ -188,11 +189,12 @@ export class PortalScraper {
     const fetchStart = Date.now();
 
     try {
-      const [resAttendance, resTimetable, resProfile, resDashboard] = await Promise.all([
+      const [resAttendance, resTimetable, resProfile, resDashboard, resMarks] = await Promise.all([
           postPage("3"),
           postPage("10"),
           postPage("1"),
           this.client.get('/HRDSystem', { headers: { 'Cookie': `JSESSIONID=${this.jsessionid}` } }),
+          postPage("2").catch(() => null),
       ]);
 
       // Validation: If any response looks like a login page, the session is dead
@@ -366,10 +368,84 @@ export class PortalScraper {
 
     console.log(`Parsed ${timetable.length} timetable days`);
 
+    // Parse Marks (page ID 2 — may or may not be available depending on portal state)
+    const marks: any[] = [];
+    if (resMarks?.data) {
+      try {
+        console.log("Parsing Marks...");
+        const $marks = cheerio.load(resMarks.data);
+        let $mTable = $marks("table").filter((_, el) => {
+          const txt = $marks(el).text();
+          return /ca1|ca\s*1|marks|grade|internal/i.test(txt);
+        }).first();
+
+        if ($mTable.length > 0) {
+          // Find header row to determine column indices
+          const headers: string[] = [];
+          $mTable.find("tr").first().find("th,td").each((_, el) => {
+            headers.push($marks(el).text().trim().toLowerCase());
+          });
+
+          const findIdx = (...keys: string[]) => {
+            for (const k of keys) {
+              const i = headers.findIndex(h => h.includes(k));
+              if (i !== -1) return i;
+            }
+            return -1;
+          };
+
+          const codeI  = findIdx('code', 'course code', 'subject code');
+          const titleI = findIdx('title', 'subject', 'course title', 'name');
+          const ca1I   = findIdx('ca1', 'ca 1', 'internal 1', 'test 1', 'ct1');
+          const ca2I   = findIdx('ca2', 'ca 2', 'internal 2', 'test 2', 'ct2');
+          const caeI   = findIdx('cae', 'exam', 'end sem', 'ese', 'external');
+          const assignI= findIdx('assign', 'quiz', 'lab');
+          const totalI = findIdx('total', 'marks obtained');
+          const gradeI = findIdx('grade', 'letter grade');
+
+          $mTable.find("tr").slice(1).each((_, row) => {
+            const cells = $marks(row).find("td");
+            if (cells.length < 3) return;
+            const rowData = cells.map((_, el) => $marks(el).text().trim()).get();
+            const courseCode = codeI >= 0 ? rowData[codeI] : '';
+            if (!courseCode || /course code|subject code/i.test(courseCode)) return;
+
+            const parseNum = (idx: number) => {
+              if (idx < 0 || !rowData[idx]) return null;
+              const n = parseFloat(rowData[idx]);
+              return isNaN(n) ? null : n;
+            };
+
+            marks.push({
+              courseCode,
+              courseTitle: titleI >= 0 ? rowData[titleI] : courseCode,
+              ca1: parseNum(ca1I),
+              ca1Max: 30,
+              ca2: parseNum(ca2I),
+              ca2Max: 30,
+              cae: parseNum(caeI),
+              caeMax: 50,
+              assignment: assignI >= 0 ? parseNum(assignI) : null,
+              assignmentMax: assignI >= 0 ? 10 : undefined,
+              total: parseNum(totalI),
+              totalMax: 120,
+              grade: gradeI >= 0 ? rowData[gradeI] : undefined,
+            });
+          });
+          console.log(`Parsed ${marks.length} mark records`);
+        } else {
+          console.log("Marks table not found in page ID 2 response");
+        }
+      } catch (markErr: any) {
+        console.warn(`Marks parsing failed: ${markErr.message}`);
+      }
+    }
+
     return {
       profile,
       attendance,
       timetable,
+      marks,
       subjects: attendance.map(a => ({ code: a.courseCode, title: a.courseTitle })),
     };
 

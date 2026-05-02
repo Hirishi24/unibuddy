@@ -45,12 +45,29 @@ export interface Profile {
   [key: string]: any;
 }
 
+export interface SubjectMark {
+  courseCode: string;
+  courseTitle: string;
+  ca1?: number | null;
+  ca1Max?: number;
+  ca2?: number | null;
+  ca2Max?: number;
+  cae?: number | null;
+  caeMax?: number;
+  assignment?: number | null;
+  assignmentMax?: number;
+  total?: number | null;
+  totalMax?: number;
+  grade?: string;
+}
+
 export interface ScrapedData {
   profile: Profile;
   attendance: AttendanceEntry[];
   timetable: TimetableDay[];
   subjects: any[];
   cgpa: any;
+  marks?: SubjectMark[];
   source: string;
   lastUpdated: string;
 }

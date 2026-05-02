@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ClassBlock } from '../types';
 import { C } from '../constants/colors';
 import { isBlockCancelled } from '../lib/academicCalendar';
+import { getCabinForFaculty } from '../lib/facultyCabins';
 
 interface Props {
   block: ClassBlock;
@@ -50,6 +51,8 @@ export const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent, selected
       ? 'rgba(248,113,113,0.07)'
       : C.surface;
 
+  const cabin = getCabinForFaculty(block.faculty);
+
   return (
     <View style={[s.card, { backgroundColor: bgColor, borderColor }]}>
       <View style={[s.accent, { backgroundColor: accentColor }]} />
@@ -84,6 +87,12 @@ export const ClassCard = ({ block, status, onMarkPresent, onMarkAbsent, selected
               <View style={s.detailItem}>
                 <Ionicons name="person-outline" size={11} color={C.lab} />
                 <Text style={s.detailText}>{block.faculty}</Text>
+                {cabin && (
+                  <View style={s.cabinChip}>
+                    <Ionicons name="business-outline" size={9} color={C.warning} />
+                    <Text style={s.cabinText}>{cabin.cabin}</Text>
+                  </View>
+                )}
               </View>
             )}
           </View>
@@ -196,6 +205,18 @@ const s = StyleSheet.create({
   detailsRow: { gap: 5 },
   detailItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   detailText: { fontSize: 11, color: C.textMuted, fontWeight: '500' },
+  cabinChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(251,191,36,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(251,191,36,0.28)',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  cabinText: { fontSize: 9, color: C.warning, fontWeight: '800' },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1 },
   statusText: { fontSize: 10, fontWeight: '800' },
   actions: { flexDirection: 'row', gap: 10 },
