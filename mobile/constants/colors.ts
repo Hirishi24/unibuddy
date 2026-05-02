@@ -1,0 +1,18 @@
+export const C = {
+  bg: '#0a0a14',
+  surface: '#12121e',
+  surfaceHigh: '#1a1a2e',
+  surfaceHigher: '#222240',
+  border: 'rgba(99,102,241,0.18)',
+  borderHigh: 'rgba(99,102,241,0.35)',
+  primary: '#6366f1',
+  primaryLight: '#818cf8',
+  success: '#34d399',
+  danger: '#f87171',
+  warning: '#fbbf24',
+  text: '#f1f5f9',
+  textMuted: '#94a3b8',
+  textDim: '#64748b',
+  lab: '#a78bfa',
+  theory: '#60a5fa',
+} as const;
