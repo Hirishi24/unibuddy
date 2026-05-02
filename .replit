@@ -1,4 +1,4 @@
-modules = ["nodejs-20"]
+modules = ["nodejs-20", "python-3.12"]
 
 [[ports]]
 localPort = 3001
@@ -15,6 +15,10 @@ externalPort = 3002
 [[ports]]
 localPort = 5002
 externalPort = 3000
+
+[[ports]]
+localPort = 6000
+externalPort = 6000
 
 [agent]
 expertMode = true
@@ -34,6 +38,10 @@ args = "Start application"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "Backend API"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Captcha Solver"
 
 [[workflows.workflow]]
 name = "Start application"
@@ -58,3 +66,19 @@ waitForPort = 3001
 
 [workflows.workflow.metadata]
 outputType = "console"
+
+[[workflows.workflow]]
+name = "Captcha Solver"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd unibuddy-captcha-solver/hybrid && python api.py"
+waitForPort = 6000
+
+[nix]
+channel = "stable-25_05"
+packages = ["freetype", "lcms2", "libimagequant", "libjpeg", "libjpeg_turbo", "libpng", "libtiff", "libwebp", "libxcrypt", "oneDNN", "openjpeg", "re2", "tcl", "tk", "which", "zlib"]
