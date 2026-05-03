@@ -215,15 +215,15 @@ export const UserTour = () => {
         }}
       >
         <div style={{
-          background: 'hsl(225 25% 8%)',
-          border: '1px solid rgba(129,140,248,0.15)',
+          background: 'hsl(var(--card))',
+          border: '1px solid hsl(var(--border))',
           borderRadius: 22,
           overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(99,102,241,0.08)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.25), 0 0 40px rgba(99,102,241,0.08)',
         }}>
           
           {/* Progress bar */}
-          <div style={{ height: 3, background: 'rgba(255,255,255,0.04)' }}>
+          <div style={{ height: 3, background: 'hsl(var(--muted))' }}>
             <div style={{ 
               height: '100%', 
               width: `${progress}%`,
@@ -251,7 +251,7 @@ export const UserTour = () => {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ 
-                  fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.3)',
+                  fontSize: 11, fontWeight: 700, color: 'hsl(var(--muted-foreground))',
                   fontFamily: "'Inter', monospace",
                 }}>
                   {currentStep + 1}/{TOUR_STEPS.length}
@@ -259,14 +259,14 @@ export const UserTour = () => {
                 <button 
                   onClick={handleClose} 
                   style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'hsl(var(--muted))',
+                    border: '1px solid hsl(var(--border))',
                     borderRadius: 8, padding: 5,
-                    color: 'rgba(255,255,255,0.3)', cursor: 'pointer',
+                    color: 'hsl(var(--muted-foreground))', cursor: 'pointer',
                     transition: 'all 0.2s',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'white'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--accent))'; e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'hsl(var(--muted))'; e.currentTarget.style.color = 'hsl(var(--muted-foreground))'; }}
                 >
                   <X size={14} />
                 </button>
@@ -275,7 +275,7 @@ export const UserTour = () => {
 
             {/* Title */}
             <h3 style={{ 
-              fontSize: 20, fontWeight: 800, color: 'white', 
+              fontSize: 20, fontWeight: 800, color: 'hsl(var(--foreground))', 
               marginBottom: 8, letterSpacing: '-0.02em',
               lineHeight: 1.2,
             }}>
@@ -284,7 +284,7 @@ export const UserTour = () => {
 
             {/* Description */}
             <p style={{ 
-              fontSize: 13.5, color: 'rgba(255,255,255,0.55)', 
+              fontSize: 13.5, color: 'hsl(var(--muted-foreground))', 
               lineHeight: 1.6, marginBottom: step.tip ? 12 : 20,
             }}>
               {step.description}
@@ -293,11 +293,11 @@ export const UserTour = () => {
             {/* Tip box */}
             {step.tip && (
               <div style={{
-                background: 'rgba(99,102,241,0.08)',
-                border: '1px solid rgba(99,102,241,0.15)',
+                background: 'hsl(var(--primary) / 0.08)',
+                border: '1px solid hsl(var(--primary) / 0.18)',
                 borderRadius: 10, padding: '8px 12px',
                 marginBottom: 20,
-                fontSize: 11.5, color: 'rgba(129,140,248,0.8)',
+                fontSize: 11.5, color: 'hsl(var(--primary))',
                 fontWeight: 500, lineHeight: 1.5,
               }}>
                 💡 {step.tip}
@@ -312,16 +312,16 @@ export const UserTour = () => {
                 onClick={() => goToStep('prev')}
                 style={{
                   visibility: currentStep === 0 ? 'hidden' : 'visible',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'hsl(var(--muted))',
+                  border: '1px solid hsl(var(--border))',
                   borderRadius: 10, padding: '8px 14px',
-                  color: 'rgba(255,255,255,0.5)', cursor: 'pointer',
+                  color: 'hsl(var(--muted-foreground))', cursor: 'pointer',
                   fontSize: 12, fontWeight: 700,
                   display: 'flex', alignItems: 'center', gap: 4,
                   transition: 'all 0.2s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'white'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--accent))'; e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'hsl(var(--muted))'; e.currentTarget.style.color = 'hsl(var(--muted-foreground))'; }}
               >
                 <ChevronLeft size={14} /> Back
               </button>
@@ -336,8 +336,8 @@ export const UserTour = () => {
                     background: i === currentStep 
                       ? 'linear-gradient(90deg, hsl(230 85% 60%), hsl(265 75% 60%))' 
                       : i < currentStep 
-                        ? 'rgba(99,102,241,0.3)' 
-                        : 'rgba(255,255,255,0.08)',
+                        ? 'hsl(var(--primary) / 0.3)' 
+                        : 'hsl(var(--border))',
                     transition: 'all 0.4s cubic-bezier(0.34,1.26,0.64,1)',
                   }} />
                 ))}
