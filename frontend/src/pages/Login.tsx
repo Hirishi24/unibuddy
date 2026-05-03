@@ -168,51 +168,25 @@ const Login = () => {
 
 
 
-      {/* ── Split layout ── */}
-      <div className="login-layout">
+      {/* ── Centered layout ── */}
+      <div className="login-center">
 
-        {/* LEFT PANEL — BRANDING */}
-        <div className="brand-panel">
-          <div className="brand-content">
-            {/* Logo */}
-            <div className="brand-logo-wrap">
-              <div className="brand-logo-ring">
-                <div className="brand-logo-inner">
-                  <img src="/favicon.png" alt="Unibuddy" style={{ width: "100%", height: "100%", borderRadius: 24, objectFit: "cover", filter: "drop-shadow(0 0 12px hsl(var(--primary) / 0.6))" }} />
-                </div>
+        {/* LOGO + BRANDING */}
+        <div className="login-brand">
+          <div className="brand-logo-wrap">
+            <div className="brand-logo-ring">
+              <div className="brand-logo-inner">
+                <img src="/favicon.png" alt="Unibuddy" style={{ width: "100%", height: "100%", borderRadius: 24, objectFit: "cover", filter: "drop-shadow(0 0 12px hsl(var(--primary) / 0.6))" }} />
               </div>
-              <div className="brand-logo-glow" />
             </div>
-
-            <div className="brand-title-group">
-              <h1 className="brand-title">Uni<span>buddy</span></h1>
-              <p className="brand-tagline">SRMAP Attendance Intelligence</p>
-            </div>
-
-            {/* Feature bullets */}
-            <div className="brand-features">
-              {[
-                { icon: <Shield size={14} />, label: "Smart bunk estimation" },
-                { icon: <Zap size={14} />, label: "Real-time class tracker" },
-                { icon: <ChevronRight size={14} />, label: "75% compliance alerts" },
-              ].map(({ icon, label }) => (
-                <div className="brand-feature-item" key={label}>
-                  <div className="brand-feature-icon">{icon}</div>
-                  <span>{label}</span>
-                </div>
-              ))}
-            </div>
-
-
+            <div className="brand-logo-glow" />
           </div>
-
-          {/* Decorative vertical line */}
-          <div className="brand-vline" />
+          <h1 className="brand-title">Uni<span>buddy</span></h1>
+          <p className="brand-tagline">SRMAP Attendance Intelligence</p>
         </div>
 
-        {/* RIGHT PANEL — FORM */}
-        <div className="form-panel">
-          <div className="form-card">
+        {/* FORM CARD */}
+        <div className="form-card">
             <div className="form-card-shine" />
 
             {/* Corner accents */}
@@ -331,7 +305,6 @@ const Login = () => {
               </p>
             </div>
           </div>
-        </div>
       </div>
 
       <style>{`
@@ -451,36 +424,33 @@ const Login = () => {
         .fp-time { color: hsl(var(--primary) / 0.6); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em; }
 
         /* ═══════════ LAYOUT ═══════════ */
-        .login-layout {
+        .login-center {
           position: relative; z-index: 10;
           flex: 1;
           display: flex;
-          overflow: hidden;
-        }
-
-        /* ═══════════ BRAND PANEL ═══════════ */
-        .brand-panel {
-          flex: 1;
-          display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 40px;
-          position: relative;
+          padding: 80px 20px 40px;
+          overflow-y: auto;
+          gap: 28px;
         }
 
-        .brand-content {
-          max-width: 360px;
+        /* ═══════════ BRAND (logo + title above form) ═══════════ */
+        .login-brand {
           display: flex;
           flex-direction: column;
-          gap: 32px;
+          align-items: center;
+          gap: 14px;
+          animation: cardIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
         }
 
         /* Logo */
         .brand-logo-wrap { position: relative; width: fit-content; }
 
         .brand-logo-ring {
-          width: 88px; height: 88px;
-          border-radius: 26px;
+          width: 80px; height: 80px;
+          border-radius: 24px;
           background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent) / 0.8));
           padding: 2.5px;
           box-shadow:
@@ -492,7 +462,7 @@ const Login = () => {
         .brand-logo-inner {
           width: 100%; height: 100%;
           background: var(--background);
-          border-radius: 24px;
+          border-radius: 22px;
           display: flex; align-items: center; justify-content: center;
           backdrop-filter: blur(10px);
         }
@@ -544,75 +514,11 @@ const Login = () => {
           margin: 0;
         }
 
-        /* Features */
-        .brand-features { display: flex; flex-direction: column; gap: 12px; }
-
-        .brand-feature-item {
-          display: flex; align-items: center; gap: 12px;
-          font-size: 13px; font-weight: 500;
-          color: hsl(var(--foreground) / 0.7);
-        }
-
-        .brand-feature-icon {
-          width: 28px; height: 28px;
-          border-radius: 8px;
-          background: hsl(var(--primary) / 0.1);
-          border: 1px solid hsl(var(--primary) / 0.2);
-          display: flex; align-items: center; justify-content: center;
-          color: hsl(var(--primary));
-          flex-shrink: 0;
-        }
-
-        /* Date */
-        .brand-date {
-          padding: 14px 18px;
-          background: hsl(var(--primary) / 0.05);
-          border: 1px solid hsl(var(--primary) / 0.15);
-          border-radius: 14px;
-          display: flex; flex-direction: column; gap: 2px;
-          width: fit-content;
-        }
-
-        .brand-date-time {
-          display: block;
-          font-size: 30px; font-weight: 900;
-          font-family: 'JetBrains Mono', monospace;
-          color: hsl(var(--primary));
-          letter-spacing: 0.05em;
-          line-height: 1;
-        }
-
-        .brand-date-label {
-          display: block;
-          font-size: 11px; font-weight: 600;
-          color: hsl(var(--muted-foreground));
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-        }
-
-        /* Vertical divider */
-        .brand-vline {
-          position: absolute; top: 10%; bottom: 10%;
-          right: 0; width: 1px;
-          background: linear-gradient(to bottom,
-            transparent,
-            hsl(var(--primary) / 0.25) 30%,
-            hsl(var(--primary) / 0.25) 70%,
-            transparent
-          );
-        }
-
-        /* ═══════════ FORM PANEL ═══════════ */
-        .form-panel {
-          width: 480px; flex-shrink: 0;
-          display: flex; align-items: center; justify-content: center;
-          padding: 32px 36px;
-          overflow-y: auto;
-        }
-
+        /* ═══════════ FORM CARD ═══════════ */
         .form-card {
           position: relative;
           width: 100%;
+          max-width: 460px;
           background: var(--glass-bg-strong);
           backdrop-filter: var(--glass-blur);
           -webkit-backdrop-filter: var(--glass-blur);
@@ -890,27 +796,23 @@ const Login = () => {
         }
 
         /* ═══════════ RESPONSIVE ═══════════ */
-        @media (max-width: 768px) {
-          .login-header { padding: 0 20px; height: 60px; }
-          .brand-panel { display: none; }
-          .form-panel { width: 100%; padding: 80px 16px 24px; align-items: flex-start; }
-          .form-card { 
-            padding: 28px 24px 24px; 
-            border-radius: 24px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-          }
-          .form-title { font-size: 26px; }
+        @media (max-width: 600px) {
+          .login-header { padding: 0 16px; height: 56px; }
+          .login-center { padding: 70px 16px 32px; gap: 20px; }
+          .form-card { padding: 28px 20px 24px; border-radius: 22px; }
+          .brand-logo-ring { width: 66px; height: 66px; border-radius: 20px; }
+          .brand-title { font-size: 34px; }
+          .form-title { font-size: 24px; }
           .form-sub { font-size: 12px; }
-          .login-layout { justify-content: center; }
           .corner { display: none; }
           .submit-btn { padding: 13px; font-size: 14px; }
         }
 
-        @media (max-height: 700px) and (max-width: 768px) {
-          .form-panel { padding-top: 70px; }
-          .form-header { margin-bottom: 20px; }
+        @media (max-height: 700px) {
+          .login-center { justify-content: flex-start; padding-top: 60px; gap: 16px; }
+          .form-header { margin-bottom: 16px; }
           .form-body { gap: 12px; }
-          .guest-sep { margin: 16px 0 12px; }
+          .guest-sep { margin: 14px 0 10px; }
         }
       `}</style>
     </div>
