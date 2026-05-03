@@ -17,12 +17,40 @@ localPort = 5002
 externalPort = 3000
 
 [[ports]]
+localPort = 5003
+externalPort = 5000
+
+[[ports]]
+localPort = 5004
+externalPort = 5173
+
+[[ports]]
+localPort = 5005
+externalPort = 6800
+
+[[ports]]
+localPort = 5006
+externalPort = 8000
+
+[[ports]]
+localPort = 5007
+externalPort = 8008
+
+[[ports]]
 localPort = 6000
 externalPort = 6000
 
 [[ports]]
 localPort = 8080
 externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 23636
+externalPort = 3003
 
 [agent]
 expertMode = true
