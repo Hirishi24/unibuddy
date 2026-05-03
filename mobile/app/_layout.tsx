@@ -41,19 +41,21 @@ export default function RootLayout() {
       <DataProvider>
         <DynamicIslandProvider>
         <StatusBar style="light" />
-        <AuthGuard>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: C.bg },
-              animation: 'fade',
-            }}
-          >
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(tabs)" />
-          </Stack>
-        </AuthGuard>
-        <DynamicIslandBanner />
+        <View style={{ flex: 1 }}>
+          <AuthGuard>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: C.bg },
+                animation: 'fade',
+              }}
+            >
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(tabs)" />
+            </Stack>
+          </AuthGuard>
+          <DynamicIslandBanner />
+        </View>
         </DynamicIslandProvider>
       </DataProvider>
     </AuthProvider>

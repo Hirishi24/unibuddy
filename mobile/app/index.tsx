@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,11 +13,20 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useDynamicIsland } from '../context/DynamicIslandContext';
 import { loginApi } from '../lib/api';
 import { C } from '../constants/colors';
 
 export default function LoginScreen() {
   const { login, loginAsGuest } = useAuth();
+  const { notify } = useDynamicIsland();
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      notify({ icon: '🎓', title: 'Unibuddy', message: 'SRMAP Attendance Intelligence', color: C.primary });
+    }, 400);
+    return () => clearTimeout(t);
+  }, []);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
