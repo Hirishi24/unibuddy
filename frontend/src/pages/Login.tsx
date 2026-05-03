@@ -605,8 +605,8 @@ const Login = () => {
         /* ═══════════ FORM PANEL ═══════════ */
         .form-panel {
           width: 480px; flex-shrink: 0;
-          display: flex; align-items: center; justify-content: center;
-          padding: 32px 36px;
+          display: flex; align-items: flex-start; justify-content: center;
+          padding: 120px 36px 32px;
           overflow-y: auto;
         }
 
