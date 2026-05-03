@@ -146,17 +146,9 @@ const Login = () => {
       {/* Grid */}
       <div className="login-grid" />
 
-      {/* Header Bar */}
-      <div className="login-header">
-        <div className="login-logo-group">
-          <div className="login-logo-icon">
-            <img src="/favicon.png" alt="UB" />
-          </div>
-          <span className="login-logo-text">Unibuddy</span>
-        </div>
-        <div className="login-header-actions">
-          <SwitchMode width={48} height={24} />
-        </div>
+      {/* Theme Toggle */}
+      <div className="login-theme-toggle-corner">
+        <SwitchMode width={48} height={24} />
       </div>
 
 
@@ -478,18 +470,10 @@ const Login = () => {
         /* Title */
         .brand-title-group { display: flex; flex-direction: column; gap: 6px; }
 
-        /* --- NEW HEADER --- */
-        .login-header {
-          position: fixed; top: 0; left: 0; right: 0;
-          height: 70px; padding: 0 24px;
-          display: flex; align-items: center; justify-content: space-between;
+        .login-theme-toggle-corner {
+          position: fixed; top: 18px; right: 20px;
           z-index: 100;
         }
-
-        .login-logo-group { display: flex; align-items: center; gap: 10px; }
-        .login-logo-icon { width: 32px; height: 32px; border-radius: 9px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        .login-logo-icon img { width: 100%; height: 100%; object-fit: cover; }
-        .login-logo-text { font-size: 17px; font-weight: 900; color: hsl(var(--foreground)); letter-spacing: -0.02em; }
 
         .brand-title {
           font-size: 44px; font-weight: 950;
