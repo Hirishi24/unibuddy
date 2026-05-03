@@ -7,6 +7,7 @@ import {
   Platform,
   StatusBar,
   Easing,
+  TouchableOpacity,
 } from 'react-native';
 import { C } from '../constants/colors';
 import { IslandNotification, useDynamicIsland } from '../context/DynamicIslandContext';
@@ -56,7 +57,7 @@ function PulseDots({ color, visible }: { color: string; visible: boolean }) {
 type Phase = 'idle' | 'entering' | 'showing' | 'leaving';
 
 export function DynamicIslandBanner() {
-  const { subscribe } = useDynamicIsland();
+  const { subscribe, dismiss } = useDynamicIsland();
   const [notif, setNotif] = useState<IslandNotification | null>(null);
   const [phase, setPhase] = useState<Phase>('idle');
 
@@ -80,6 +81,9 @@ export function DynamicIslandBanner() {
   const msgY      = useRef(new Animated.Value(12)).current;
   const msgOp     = useRef(new Animated.Value(0)).current;
 
+  // X button fade
+  const xOp       = useRef(new Animated.Value(0)).current;
+
   // ── Reset all values to scanner-line idle ─────────────────────────────────
   const hardReset = useCallback(() => {
     pillH.setValue(SCAN_H);
@@ -94,6 +98,7 @@ export function DynamicIslandBanner() {
     titleOp.setValue(0);
     msgY.setValue(12);
     msgOp.setValue(0);
+    xOp.setValue(0);
   }, []);
 
   // ── Receive context events ────────────────────────────────────────────────
@@ -102,14 +107,19 @@ export function DynamicIslandBanner() {
       if (n) {
         hardReset();
         setNotif(n);
-        setPhase('entering');   // triggers expand useEffect below
+        setPhase('entering');
       } else {
-        setPhase('leaving');    // triggers collapse useEffect below
+        setPhase('leaving');
       }
     });
   }, [subscribe, hardReset]);
 
-  // ── EXPAND — runs once phase==='entering' AND notif is set ───────────────
+  // ── Handle X button press ─────────────────────────────────────────────────
+  const handleDismiss = useCallback(() => {
+    dismiss();
+  }, [dismiss]);
+
+  // ── EXPAND ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'entering' || !notif) return;
 
@@ -121,7 +131,7 @@ export function DynamicIslandBanner() {
       Animated.parallel([
         Animated.spring(pillH, { toValue: FULL_H, useNativeDriver: false, damping: 11, stiffness: 180 }),
         Animated.spring(pillR, { toValue: FULL_R, useNativeDriver: false, damping: 16, stiffness: 240 }),
-        Animated.timing(barOp,  { toValue: 1, duration: 260, useNativeDriver: false }),
+        Animated.timing(barOp, { toValue: 1, duration: 260, useNativeDriver: false }),
       ]),
 
       // 3. Scanline sweep top → bottom
@@ -136,26 +146,30 @@ export function DynamicIslandBanner() {
       Animated.spring(iconSc, { toValue: 1, useNativeDriver: false, damping: 5, stiffness: 240, mass: 0.5 }),
       Animated.parallel([
         Animated.timing(titleOp, { toValue: 1, duration: 180, useNativeDriver: false }),
-        Animated.spring(titleY,  { toValue: 0,  useNativeDriver: false, damping: 18, stiffness: 300 }),
+        Animated.spring(titleY,  { toValue: 0, useNativeDriver: false, damping: 18, stiffness: 300 }),
       ]),
       Animated.parallel([
-        Animated.timing(msgOp,   { toValue: 1, duration: 160, useNativeDriver: false }),
-        Animated.spring(msgY,    { toValue: 0,  useNativeDriver: false, damping: 18, stiffness: 300 }),
+        Animated.timing(msgOp,  { toValue: 1, duration: 160, useNativeDriver: false }),
+        Animated.spring(msgY,   { toValue: 0, useNativeDriver: false, damping: 18, stiffness: 300 }),
       ]),
+
+      // 5. X button fades in last
+      Animated.timing(xOp, { toValue: 1, duration: 200, useNativeDriver: false }),
     ]).start(() => setPhase('showing'));
   }, [phase, notif]);
 
-  // ── COLLAPSE — runs once phase==='leaving' ────────────────────────────────
+  // ── COLLAPSE ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'leaving') return;
 
     Animated.sequence([
       Animated.parallel([
-        Animated.timing(msgOp,   { toValue: 0, duration: 100, useNativeDriver: false }),
-        Animated.timing(titleOp, { toValue: 0, duration: 120, useNativeDriver: false }),
-        Animated.timing(iconSc,  { toValue: 0, duration: 120, useNativeDriver: false }),
-        Animated.timing(contOp,  { toValue: 0, duration: 140, useNativeDriver: false }),
-        Animated.timing(barOp,   { toValue: 0, duration: 140, useNativeDriver: false }),
+        Animated.timing(xOp,    { toValue: 0, duration: 80,  useNativeDriver: false }),
+        Animated.timing(msgOp,  { toValue: 0, duration: 100, useNativeDriver: false }),
+        Animated.timing(titleOp,{ toValue: 0, duration: 120, useNativeDriver: false }),
+        Animated.timing(iconSc, { toValue: 0, duration: 120, useNativeDriver: false }),
+        Animated.timing(contOp, { toValue: 0, duration: 140, useNativeDriver: false }),
+        Animated.timing(barOp,  { toValue: 0, duration: 140, useNativeDriver: false }),
       ]),
       Animated.parallel([
         Animated.spring(pillH, { toValue: SCAN_H, useNativeDriver: false, damping: 22, stiffness: 360 }),
@@ -173,7 +187,7 @@ export function DynamicIslandBanner() {
   const glow = notif?.color ?? C.primary;
 
   return (
-    <View style={[st.wrapper, { top: TOP }]} pointerEvents="none">
+    <View style={[st.wrapper, { top: TOP }]} pointerEvents="box-none">
       <Animated.View
         style={[
           st.pill,
@@ -215,6 +229,13 @@ export function DynamicIslandBanner() {
             <PulseDots color={glow} visible={phase === 'showing'} />
           </View>
         </Animated.View>
+
+        {/* X dismiss button — fades in after content */}
+        <Animated.View style={[st.xWrap, { opacity: xOp }]}>
+          <TouchableOpacity onPress={handleDismiss} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={[st.xBtn, { borderColor: `${glow}55` }]}>
+            <Text style={[st.xIcon, { color: glow }]}>✕</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </Animated.View>
     </View>
   );
@@ -255,6 +276,7 @@ const st = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 14,
+    paddingRight: 46,
     justifyContent: 'center',
   },
   row: {
@@ -296,5 +318,27 @@ const st = StyleSheet.create({
     width: 5,
     height: 5,
     borderRadius: 3,
+  },
+  xWrap: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  xBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  xIcon: {
+    fontSize: 11,
+    fontWeight: '700',
   },
 });

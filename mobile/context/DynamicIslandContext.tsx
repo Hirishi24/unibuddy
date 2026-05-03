@@ -9,6 +9,7 @@ export interface IslandNotification {
 
 interface DynamicIslandContextValue {
   notify: (n: IslandNotification) => void;
+  dismiss: () => void;
   subscribe: (listener: (n: IslandNotification | null) => void) => () => void;
 }
 
@@ -16,21 +17,32 @@ const DynamicIslandContext = createContext<DynamicIslandContextValue | null>(nul
 
 export function DynamicIslandProvider({ children }: { children: React.ReactNode }) {
   const listeners = useRef<Set<(n: IslandNotification | null) => void>>(new Set());
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const subscribe = useCallback((listener: (n: IslandNotification | null) => void) => {
     listeners.current.add(listener);
     return () => listeners.current.delete(listener);
   }, []);
 
+  const dismiss = useCallback(() => {
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+    listeners.current.forEach((l) => l(null));
+  }, []);
+
   const notify = useCallback((n: IslandNotification) => {
+    if (timer.current) clearTimeout(timer.current);
     listeners.current.forEach((l) => l(n));
-    setTimeout(() => {
+    timer.current = setTimeout(() => {
       listeners.current.forEach((l) => l(null));
-    }, 3200);
+      timer.current = null;
+    }, 5000);
   }, []);
 
   return (
-    <DynamicIslandContext.Provider value={{ notify, subscribe }}>
+    <DynamicIslandContext.Provider value={{ notify, dismiss, subscribe }}>
       {children}
     </DynamicIslandContext.Provider>
   );
