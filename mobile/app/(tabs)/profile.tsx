@@ -14,30 +14,50 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { useDynamicIsland } from '../../context/DynamicIslandContext';
 import { C } from '../../constants/colors';
 
 export default function ProfileScreen() {
   const { profile, logout, isGuest, session } = useAuth();
   const { data, resetAttendance, fetchData, isFetching } = useData();
+  const { notify } = useDynamicIsland();
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => {
-          resetAttendance();
-          await logout();
+    Alert.alert(
+      isGuest ? 'Exit Demo' : 'Logout',
+      isGuest ? 'Exit guest mode and return to login?' : 'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: isGuest ? 'Exit' : 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            notify({
+              icon: '👋',
+              title: isGuest ? 'Exiting Demo' : 'Logged Out',
+              message: isGuest ? 'Thanks for trying Unibuddy!' : 'Session cleared. See you soon!',
+              color: '#f87171',
+            });
+            await new Promise((r) => setTimeout(r, 600));
+            resetAttendance();
+            await logout();
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const handleReset = () => {
     Alert.alert('Reset Attendance', 'This will clear all locally marked attendance. Continue?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Reset', style: 'destructive', onPress: resetAttendance },
+      {
+        text: 'Reset',
+        style: 'destructive',
+        onPress: () => {
+          notify({ icon: '🗑️', title: 'Attendance Reset', message: 'All local marks cleared', color: C.warning });
+          resetAttendance();
+        },
+      },
     ]);
   };
 

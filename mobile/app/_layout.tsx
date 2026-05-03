@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { DataProvider } from '../context/DataContext';
 import { DynamicIslandProvider } from '../context/DynamicIslandContext';
+import { DynamicIslandBanner } from '../components/DynamicIslandBanner';
 import { View, ActivityIndicator } from 'react-native';
 import { C } from '../constants/colors';
 import { useRouter, useSegments } from 'expo-router';
@@ -52,6 +53,7 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" />
           </Stack>
         </AuthGuard>
+        <DynamicIslandBanner />
         </DynamicIslandProvider>
       </DataProvider>
     </AuthProvider>
