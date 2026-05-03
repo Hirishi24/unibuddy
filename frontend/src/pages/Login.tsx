@@ -14,6 +14,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: (e.clientX / window.innerWidth) * 100, y: (e.clientY / window.innerHeight) * 100 });
@@ -145,7 +146,7 @@ const Login = () => {
       {/* Grid */}
       <div className="login-grid" />
 
-      {/* Header Bar — desktop only (hidden on mobile via CSS) */}
+      {/* Header Bar */}
       <div className="login-header">
         <div className="login-logo-group">
           <div className="login-logo-icon">
@@ -158,17 +159,22 @@ const Login = () => {
         </div>
       </div>
 
+
+
       {/* Orbs */}
       <div className="orb orb-1" />
       <div className="orb orb-2" />
       <div className="orb orb-3" />
 
-      {/* ── Layout ── */}
+
+
+      {/* ── Split layout ── */}
       <div className="login-layout">
 
-        {/* LEFT PANEL — BRANDING (desktop only, hidden on mobile via CSS) */}
+        {/* LEFT PANEL — BRANDING */}
         <div className="brand-panel">
           <div className="brand-content">
+            {/* Logo */}
             <div className="brand-logo-wrap">
               <div className="brand-logo-ring">
                 <div className="brand-logo-inner">
@@ -177,10 +183,13 @@ const Login = () => {
               </div>
               <div className="brand-logo-glow" />
             </div>
+
             <div className="brand-title-group">
               <h1 className="brand-title">Uni<span>buddy</span></h1>
               <p className="brand-tagline">SRMAP Attendance Intelligence</p>
             </div>
+
+            {/* Feature bullets */}
             <div className="brand-features">
               {[
                 { icon: <Shield size={14} />, label: "Smart bunk estimation" },
@@ -193,32 +202,16 @@ const Login = () => {
                 </div>
               ))}
             </div>
+
+
           </div>
+
+          {/* Decorative vertical line */}
           <div className="brand-vline" />
         </div>
 
-        {/* FORM PANEL */}
+        {/* RIGHT PANEL — FORM */}
         <div className="form-panel">
-
-          {/* Mobile-only: toggle top-left + logo centered (hidden on desktop via CSS) */}
-          <div className="mobile-top">
-            {/* Toggle on the left */}
-            <div className="mobile-toggle">
-              <SwitchMode width={48} height={24} />
-            </div>
-            {/* Logo + title centered */}
-            <div className="mobile-brand">
-              <div className="mobile-logo-ring">
-                <div className="mobile-logo-inner">
-                  <img src="/favicon.png" alt="Unibuddy" style={{ width: "88%", height: "88%", objectFit: "cover", borderRadius: 20 }} />
-                </div>
-                <div className="mobile-logo-glow" />
-              </div>
-              <h1 className="mobile-title">Uni<span>buddy</span></h1>
-              <p className="mobile-tagline">SRMAP Attendance Intelligence</p>
-            </div>
-          </div>
-
           <div className="form-card">
             <div className="form-card-shine" />
 
@@ -896,124 +889,28 @@ const Login = () => {
           opacity: 1 !important;
         }
 
-        /* ═══════════ MOBILE SECTIONS (hidden on desktop) ═══════════ */
-        .mobile-top { display: none; }
-
-        .mobile-logo-ring {
-          width: 86px; height: 86px;
-          border-radius: 26px;
-          background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent) / 0.85));
-          padding: 3px;
-          box-shadow:
-            0 0 0 1px hsl(var(--primary) / 0.2),
-            0 12px 40px hsl(var(--primary) / 0.55),
-            0 0 80px hsl(var(--primary) / 0.18);
-          position: relative;
-        }
-
-        .mobile-logo-inner {
-          width: 100%; height: 100%;
-          background: hsl(var(--background));
-          border-radius: 23px;
-          display: flex; align-items: center; justify-content: center;
-          overflow: hidden;
-        }
-
-        .mobile-logo-glow {
-          position: absolute; inset: -20px;
-          background: radial-gradient(circle, hsl(var(--primary) / 0.2) 0%, transparent 65%);
-          border-radius: 50%;
-          pointer-events: none;
-        }
-
-        .mobile-title {
-          font-size: 40px; font-weight: 950;
-          letter-spacing: -2px; line-height: 1; margin: 0;
-          color: hsl(var(--foreground));
-        }
-
-        .mobile-title span {
-          background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .mobile-tagline {
-          font-size: 10px; font-weight: 700;
-          letter-spacing: 0.15em; text-transform: uppercase;
-          color: hsl(var(--muted-foreground)); margin: 0;
-        }
-
-        /* ═══════════ RESPONSIVE — MOBILE ═══════════ */
+        /* ═══════════ RESPONSIVE ═══════════ */
         @media (max-width: 768px) {
-          /* Allow vertical scroll */
-          .login-root { overflow-y: auto; overflow-x: hidden; }
-
-          /* Hide desktop-only elements */
-          .login-header { display: none !important; }
-          .brand-panel  { display: none !important; }
-          .brand-vline  { display: none !important; }
-
-          /* Single-column layout */
-          .login-layout {
-            flex-direction: column;
-            justify-content: flex-start;
-            overflow: visible;
-          }
-
-          /* Form panel fills width */
-          .form-panel {
-            width: 100%;
-            padding: 0 18px 48px;
-            align-items: stretch;
-            justify-content: flex-start;
-            overflow-y: visible;
-          }
-
-          /* Show mobile header section */
-          .mobile-top {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-          }
-
-          /* Toggle sits on the left */
-          .mobile-toggle {
-            display: flex;
-            align-items: center;
-            padding: 18px 0 0;
-          }
-
-          /* Logo + name centered below toggle */
-          .mobile-brand {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 28px 0 26px;
-            gap: 12px;
-          }
-
-          /* Form card tweaks */
-          .form-card {
-            padding: 28px 22px 26px;
+          .login-header { padding: 0 20px; height: 60px; }
+          .brand-panel { display: none; }
+          .form-panel { width: 100%; padding: 80px 16px 24px; align-items: flex-start; }
+          .form-card { 
+            padding: 28px 24px 24px; 
             border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.38);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
           }
-
-          .form-title  { font-size: 26px; }
-          .form-sub    { font-size: 12px; }
-          .corner      { display: none; }
-          .submit-btn  { padding: 14px; font-size: 14px; }
-          .field-input { font-size: 16px; }
+          .form-title { font-size: 26px; }
+          .form-sub { font-size: 12px; }
+          .login-layout { justify-content: center; }
+          .corner { display: none; }
+          .submit-btn { padding: 13px; font-size: 14px; }
         }
 
         @media (max-height: 700px) and (max-width: 768px) {
-          .mobile-brand { padding: 18px 0 16px; }
-          .form-header  { margin-bottom: 20px; }
-          .form-body    { gap: 12px; }
-          .guest-sep    { margin: 14px 0 10px; }
+          .form-panel { padding-top: 70px; }
+          .form-header { margin-bottom: 20px; }
+          .form-body { gap: 12px; }
+          .guest-sep { margin: 16px 0 12px; }
         }
       `}</style>
     </div>
