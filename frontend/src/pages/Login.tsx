@@ -229,70 +229,71 @@ const Login = () => {
           overflowY: "visible",
         } : {}}>
 
-          {/* Mobile brand section */}
+          {/* Mobile layout */}
           {isMobile && (
-            <div style={{
-              display: "flex", flexDirection: "column", alignItems: "center",
-              textAlign: "center", padding: "52px 0 32px", gap: 14,
-              animation: "fadeUp 0.7s cubic-bezier(0.34,1.26,0.64,1) both",
-              position: "relative",
-            }}>
-              {/* Theme toggle top-right */}
-              <div style={{ position: "absolute", top: 16, right: 0 }}>
+            <>
+              {/* Top bar: toggle on left */}
+              <div style={{
+                display: "flex", alignItems: "center",
+                padding: "18px 0 0",
+              }}>
                 <SwitchMode width={48} height={24} />
               </div>
 
-              {/* Logo */}
-              <div style={{ position: "relative" }}>
-                <div style={{
-                  width: 86, height: 86,
-                  borderRadius: 26,
-                  background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent) / 0.85))",
-                  padding: "3px",
-                  boxShadow: "0 0 0 1px hsl(var(--primary)/0.2), 0 12px 40px hsl(var(--primary)/0.55), 0 0 80px hsl(var(--primary)/0.2)",
-                }}>
+              {/* Logo centered */}
+              <div style={{
+                display: "flex", flexDirection: "column", alignItems: "center",
+                textAlign: "center", padding: "32px 0 28px", gap: 12,
+              }}>
+                {/* Logo */}
+                <div style={{ position: "relative" }}>
                   <div style={{
-                    width: "100%", height: "100%",
-                    background: "hsl(var(--background))",
-                    borderRadius: 23,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    overflow: "hidden",
+                    width: 88, height: 88,
+                    borderRadius: 26,
+                    background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent) / 0.85))",
+                    padding: "3px",
+                    boxShadow: "0 0 0 1px hsl(var(--primary)/0.2), 0 12px 40px hsl(var(--primary)/0.55), 0 0 80px hsl(var(--primary)/0.18)",
                   }}>
-                    <img src="/favicon.png" alt="Unibuddy" style={{ width: "88%", height: "88%", objectFit: "cover", borderRadius: 20 }} />
+                    <div style={{
+                      width: "100%", height: "100%",
+                      background: "hsl(var(--background))",
+                      borderRadius: 23,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      overflow: "hidden",
+                    }}>
+                      <img src="/favicon.png" alt="Unibuddy" style={{ width: "88%", height: "88%", objectFit: "cover", borderRadius: 20 }} />
+                    </div>
                   </div>
+                  <div style={{
+                    position: "absolute", inset: -18,
+                    background: "radial-gradient(circle, hsl(var(--primary)/0.2) 0%, transparent 65%)",
+                    borderRadius: "50%",
+                    pointerEvents: "none",
+                  }} />
                 </div>
-                {/* Glow halo */}
-                <div style={{
-                  position: "absolute", inset: -20,
-                  background: "radial-gradient(circle, hsl(var(--primary)/0.22) 0%, transparent 65%)",
-                  borderRadius: "50%",
-                  animation: "indigoPulse 3s ease-in-out infinite",
-                  pointerEvents: "none",
-                }} />
+
+                {/* Title */}
+                <h1 style={{
+                  fontSize: 40, fontWeight: 950, letterSpacing: "-2px",
+                  lineHeight: 1, margin: 0,
+                  color: "hsl(var(--foreground))",
+                }}>
+                  Uni<span style={{
+                    background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
+                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}>buddy</span>
+                </h1>
+
+                <p style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: "0.15em",
+                  textTransform: "uppercase", margin: 0,
+                  color: "hsl(var(--muted-foreground))",
+                }}>
+                  SRMAP Attendance Intelligence
+                </p>
               </div>
-
-              {/* Title */}
-              <h1 style={{
-                fontSize: 42, fontWeight: 950, letterSpacing: "-2.5px",
-                lineHeight: 1, margin: 0,
-                color: "hsl(var(--foreground))",
-              }}>
-                Uni<span style={{
-                  background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
-                  WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}>buddy</span>
-              </h1>
-
-              {/* Tagline */}
-              <p style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: "0.16em",
-                textTransform: "uppercase", margin: 0,
-                color: "hsl(var(--muted-foreground))",
-              }}>
-                SRMAP Attendance Intelligence
-              </p>
-            </div>
+            </>
           )}
 
           <div className="form-card">
