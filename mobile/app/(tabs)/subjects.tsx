@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../../context/DataContext';
 import { SubjectRow } from '../../components/SubjectRow';
 import { SubjectStats } from '../../types';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { C } from '../../constants/colors';
 
 type Filter = 'all' | 'safe' | 'warning' | 'danger';
@@ -40,11 +41,8 @@ export default function SubjectsScreen() {
 
   return (
     <View style={s.root}>
+      <ScreenHeader title="Subjects" />
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
-        <View style={s.header}>
-          <Text style={s.title}>Subjects</Text>
-          <Text style={s.sub}>{subjectStats.length} courses loaded</Text>
-        </View>
 
         <View style={s.filterRow}>
           {([
@@ -248,7 +246,7 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
   content: {
     paddingHorizontal: 18,
-    paddingTop: Platform.OS === 'ios' ? 60 : (StatusBar.currentHeight || 0) + 16,
+    paddingTop: 16,
     paddingBottom: 20,
   },
   header: { marginBottom: 16 },

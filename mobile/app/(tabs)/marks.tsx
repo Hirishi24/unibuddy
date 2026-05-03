@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../../context/DataContext';
 import { SubjectMark } from '../../types';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { C } from '../../constants/colors';
 
 const gradeColor = (grade?: string): string => {
@@ -233,11 +234,8 @@ export default function MarksScreen() {
 
   return (
     <View style={s.root}>
+      <ScreenHeader title="Marks" />
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
-        <View style={s.header}>
-          <Text style={s.title}>Marks</Text>
-          <Text style={s.sub}>{marks.length} subjects loaded</Text>
-        </View>
 
         {cgpa ? (
           <View style={s.cgpaCard}>
@@ -293,7 +291,7 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
   content: {
     paddingHorizontal: 18,
-    paddingTop: Platform.OS === 'ios' ? 60 : (StatusBar.currentHeight || 0) + 16,
+    paddingTop: 16,
     paddingBottom: 20,
   },
   header: { marginBottom: 18 },

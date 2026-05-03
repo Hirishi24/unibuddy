@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { C } from '../../constants/colors';
 
 export default function ProfileScreen() {
@@ -51,8 +52,9 @@ export default function ProfileScreen() {
     : null;
 
   return (
-    <ScrollView style={s.root} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
-      <Text style={s.title}>Profile</Text>
+    <View style={s.root}>
+      <ScreenHeader title="Profile" />
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
 
       <View style={s.profileCard}>
         <View style={s.avatar}>
@@ -157,6 +159,7 @@ export default function ProfileScreen() {
         <Text style={s.footerSub}>SRMAP Attendance Intelligence Platform</Text>
       </View>
     </ScrollView>
+    </View>
   );
 }
 
@@ -164,7 +167,7 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
   content: {
     paddingHorizontal: 18,
-    paddingTop: Platform.OS === 'ios' ? 60 : (StatusBar.currentHeight || 0) + 16,
+    paddingTop: 16,
     paddingBottom: 40,
   },
   title: { fontSize: 26, fontWeight: '900', color: C.text, marginBottom: 20 },

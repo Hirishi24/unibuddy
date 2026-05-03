@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { OngoingBanner } from '../../components/OngoingBanner';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { C } from '../../constants/colors';
 
 const SAF_TARGET = 75;
@@ -47,122 +48,126 @@ export default function HomeScreen() {
       : C.danger;
 
   return (
-    <ScrollView
-      style={s.root}
-      contentContainerStyle={s.content}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={isFetching}
-          onRefresh={fetchData}
-          tintColor={C.primary}
-          colors={[C.primary]}
-        />
-      }
-    >
-      <View style={s.header}>
-        <View>
-          <Text style={s.greeting}>
-            {isGuest ? 'Guest Mode' : 'Hello,'}
-          </Text>
-          <Text style={s.name} numberOfLines={1}>
-            {profile?.name?.split(' ')[0] || 'Student'}
-          </Text>
-        </View>
-        <View style={s.headerRight}>
-          {isGuest && (
-            <View style={s.guestBadge}>
-              <Text style={s.guestText}>DEMO</Text>
-            </View>
-          )}
-          <View style={s.avatarCircle}>
-            <Ionicons name="person" size={20} color={C.primary} />
-          </View>
-        </View>
-      </View>
-
-      {overallStats && (
-        <View style={[s.safetyCard, { borderColor: `${safetyColor}30` }]}>
-          <View style={s.safetyLeft}>
-            <Text style={s.safetyLabel}>Overall Attendance</Text>
-            <Text style={[s.safetyPct, { color: safetyColor }]}>
-              {Math.round(overallStats.pct)}%
-            </Text>
-            <View style={s.safetyMeta}>
-              <StatusDot color={C.success} label={`${overallStats.safe} safe`} />
-              {overallStats.warning > 0 && (
-                <StatusDot color={C.warning} label={`${overallStats.warning} warning`} />
-              )}
-              {overallStats.danger > 0 && (
-                <StatusDot color={C.danger} label={`${overallStats.danger} at risk`} />
-              )}
-            </View>
-          </View>
-          <View style={s.gaugeWrap}>
-            <CircleGauge pct={overallStats.pct} color={safetyColor} />
-          </View>
-        </View>
-      )}
-
-      {todayBlocks.length > 0 && (
-        <OngoingBanner blocks={todayBlocks} selectedDate={new Date()} />
-      )}
-
-      {overallStats?.danger > 0 && (
-        <View style={s.alertCard}>
-          <Ionicons name="warning-outline" size={16} color={C.danger} />
-          <View style={s.alertInfo}>
-            <Text style={s.alertTitle}>Attendance Alert</Text>
-            <Text style={s.alertSub}>
-              {overallStats.worstSub.course}: {Math.round(overallStats.worstSub.percentage)}% —{' '}
-              {overallStats.worstSub.mustAttend > 0
-                ? `Attend ${overallStats.worstSub.mustAttend} more classes`
-                : 'Below 75%'}
+    <View style={s.root}>
+      <ScreenHeader
+        title="Unibuddy"
+        left={
+          <View>
+            <Text style={s.greeting}>{isGuest ? 'Demo' : 'Hello,'}</Text>
+            <Text style={s.name} numberOfLines={1}>
+              {profile?.name?.split(' ')[0] || 'Student'}
             </Text>
           </View>
-        </View>
-      )}
-
-      <View style={s.sectionHeader}>
-        <Text style={s.sectionTitle}>Subject Overview</Text>
-        <Text style={s.sectionSub}>{subjectStats.length} courses</Text>
-      </View>
-
-      {isLoading && !subjectStats.length ? (
-        <View style={s.emptyCard}>
-          <Text style={s.emptyText}>Loading attendance data…</Text>
-        </View>
-      ) : subjectStats.length === 0 ? (
-        <View style={s.emptyCard}>
-          <Ionicons name="cloud-download-outline" size={30} color={C.textDim} />
-          <Text style={s.emptyText}>Pull down to fetch your portal data</Text>
-        </View>
-      ) : (
-        subjectStats.map((stat) => {
-          const color =
-            stat.status === 'safe' ? C.success : stat.status === 'warning' ? C.warning : C.danger;
-          return (
-            <View key={stat.course} style={[s.miniCard, { borderColor: `${color}22` }]}>
-              <View style={[s.miniAccent, { backgroundColor: color }]} />
-              <View style={s.miniInfo}>
-                <Text style={s.miniTitle} numberOfLines={1}>{stat.title}</Text>
-                <Text style={s.miniCode}>{stat.course}</Text>
+        }
+        right={
+          <View style={s.headerRight}>
+            {isGuest && (
+              <View style={s.guestBadge}>
+                <Text style={s.guestText}>DEMO</Text>
               </View>
-              <View style={s.miniRight}>
-                <Text style={[s.miniPct, { color }]}>{Math.round(stat.percentage)}%</Text>
-                <Text style={s.miniSub}>
-                  {stat.status === 'safe'
-                    ? `Bunk: ${stat.canBunk}`
-                    : `Need: ${stat.mustAttend}`}
-                </Text>
+            )}
+            <View style={s.avatarCircle}>
+              <Ionicons name="person" size={20} color={C.primary} />
+            </View>
+          </View>
+        }
+      />
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={s.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching}
+            onRefresh={fetchData}
+            tintColor={C.primary}
+            colors={[C.primary]}
+          />
+        }
+      >
+        {overallStats && (
+          <View style={[s.safetyCard, { borderColor: `${safetyColor}30` }]}>
+            <View style={s.safetyLeft}>
+              <Text style={s.safetyLabel}>Overall Attendance</Text>
+              <Text style={[s.safetyPct, { color: safetyColor }]}>
+                {Math.round(overallStats.pct)}%
+              </Text>
+              <View style={s.safetyMeta}>
+                <StatusDot color={C.success} label={`${overallStats.safe} safe`} />
+                {overallStats.warning > 0 && (
+                  <StatusDot color={C.warning} label={`${overallStats.warning} warning`} />
+                )}
+                {overallStats.danger > 0 && (
+                  <StatusDot color={C.danger} label={`${overallStats.danger} at risk`} />
+                )}
               </View>
             </View>
-          );
-        })
-      )}
+            <View style={s.gaugeWrap}>
+              <CircleGauge pct={overallStats.pct} color={safetyColor} />
+            </View>
+          </View>
+        )}
 
-      <View style={{ height: 20 }} />
-    </ScrollView>
+        {todayBlocks.length > 0 && (
+          <OngoingBanner blocks={todayBlocks} selectedDate={new Date()} />
+        )}
+
+        {overallStats?.danger > 0 && (
+          <View style={s.alertCard}>
+            <Ionicons name="warning-outline" size={16} color={C.danger} />
+            <View style={s.alertInfo}>
+              <Text style={s.alertTitle}>Attendance Alert</Text>
+              <Text style={s.alertSub}>
+                {overallStats.worstSub.course}: {Math.round(overallStats.worstSub.percentage)}% —{' '}
+                {overallStats.worstSub.mustAttend > 0
+                  ? `Attend ${overallStats.worstSub.mustAttend} more classes`
+                  : 'Below 75%'}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        <View style={s.sectionHeader}>
+          <Text style={s.sectionTitle}>Subject Overview</Text>
+          <Text style={s.sectionSub}>{subjectStats.length} courses</Text>
+        </View>
+
+        {isLoading && !subjectStats.length ? (
+          <View style={s.emptyCard}>
+            <Text style={s.emptyText}>Loading attendance data…</Text>
+          </View>
+        ) : subjectStats.length === 0 ? (
+          <View style={s.emptyCard}>
+            <Ionicons name="cloud-download-outline" size={30} color={C.textDim} />
+            <Text style={s.emptyText}>Pull down to fetch your portal data</Text>
+          </View>
+        ) : (
+          subjectStats.map((stat) => {
+            const color =
+              stat.status === 'safe' ? C.success : stat.status === 'warning' ? C.warning : C.danger;
+            return (
+              <View key={stat.course} style={[s.miniCard, { borderColor: `${color}22` }]}>
+                <View style={[s.miniAccent, { backgroundColor: color }]} />
+                <View style={s.miniInfo}>
+                  <Text style={s.miniTitle} numberOfLines={1}>{stat.title}</Text>
+                  <Text style={s.miniCode}>{stat.course}</Text>
+                </View>
+                <View style={s.miniRight}>
+                  <Text style={[s.miniPct, { color }]}>{Math.round(stat.percentage)}%</Text>
+                  <Text style={s.miniSub}>
+                    {stat.status === 'safe'
+                      ? `Bunk: ${stat.canBunk}`
+                      : `Need: ${stat.mustAttend}`}
+                  </Text>
+                </View>
+              </View>
+            );
+          })
+        )}
+
+        <View style={{ height: 20 }} />
+      </ScrollView>
+    </View>
   );
 }
 
@@ -196,7 +201,7 @@ const g = StyleSheet.create({
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
-  content: { paddingHorizontal: 18, paddingTop: Platform.OS === 'ios' ? 60 : (StatusBar.currentHeight || 0) + 16, paddingBottom: 20 },
+  content: { paddingHorizontal: 18, paddingTop: 16, paddingBottom: 20 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
   greeting: { fontSize: 13, color: C.textMuted, fontWeight: '600' },
   name: { fontSize: 26, fontWeight: '900', color: C.text, marginTop: 2 },

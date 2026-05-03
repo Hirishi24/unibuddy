@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../../context/DataContext';
 import { OngoingBanner } from '../../components/OngoingBanner';
 import { ClassCard } from '../../components/ClassCard';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { C } from '../../constants/colors';
 import { getNoClassMessage, getSwapInfo } from '../../lib/academicCalendar';
 
@@ -60,96 +61,96 @@ export default function ScheduleScreen() {
   );
 
   return (
-    <ScrollView style={s.root} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
-      <View style={s.header}>
-        <Text style={s.title}>Schedule</Text>
-        <TouchableOpacity
-          onPress={() => setSelectedDate(new Date())}
-          style={s.todayBtn}
-        >
-          <Text style={s.todayText}>Today</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={s.weekRow}>
-        {weekDates.map((d) => {
-          const isSel = sameDay(d, selectedDate);
-          const isToday = sameDay(d, new Date());
-          return (
-            <TouchableOpacity
-              key={d.toISOString()}
-              onPress={() => setSelectedDate(d)}
-              style={[
-                s.dayChip,
-                isSel && s.dayChipSelected,
-                isToday && !isSel && s.dayChipToday,
-              ]}
-            >
-              <Text style={[s.dayLabel, isSel && s.dayLabelSel]}>
-                {DAY_NAMES[d.getDay()]}
-              </Text>
-              <Text style={[s.dayNum, isSel && s.dayNumSel, isToday && !isSel && { color: C.primary }]}>
-                {d.getDate()}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      <View style={s.dateHeader}>
-        <TouchableOpacity onPress={() => changeDay(-1)} style={s.arrowBtn}>
-          <Ionicons name="chevron-back" size={18} color={C.textMuted} />
-        </TouchableOpacity>
-        <View style={s.dateInfo}>
-          <Text style={s.dateMain}>
-            {FULL_DAY[selectedDate.getDay()]}, {MONTHS[selectedDate.getMonth()]} {selectedDate.getDate()}
-          </Text>
-          {swapInfo && (
-            <View style={s.swapBadge}>
-              <Ionicons name="swap-horizontal-outline" size={11} color={C.theory} />
-              <Text style={s.swapText}>Following {swapInfo.followsDay} timetable</Text>
-            </View>
-          )}
+    <View style={s.root}>
+      <ScreenHeader
+        title="Schedule"
+        right={
+          <TouchableOpacity onPress={() => setSelectedDate(new Date())} style={s.todayBtn}>
+            <Text style={s.todayText}>Today</Text>
+          </TouchableOpacity>
+        }
+      />
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        <View style={s.weekRow}>
+          {weekDates.map((d) => {
+            const isSel = sameDay(d, selectedDate);
+            const isToday = sameDay(d, new Date());
+            return (
+              <TouchableOpacity
+                key={d.toISOString()}
+                onPress={() => setSelectedDate(d)}
+                style={[
+                  s.dayChip,
+                  isSel && s.dayChipSelected,
+                  isToday && !isSel && s.dayChipToday,
+                ]}
+              >
+                <Text style={[s.dayLabel, isSel && s.dayLabelSel]}>
+                  {DAY_NAMES[d.getDay()]}
+                </Text>
+                <Text style={[s.dayNum, isSel && s.dayNumSel, isToday && !isSel && { color: C.primary }]}>
+                  {d.getDate()}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
-        <TouchableOpacity onPress={() => changeDay(1)} style={s.arrowBtn}>
-          <Ionicons name="chevron-forward" size={18} color={C.textMuted} />
-        </TouchableOpacity>
-      </View>
 
-      {sameDay(selectedDate, new Date()) && blocks.length > 0 && (
-        <OngoingBanner blocks={blocks} selectedDate={selectedDate} />
-      )}
+        <View style={s.dateHeader}>
+          <TouchableOpacity onPress={() => changeDay(-1)} style={s.arrowBtn}>
+            <Ionicons name="chevron-back" size={18} color={C.textMuted} />
+          </TouchableOpacity>
+          <View style={s.dateInfo}>
+            <Text style={s.dateMain}>
+              {FULL_DAY[selectedDate.getDay()]}, {MONTHS[selectedDate.getMonth()]} {selectedDate.getDate()}
+            </Text>
+            {swapInfo && (
+              <View style={s.swapBadge}>
+                <Ionicons name="swap-horizontal-outline" size={11} color={C.theory} />
+                <Text style={s.swapText}>Following {swapInfo.followsDay} timetable</Text>
+              </View>
+            )}
+          </View>
+          <TouchableOpacity onPress={() => changeDay(1)} style={s.arrowBtn}>
+            <Ionicons name="chevron-forward" size={18} color={C.textMuted} />
+          </TouchableOpacity>
+        </View>
 
-      {noClassMsg ? (
-        <View style={s.noClassCard}>
-          <Ionicons name="moon-outline" size={28} color={C.textDim} />
-          <Text style={s.noClassTitle}>{noClassMsg}</Text>
-          <Text style={s.noClassSub}>No classes scheduled</Text>
-        </View>
-      ) : blocks.length === 0 ? (
-        <View style={s.noClassCard}>
-          <Ionicons name="calendar-outline" size={28} color={C.textDim} />
-          <Text style={s.noClassTitle}>No timetable loaded</Text>
-          <Text style={s.noClassSub}>Pull to refresh on Home screen to fetch data</Text>
-        </View>
-      ) : (
-        <View>
-          <Text style={s.classCount}>{blocks.length} class{blocks.length !== 1 ? 'es' : ''}</Text>
-          {blocks.map((block) => (
-            <ClassCard
-              key={block.blockId}
-              block={block}
-              status={attendance[block.blockId] || null}
-              onMarkPresent={() => handleMark(block.blockId, 'present')}
-              onMarkAbsent={() => handleMark(block.blockId, 'absent')}
-              selectedDate={selectedDate}
-            />
-          ))}
-        </View>
-      )}
+        {sameDay(selectedDate, new Date()) && blocks.length > 0 && (
+          <OngoingBanner blocks={blocks} selectedDate={selectedDate} />
+        )}
 
-      <View style={{ height: 20 }} />
-    </ScrollView>
+        {noClassMsg ? (
+          <View style={s.noClassCard}>
+            <Ionicons name="moon-outline" size={28} color={C.textDim} />
+            <Text style={s.noClassTitle}>{noClassMsg}</Text>
+            <Text style={s.noClassSub}>No classes scheduled</Text>
+          </View>
+        ) : blocks.length === 0 ? (
+          <View style={s.noClassCard}>
+            <Ionicons name="calendar-outline" size={28} color={C.textDim} />
+            <Text style={s.noClassTitle}>No timetable loaded</Text>
+            <Text style={s.noClassSub}>Pull to refresh on Home screen to fetch data</Text>
+          </View>
+        ) : (
+          <View>
+            <Text style={s.classCount}>{blocks.length} class{blocks.length !== 1 ? 'es' : ''}</Text>
+            {blocks.map((block) => (
+              <ClassCard
+                key={block.blockId}
+                block={block}
+                status={attendance[block.blockId] || null}
+                onMarkPresent={() => handleMark(block.blockId, 'present')}
+                onMarkAbsent={() => handleMark(block.blockId, 'absent')}
+                selectedDate={selectedDate}
+              />
+            ))}
+          </View>
+        )}
+
+        <View style={{ height: 20 }} />
+      </ScrollView>
+    </View>
   );
 }
 
@@ -157,7 +158,7 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
   content: {
     paddingHorizontal: 18,
-    paddingTop: Platform.OS === 'ios' ? 60 : (StatusBar.currentHeight || 0) + 16,
+    paddingTop: 16,
     paddingBottom: 20,
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
