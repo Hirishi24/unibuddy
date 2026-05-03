@@ -48,13 +48,10 @@ export default function LoginScreen() {
           data.profile
         );
       } else {
-        Alert.alert('Login Failed', data.message || 'Invalid credentials. Please try again.');
+        notify({ icon: '🔐', title: 'Wrong Credentials', message: 'Double-check your password and try again', color: C.warning });
       }
     } catch (e: any) {
-      Alert.alert(
-        'Connection Error',
-        'Could not reach the server. Make sure the backend is running.'
-      );
+      notify({ icon: '📡', title: 'No Connection', message: 'Check your internet and try again', color: C.primary });
     } finally {
       setLoading(false);
     }
