@@ -53,17 +53,26 @@ export default function HomeScreen() {
   useEffect(() => {
     if (!overallStats || hasNotifiedLoad.current) return;
     hasNotifiedLoad.current = true;
+
     const color = overallStats.pct >= 75 ? C.success : overallStats.pct >= 65 ? C.warning : C.danger;
     const emoji = overallStats.pct >= 75 ? '🎯' : overallStats.pct >= 65 ? '⚠️' : '🚨';
-    setTimeout(() => {
-      notify({
-        icon: emoji,
-        title: `${Math.round(overallStats.pct)}% Attendance`,
-        message: `${overallStats.safe} safe · ${overallStats.danger} at risk`,
-        color,
-      });
-    }, 600);
-  }, [overallStats]);
+
+    if (isGuest) {
+      // Guest: data is synchronous — header hasn't subscribed yet.
+      // Fire a welcome greeting first, then the attendance summary.
+      setTimeout(() => {
+        notify({ icon: '👋', title: 'Welcome, Demo!', message: 'Exploring Unibuddy in guest mode', color: C.primary });
+      }, 900);
+      setTimeout(() => {
+        notify({ icon: emoji, title: `${Math.round(overallStats.pct)}% Attendance`, message: `${overallStats.safe} safe · ${overallStats.danger} at risk`, color });
+      }, 4400);
+    } else {
+      // Real user: data arrives async, header is already mounted.
+      setTimeout(() => {
+        notify({ icon: emoji, title: `${Math.round(overallStats.pct)}% Attendance`, message: `${overallStats.safe} safe · ${overallStats.danger} at risk`, color });
+      }, 800);
+    }
+  }, [overallStats, isGuest]);
 
   const safetyColor =
     !overallStats
