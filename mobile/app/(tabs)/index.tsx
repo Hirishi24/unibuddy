@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { OngoingBanner } from '../../components/OngoingBanner';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { useDynamicIsland } from '../../context/DynamicIslandContext';
 import { C } from '../../constants/colors';
 
 const SAF_TARGET = 75;
@@ -21,6 +22,9 @@ const SAF_TARGET = 75;
 export default function HomeScreen() {
   const { profile, isGuest } = useAuth();
   const { subjectStats, isFetching, fetchData, getBlocksForSelectedDay, isLoading } = useData();
+  const { notify } = useDynamicIsland();
+  const hasNotifiedLoad = useRef(false);
+  const wasRefreshing = useRef(false);
 
   const todayBlocks = useMemo(() => getBlocksForSelectedDay(new Date()), [getBlocksForSelectedDay]);
 
@@ -37,6 +41,29 @@ export default function HomeScreen() {
     const worstSub = active.reduce((p, c) => (c.percentage < p.percentage ? c : p));
     return { pct, safe, danger, warning, worstSub, total: active.length };
   }, [subjectStats]);
+
+  useEffect(() => {
+    if (isFetching) { wasRefreshing.current = true; }
+    if (!isFetching && wasRefreshing.current) {
+      wasRefreshing.current = false;
+      notify({ icon: '✅', title: 'Data Synced', message: 'Portal data refreshed successfully', color: C.success });
+    }
+  }, [isFetching]);
+
+  useEffect(() => {
+    if (!overallStats || hasNotifiedLoad.current) return;
+    hasNotifiedLoad.current = true;
+    const color = overallStats.pct >= 75 ? C.success : overallStats.pct >= 65 ? C.warning : C.danger;
+    const emoji = overallStats.pct >= 75 ? '🎯' : overallStats.pct >= 65 ? '⚠️' : '🚨';
+    setTimeout(() => {
+      notify({
+        icon: emoji,
+        title: `${Math.round(overallStats.pct)}% Attendance`,
+        message: `${overallStats.safe} safe · ${overallStats.danger} at risk`,
+        color,
+      });
+    }, 600);
+  }, [overallStats]);
 
   const safetyColor =
     !overallStats

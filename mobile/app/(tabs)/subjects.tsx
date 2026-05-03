@@ -14,6 +14,7 @@ import { useData } from '../../context/DataContext';
 import { SubjectRow } from '../../components/SubjectRow';
 import { SubjectStats } from '../../types';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { useDynamicIsland } from '../../context/DynamicIslandContext';
 import { C } from '../../constants/colors';
 
 type Filter = 'all' | 'safe' | 'warning' | 'danger';
@@ -22,6 +23,7 @@ const fmtPct = (n: number) => `${Math.round(n)}%`;
 
 export default function SubjectsScreen() {
   const { subjectStats, isLoading } = useData();
+  const { notify } = useDynamicIsland();
   const [filter, setFilter] = useState<Filter>('all');
   const [selected, setSelected] = useState<SubjectStats | null>(null);
 
@@ -39,6 +41,15 @@ export default function SubjectsScreen() {
     [subjectStats]
   );
 
+  const handleFilterChange = (key: Filter) => {
+    setFilter(key);
+    const labels: Record<Filter, string> = { all: 'All subjects', safe: 'Safe subjects', warning: 'Warning zone', danger: 'At-risk subjects' };
+    const icons: Record<Filter, string> = { all: '📋', safe: '✅', warning: '⚠️', danger: '🚨' };
+    const colors: Record<Filter, string> = { all: C.textMuted, safe: C.success, warning: C.warning, danger: C.danger };
+    const count = key === 'all' ? subjectStats.length : key === 'safe' ? counts.safe : key === 'warning' ? counts.warning : counts.danger;
+    notify({ icon: icons[key], title: labels[key], message: `Showing ${count} subjects`, color: colors[key] });
+  };
+
   return (
     <View style={s.root}>
       <ScreenHeader title="Subjects" />
@@ -53,7 +64,7 @@ export default function SubjectsScreen() {
           ] as const).map(([key, label, count, color]) => (
             <TouchableOpacity
               key={key}
-              onPress={() => setFilter(key as Filter)}
+              onPress={() => handleFilterChange(key as Filter)}
               style={[
                 s.filterChip,
                 filter === key && { backgroundColor: `${color}18`, borderColor: `${color}50` },

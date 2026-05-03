@@ -13,6 +13,7 @@ import { useData } from '../../context/DataContext';
 import { OngoingBanner } from '../../components/OngoingBanner';
 import { ClassCard } from '../../components/ClassCard';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { useDynamicIsland } from '../../context/DynamicIslandContext';
 import { C } from '../../constants/colors';
 import { getNoClassMessage, getSwapInfo } from '../../lib/academicCalendar';
 
@@ -28,6 +29,7 @@ const sameDay = (a: Date, b: Date) =>
 export default function ScheduleScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { getBlocksForSelectedDay, getAttendanceForDate, markAttendance } = useData();
+  const { notify } = useDynamicIsland();
 
   const blocks = useMemo(() => getBlocksForSelectedDay(selectedDate), [selectedDate, getBlocksForSelectedDay]);
   const attendance = useMemo(() => getAttendanceForDate(selectedDate), [selectedDate, getAttendanceForDate]);
@@ -56,8 +58,11 @@ export default function ScheduleScreen() {
   const handleMark = useCallback(
     (blockId: string, status: 'present' | 'absent') => {
       markAttendance(blockId, status, selectedDate);
+      const icon = status === 'present' ? '✅' : '❌';
+      const color = status === 'present' ? '#34d399' : '#f87171';
+      notify({ icon, title: status === 'present' ? 'Marked Present' : 'Marked Absent', message: 'Attendance recorded', color });
     },
-    [markAttendance, selectedDate]
+    [markAttendance, selectedDate, notify]
   );
 
   return (
