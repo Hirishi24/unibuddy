@@ -204,16 +204,28 @@ const Index = () => {
         </div>
       </nav>
 
-      <main className="container mx-auto max-w-7xl px-5 pb-10 pt-6 space-y-6">
+      <main className="container mx-auto max-w-7xl px-3 sm:px-5 pb-10 pt-4 sm:pt-6 space-y-4 sm:space-y-6">
         <div id="tour-summary-stats" className="animate-fade-up">
-          <div className="glass p-5 flex items-center justify-between">
+          <div className="glass p-4 sm:p-5 flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.15em] mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Academic Safety</p>
-              <p className="text-2xl font-black text-primary">
-                {safeSubjects} <span className="font-medium text-lg" style={{ color: "hsl(var(--muted-foreground))" }}>/ {subjectStats.length} Subjects Safe</span>
+              <p className="text-2xl font-black text-primary leading-none">
+                {safeSubjects} <span className="font-medium text-lg" style={{ color: "hsl(var(--muted-foreground))" }}>/ {subjectStats.length} Safe</span>
+              </p>
+              <p className="text-[11px] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+                {safeSubjects === subjectStats.length && subjectStats.length > 0
+                  ? "All subjects above 75% ✓"
+                  : subjectStats.length === 0
+                  ? "Mark attendance to track"
+                  : `${subjectStats.length - safeSubjects} need attention`}
               </p>
             </div>
-
+            {cgpa && (
+              <div className="flex flex-col items-end shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(var(--muted-foreground))" }}>CGPA</span>
+                <span className="text-3xl font-black" style={{ color: "#34d399", lineHeight: 1 }}>{cgpa}</span>
+              </div>
+            )}
           </div>
         </div>
 

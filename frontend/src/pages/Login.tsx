@@ -212,6 +212,20 @@ const Login = () => {
 
         {/* RIGHT PANEL — FORM */}
         <div className="form-panel">
+          {/* Mobile-only brand header (hidden on desktop) */}
+          <div className="login-mobile-brand">
+            <div className="login-mb-logo-wrap">
+              <div className="login-mb-logo-ring">
+                <div className="login-mb-logo-inner">
+                  <img src="/favicon.png" alt="Unibuddy" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 20 }} />
+                </div>
+              </div>
+              <div className="login-mb-logo-glow" />
+            </div>
+            <h1 className="login-mb-title">Uni<span>buddy</span></h1>
+            <p className="login-mb-tagline">SRMAP Attendance Intelligence</p>
+          </div>
+
           <div className="form-card">
             <div className="form-card-shine" />
 
@@ -889,28 +903,119 @@ const Login = () => {
           opacity: 1 !important;
         }
 
-        /* ═══════════ RESPONSIVE ═══════════ */
+        /* ═══════════ MOBILE BRAND (desktop: hidden) ═══════════ */
+        .login-mobile-brand { display: none; }
+
+        /* ═══════════ RESPONSIVE — MOBILE ═══════════ */
         @media (max-width: 768px) {
-          .login-header { padding: 0 20px; height: 60px; }
-          .brand-panel { display: none; }
-          .form-panel { width: 100%; padding: 80px 16px 24px; align-items: flex-start; }
-          .form-card { 
-            padding: 28px 24px 24px; 
-            border-radius: 24px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+          /* Allow vertical scroll on mobile */
+          .login-root   { overflow-y: auto; overflow-x: hidden; }
+
+          /* Hide the desktop header bar & brand panel */
+          .login-header { display: none; }
+          .brand-panel  { display: none; }
+          .brand-vline  { display: none; }
+
+          /* Full-height single-column layout */
+          .login-layout {
+            flex-direction: column;
+            justify-content: flex-start;
+            overflow: visible;
           }
+
+          /* Form panel fills screen */
+          .form-panel {
+            width: 100%;
+            padding: 0 16px 40px;
+            align-items: stretch;
+            justify-content: flex-start;
+            overflow-y: visible;
+          }
+
+          /* Show mobile brand block */
+          .login-mobile-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 52px 0 32px;
+            gap: 14px;
+            animation: fadeUp 0.7s cubic-bezier(0.34, 1.26, 0.64, 1) both;
+            position: relative;
+          }
+
+          .login-mb-logo-wrap {
+            position: relative;
+            width: fit-content;
+          }
+
+          .login-mb-logo-ring {
+            width: 82px; height: 82px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent) / 0.85));
+            padding: 3px;
+            box-shadow:
+              0 0 0 1px hsl(var(--primary) / 0.2),
+              0 10px 36px hsl(var(--primary) / 0.55),
+              0 0 70px hsl(var(--primary) / 0.18);
+          }
+
+          .login-mb-logo-inner {
+            width: 100%; height: 100%;
+            background: hsl(225 25% 7%);
+            border-radius: 21px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+          }
+
+          .login-mb-logo-glow {
+            position: absolute; inset: -22px;
+            background: radial-gradient(circle, hsl(var(--primary) / 0.22) 0%, transparent 65%);
+            border-radius: 50%;
+            animation: indigoPulse 3s ease-in-out infinite;
+            pointer-events: none;
+          }
+
+          .login-mb-title {
+            font-size: 40px; font-weight: 950;
+            color: hsl(var(--foreground));
+            letter-spacing: -2.5px; line-height: 1;
+            margin: 0;
+          }
+
+          .login-mb-title span {
+            background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          }
+
+          .login-mb-tagline {
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.15em; text-transform: uppercase;
+            color: hsl(var(--muted-foreground));
+            margin: 0;
+          }
+
+          /* Form card */
+          .form-card {
+            padding: 28px 22px 26px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.38);
+          }
+
           .form-title { font-size: 26px; }
-          .form-sub { font-size: 12px; }
-          .login-layout { justify-content: center; }
-          .corner { display: none; }
-          .submit-btn { padding: 13px; font-size: 14px; }
+          .form-sub   { font-size: 12px; }
+          .corner     { display: none; }
+          .submit-btn { padding: 14px; font-size: 14px; }
+          .field-input { font-size: 16px; /* prevent iOS zoom */ }
         }
 
         @media (max-height: 700px) and (max-width: 768px) {
-          .form-panel { padding-top: 70px; }
+          .login-mobile-brand { padding: 32px 0 22px; }
           .form-header { margin-bottom: 20px; }
-          .form-body { gap: 12px; }
-          .guest-sep { margin: 16px 0 12px; }
+          .form-body   { gap: 12px; }
+          .guest-sep   { margin: 14px 0 10px; }
         }
       `}</style>
     </div>
