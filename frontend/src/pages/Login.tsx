@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { GraduationCap, Eye, EyeOff, Lock, Hash, ArrowRight, Zap, Shield, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SwitchMode from "@/components/ui/switch-mode";
@@ -14,7 +14,8 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(() => document.documentElement.clientWidth <= 768);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -25,9 +26,14 @@ const Login = () => {
   }, []);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const el = rootRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      const w = entries[0].contentRect.width;
+      setIsMobile(w <= 768);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
 
@@ -144,7 +150,7 @@ const Login = () => {
   };
 
   return (
-    <div className="login-root" style={isMobile ? { overflowY: "auto", overflowX: "hidden" } : {}}>
+    <div ref={rootRef} className="login-root" style={isMobile ? { overflowY: "auto", overflowX: "hidden" } : {}}>
       {/* Dynamic bg */}
       <div className="login-bg" style={{
         background: `radial-gradient(ellipse at ${mousePos.x}% ${mousePos.y}%, var(--login-glow) 0%, var(--login-glow-soft) 40%, var(--background-hex) 100%)`,
